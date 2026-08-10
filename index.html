@@ -5744,11 +5744,14 @@ function eflMonthOrder(month){
   return ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].indexOf(month);
 }
 function eflComputeMetrics(days){
+  let kmSemClass=0;
   let kmTotal=0,kmCarreg=0,kmVazio=0;
   let diasUteis=0,diasOp=0,diasAgDesc=0;
   const agDescByMonth={};
   (days||[]).forEach(d=>{
+    const cargo=String(d.cargd||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'').toUpperCase();
     kmTotal+=d.km||0;
+    if(!cargo||cargo==='-'||cargo==='—')kmSemClass+=d.km||0;
     if(d.isCarreg)kmCarreg+=d.km||0;
     if(d.isVazio)kmVazio+=d.km||0;
     const countable=d.dUtil&&!d.isManut;
@@ -5764,7 +5767,10 @@ function eflComputeMetrics(days){
   const diasDF=Math.max(0,diasUteis-descontoAgDesc);
   const rdeCalc=diasDF>0?Math.round(diasOp/diasDF*100):null;
   const pctCarreg=kmTotal>0?Math.round(kmCarreg/kmTotal*100):0;
-  return{diasUteis,diasDF,diasOp,diasAgDesc,kmTotal:Math.round(kmTotal),kmCarreg:Math.round(kmCarreg),kmVazio:Math.round(kmVazio),pctCarreg,rdeCalc};
+  return{diasUteis,diasDF,diasOp,diasAgDesc,kmSemClass:Math.round(kmSemClass),kmTotal:Math.round(kmTotal),kmCarreg:Math.round(kmCarreg),kmVazio:Math.round(kmVazio),pctCarreg,rdeCalc};
+}
+function eflMonthOrderSafe(month){
+  return ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].indexOf(month);
 }
 
 function processEFL(sheets){
@@ -5816,10 +5822,11 @@ function processEFL(sheets){
         const km=parseFloat(String(r1[dc.idx]||'0').replace(',','.'))||0;
         const cond=String(r2[dc.idx]||'').trim().toUpperCase();
         const cargd=String(r3[dc.idx]||'').trim().toUpperCase();
+        const cargoKey=cargd.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');
         base.days.push({
           date:dc.label,dateKey:dc.key,month,km,cond,cargd,
-          isCarreg:cargd.includes('CARREGADO')&&!cargd.includes('DESCARRE'),
-          isVazio:cargd.includes('VAZIO'),
+          isCarreg:cargoKey.includes('CARREG'),
+          isVazio:(cargoKey.includes('VAZIO')&&!cargoKey.includes('CARREG'))||cargoKey==='DESCARREGADO',
           isManut:cond.includes('MC')||cond.includes('RF')||cond.includes('MP'),
           dUtil:isUtilDate(dc.label),
           isAgDesc:cond.includes('AG')||cond.includes('AGU')||cond.includes('AGUARD')
@@ -5944,7 +5951,7 @@ function scrollEFLChart(dir){
   renderEFLChart(f);
 }
 function scrollEFLFrotaMesChart(dir){
-  const months=[...new Set(aggregateEFLByFrotaMonth(getEFLDetailFiltered()).map(r=>r.month))].sort((a,b)=>eflMonthOrder(a)-eflMonthOrder(b));
+  const months=[...new Set(aggregateEFLByFrotaMonth(getEFLDetailFiltered()).map(r=>r.month))].sort((a,b)=>eflMonthOrderSafe(a)-eflMonthOrderSafe(b));
   const pages=months.length||1;
   eflFrotaMesPage=Math.max(0,Math.min(pages-1,eflFrotaMesPage+dir));
   renderEFLFrotaMesChart(getEFLDetailFiltered());
@@ -5982,7 +5989,7 @@ function aggregateEFLByMonth(detail){
     map[key].kmVazio+=r.kmVazio||0;
     if(r.frota)map[key].frotas.add(String(r.frota));
   });
-  return Object.values(map).map(r=>({...r,qtdFrotas:r.frotas.size})).sort((a,b)=>eflMonthOrder(a.month)-eflMonthOrder(b.month));
+  return Object.values(map).map(r=>({...r,qtdFrotas:r.frotas.size})).sort((a,b)=>eflMonthOrderSafe(a.month)-eflMonthOrderSafe(b.month));
 }
 function aggregateEFLByDay(rows){
   const map={};
@@ -6031,7 +6038,7 @@ function renderEFLFrotaMesChart(detail){
   if(!ctx)return;
   if(eflFrotaMesChart){eflFrotaMesChart.destroy();eflFrotaMesChart=null;}
   const allRows=aggregateEFLByFrotaMonth(detail);
-  const months=[...new Set(allRows.map(r=>r.month))].sort((a,b)=>eflMonthOrder(a)-eflMonthOrder(b));
+  const months=[...new Set(allRows.map(r=>r.month))].sort((a,b)=>eflMonthOrderSafe(a)-eflMonthOrderSafe(b));
   const pages=months.length||1;
   eflFrotaMesPage=Math.max(0,Math.min(pages-1,eflFrotaMesPage));
   const currentMonth=months[eflFrotaMesPage]||'Base';
@@ -6076,12 +6083,13 @@ function renderEFL(){
   const totKm=f.reduce((s,r)=>s+r.kmTotal,0);
   const totCarreg=f.reduce((s,r)=>s+r.kmCarreg,0);
   const totVazio=f.reduce((s,r)=>s+r.kmVazio,0);
+  const totSemClass=f.reduce((s,r)=>s+(r.kmSemClass||0),0);
   const pct=totKm>0?Math.round(totCarreg/totKm*100):0;
   const e0=document.getElementById('ef0');const e0s=document.getElementById('ef0s');
   const e1=document.getElementById('ef1');const e1s=document.getElementById('ef1s');
   const e2=document.getElementById('ef2');const e2s=document.getElementById('ef2s');
   if(e0)e0.textContent=totKm.toLocaleString('pt-BR')+'km';
-  if(e0s)e0s.textContent=byFrota.length+' frotas';
+  if(e0s)e0s.textContent=byFrota.length+' frotas'+(totSemClass>0?' · '+totSemClass.toLocaleString('pt-BR')+' km sem classificação':'');
   if(e1)e1.textContent=totCarreg.toLocaleString('pt-BR')+'km';
   if(e1s)e1s.textContent=pct+'% do total';
   if(e2)e2.textContent=totVazio.toLocaleString('pt-BR')+'km';
@@ -6095,7 +6103,7 @@ function renderEFL(){
   if(!tbl)return;
   tbl.innerHTML=detail.length===0
     ?'<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px">Nenhum registro</td></tr>'
-    :detail.sort((a,b)=>(eflMonthOrder(a.month)-eflMonthOrder(b.month))||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})||String(a.motor).localeCompare(String(b.motor),'pt-BR')).map(r=>`<tr>
+    :detail.sort((a,b)=>(eflMonthOrderSafe(a.month)-eflMonthOrderSafe(b.month))||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})||String(a.motor).localeCompare(String(b.motor),'pt-BR')).map(r=>`<tr>
       <td style="font-family:var(--font-data);font-weight:600">${r.month}</td>
       <td style="font-family:var(--font-data);font-weight:600">${r.frota}</td>
       <td>${r.modelo}</td>
