@@ -2576,10 +2576,11 @@ function cC(){return dark?{bg:'rgba(255,255,255,0.05)',txt:'#6b7280'}:{bg:'rgba(
 // GIDs das abas - atualize se necessário
 const CSV_AET = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_Ry7aRW5A3zpaLdCu2u_xb3vgfOjnfHRmSH_OyvVX3wzmxvh4fSZBFvZakDRF2eDNA3DWJk9OFbml/pub?output=csv&gid=1076498373";
 const EFL_SHEETS=[
-  {month:'Março',gid:'784627574',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=784627574'},
-  {month:'Abril',gid:'922237190',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=922237190'},
-  {month:'Maio',gid:'795326864',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=795326864'},
-  {month:'Julho',gid:'192071067',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=192071067'}
+  {month:'Março',gid:'597669245',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=597669245'},
+  {month:'Abril',gid:'1761032016',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=1761032016'},
+  {month:'Maio',gid:'272661921',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=272661921'},
+  {month:'Julho',gid:'655500116',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=655500116'},
+  {month:'Agosto',gid:'1566629523',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=1566629523'}
 ];
 const CSV_INEF = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=262129708";
 const CSV_PATIO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRuyDBTaz3bDMc7uelyXQ8t5GkpUjdr0pfK2xm9TZHHJL6uEVEo0GxrTImAyKs-PbjHhhmNIziyBXMO/pub?output=csv";
@@ -6487,7 +6488,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=23',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=24',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
