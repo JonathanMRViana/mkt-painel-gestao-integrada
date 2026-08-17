@@ -2286,8 +2286,11 @@ function goTo(id){
 const STRATWS_INDICATORS_URL='https://makroengenharia.stratws.com/PerformanceCorporativa/FarolDeIndicadores?uid=eyJJZERhVmlzYW8iOm51bGwsIkZvcm1hRGVWaXN1YWxpemFjYW8iOjEsIkZhcm9sQWN1bXVsYWRvIjpmYWxzZSwiQ29tcGFyYXJDb20iOjMsIkNvbXBhcmFyRGUiOjAsIklkRGFBcmVhRGVSZXN1bHRhZG8iOjAsIkZhcm9sVGVuZGVuY2lhIjpmYWxzZSwiRnJlcXVlbmNpYSI6MSwiQ2VuYXJpbyI6MSwiT2NvcnJlbmNpYSI6NywiSWREb1BsYW5vRGVHZXN0YW8iOjExMjAxMzAwODUxNjAsIklkRGFVbmlkYWRlIjoxMTIwMTMwMDAyNzU0fQ%3D%3D';
 function openStratwsIndicators(){
   toggleMobileNav(false);
-  const opened=window.open(STRATWS_INDICATORS_URL,'_blank','noopener,noreferrer');
-  if(!opened)window.location.assign(STRATWS_INDICATORS_URL);
+  const link=document.createElement('a');
+  link.href=STRATWS_INDICATORS_URL;
+  link.target='_blank';
+  link.rel='noopener noreferrer';
+  link.click();
 }
 
 function toggleTheme(){
@@ -6508,7 +6511,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=27',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=28',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
