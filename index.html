@@ -785,7 +785,7 @@ tbody tr:hover td{background:var(--surface2)}
 
   <div class="sb-section">KPIs</div>
 
-  <div class="nav-item nav-disabled" data-tip="Indicadores" data-sub="Em desenvolvimento">
+  <div class="nav-item" id="nav-indicadores" data-tip="Indicadores" data-sub="Abrir STRATWs" onclick="openStratwsIndicators()">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     <span class="nav-lbl">Indicadores</span>
   </div>
@@ -2281,6 +2281,13 @@ function goTo(id){
     if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}renderBUDGET();}
     if(id==='exec'){setExecTab(execActiveTab||'overview');renderEXEC();}
   },50);
+}
+
+const STRATWS_INDICATORS_URL='https://makroengenharia.stratws.com/PerformanceCorporativa/FarolDeIndicadores?uid=eyJJZERhVmlzYW8iOm51bGwsIkZvcm1hRGVWaXN1YWxpemFjYW8iOjEsIkZhcm9sQWN1bXVsYWRvIjpmYWxzZSwiQ29tcGFyYXJDb20iOjMsIkNvbXBhcmFyRGUiOjAsIklkRGFBcmVhRGVSZXN1bHRhZG8iOjAsIkZhcm9sVGVuZGVuY2lhIjpmYWxzZSwiRnJlcXVlbmNpYSI6MSwiQ2VuYXJpbyI6MSwiT2NvcnJlbmNpYSI6NywiSWREb1BsYW5vRGVHZXN0YW8iOjExMjAxMzAwODUxNjAsIklkRGFVbmlkYWRlIjoxMTIwMTMwMDAyNzU0fQ%3D%3D';
+function openStratwsIndicators(){
+  toggleMobileNav(false);
+  const opened=window.open(STRATWS_INDICATORS_URL,'_blank','noopener,noreferrer');
+  if(!opened)window.location.assign(STRATWS_INDICATORS_URL);
 }
 
 function toggleTheme(){
@@ -6501,7 +6508,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=26',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=27',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
