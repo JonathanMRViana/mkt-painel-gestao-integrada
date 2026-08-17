@@ -875,7 +875,7 @@ tbody tr:hover td{background:var(--surface2)}
             <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" class="search-input" id="aetSearchTop" placeholder="Buscar frota ou nº de licença..." oninput="syncAETSearch(this,'aetSearch')">
           </div>
-          <div class="select-group"><label class="select-label">Status</label><select class="f-select" id="aetSem" onchange="renderAETAll()"><option value="TODOS">Todos</option><option value="VENCIDA">Vencidas</option><option value="C5">Crítico 5d</option><option value="C15">Atenção 15d</option><option value="C30">Vencendo 30d</option><option value="R">Regular</option><option value="SD">Sem Data</option></select></div>
+          <div class="select-group"><label class="select-label">Status</label><select class="f-select" id="aetSem" onchange="renderAETAll()"><option value="TODOS">Todos</option><option value="VENCIDA">Vencidas</option><option value="C5">Crítico 5d</option><option value="C15">Atenção 15d</option><option value="C30">Vencendo 30d</option><option value="R">Regular</option><option value="H">Histórico</option><option value="SD">Sem Data</option></select></div>
           <div class="select-group"><label class="select-label">Tipo</label><select class="f-select" id="aetTipo" onchange="renderAETAll()"><option value="TODOS">Todos</option></select></div>
           <div class="select-group"><label class="select-label">Renovação</label><select class="f-select" id="aetRen" onchange="renderAETAll()"><option value="TODOS">Todos</option><option value="SIM">Sim</option><option value="NAO">Não</option></select></div>
           <div class="select-group">
@@ -937,7 +937,7 @@ tbody tr:hover td{background:var(--surface2)}
               <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="text" class="search-input" id="aetSearch" placeholder="Buscar frota ou nº de licença..." oninput="syncAETSearch(this,'aetSearchTop')">
             </div>
-            <div class="select-group"><label class="select-label">Status</label><select class="f-select" id="aetSemBot" onchange="syncAETSelect(this,'aetSem')"><option value="TODOS">Todos</option><option value="VENCIDA">Vencidas</option><option value="C5">Crítico 5d</option><option value="C15">Atenção 15d</option><option value="C30">Vencendo 30d</option><option value="R">Regular</option><option value="SD">Sem Data</option></select></div>
+            <div class="select-group"><label class="select-label">Status</label><select class="f-select" id="aetSemBot" onchange="syncAETSelect(this,'aetSem')"><option value="TODOS">Todos</option><option value="VENCIDA">Vencidas</option><option value="C5">Crítico 5d</option><option value="C15">Atenção 15d</option><option value="C30">Vencendo 30d</option><option value="R">Regular</option><option value="H">Histórico</option><option value="SD">Sem Data</option></select></div>
             <div class="select-group"><label class="select-label">Tipo</label><select class="f-select" id="aetTipoBot" onchange="syncAETSelect(this,'aetTipo')"><option value="TODOS">Todos</option></select></div>
             <div class="select-group"><label class="select-label">Renovação</label><select class="f-select" id="aetRenBot" onchange="syncAETSelect(this,'aetRen')"><option value="TODOS">Todos</option><option value="SIM">Sim</option><option value="NAO">Não</option></select></div>
             <div class="select-group">
@@ -2116,9 +2116,9 @@ const panelPremises={
   aet:[
     ['Objetivo','Controlar licenças AET e antecipar documentos vencidos ou próximos do vencimento.'],
     ['Origem dos dados','A base vem do controle de AET publicado no Google Sheets.'],
-    ['Como ler os status','A licença é classificada conforme a data de validade: regular, vencendo, crítica ou vencida.'],
-    ['Renovação','O painel separa o que já está marcado para renovação do que ainda precisa de tratativa.'],
-    ['Ponto de atenção','Licenças vencidas ou em janela crítica podem impactar liberação de transporte e devem ser tratadas antes da operação.']
+    ['Como ler os status','A licença é classificada conforme a validade. Documentos expirados sem renovação são mantidos apenas como histórico.'],
+    ['Renovação','Uma licença expirada só entra como vencida quando a coluna Renovação estiver marcada como Sim.'],
+    ['Ponto de atenção','Licenças renováveis vencidas ou em janela crítica podem impactar a liberação do transporte e devem ser priorizadas.']
   ],
   mat:[
     ['Objetivo','Mostrar se as frotas estão com os materiais mínimos de amarração e segurança para operar.'],
@@ -2566,10 +2566,10 @@ function nTipo(t){if(!t)return'';const v=t.toUpperCase();return v.includes('DESM
 function calcSLA(p,s){const x=(s||'').toLowerCase();if(x.includes('finaliz')&&x.includes('prazo')&&!x.includes('fora'))return'FP';if(x.includes('finaliz')&&x.includes('fora'))return'FF';if(x.includes('finaliz'))return'F';if(x.includes('cancelad'))return'CX';if(!p||p==='')return'SP';const d=diasN(p);if(d===null)return'SP';return d<0?'AT':'OK';}
 
 
-function tagAET(s){const m={V:['tag-red','VENCIDA'],C5:['tag-red','CRÍTICO 5d'],C15:['tag-amber','ATENÇÃO 15d'],C30:['tag-amber','VENCENDO 30d'],R:['tag-green','REGULAR'],SD:['tag-dim','SEM DATA']};const[c,l]=m[s]||['tag-dim',s];return`<span class="tag ${c}">${l}</span>`;}
+function tagAET(s){const m={V:['tag-red','VENCIDA'],C5:['tag-red','CRÍTICO 5d'],C15:['tag-amber','ATENÇÃO 15d'],C30:['tag-amber','VENCENDO 30d'],R:['tag-green','REGULAR'],H:['tag-dim','HISTÓRICO'],SD:['tag-dim','SEM DATA']};const[c,l]=m[s]||['tag-dim',s];return`<span class="tag ${c}">${l}</span>`;}
 function tagSLA(s){const m={AT:['tag-red','ATRASADO'],OK:['tag-green','NO PRAZO'],FP:['tag-teal','FINALIZADO'],FF:['tag-amber','FORA DO PRAZO'],F:['tag-teal','FINALIZADO'],CX:['tag-dim','CANCELADA'],SP:['tag-dim','SEM PRAZO']};const[c,l]=m[s]||['tag-dim',s];return`<span class="tag ${c}">${l}</span>`;}
 function tagCrit(c){const m={ALTA:['tag-red','ALTA'],'MÉDIA':['tag-amber','MÉDIA'],BAIXA:['tag-green','BAIXA']};const[cl,l]=m[c]||['tag-dim',c];return`<span class="tag ${cl}">${l}</span>`;}
-function tagRen(r){if(r==='SIM')return'<span class="tag tag-red">SIM</span>';if(r==='NÃO')return'<span class="tag tag-green">NÃO</span>';return`<span class="tag tag-dim">${r||'—'}</span>`;}
+function tagRen(r){if(r==='SIM')return'<span class="tag tag-red">SIM</span>';if(r==='NAO'||r==='NÃO')return'<span class="tag tag-green">NÃO</span>';return`<span class="tag tag-dim">${r||'—'}</span>`;}
 
 function cC(){return dark?{bg:'rgba(255,255,255,0.05)',txt:'#6b7280'}:{bg:'rgba(0,0,0,0.05)',txt:'#9ca3af'};}
 
@@ -4005,7 +4005,10 @@ function processAET(rows){
     const dtSol=String(v[7]||'');
     const dtLib=String(v[8]||'');
     const obsAet=String(v[12]||'').replace(/"/g,'').trim();
-    aetData.push({frota:String(v[0]||''),lic:String(v[1]||''),tipo:String(v[4]||'').toUpperCase(),orig:String(v[5]||''),dest:String(v[6]||''),dtSol,dtLib,val,d:diasN(val),sem:sem(val),ren:String(v[11]||'').toUpperCase(),obs:obsAet});
+    const ren=normText(v[11]);
+    const dateStatus=sem(val);
+    const aetStatus=dateStatus==='V'&&ren!=='SIM'?'H':dateStatus;
+    aetData.push({frota:String(v[0]||''),lic:String(v[1]||''),tipo:String(v[4]||'').toUpperCase(),orig:String(v[5]||''),dest:String(v[6]||''),dtSol,dtLib,val,d:diasN(val),sem:aetStatus,ren,obs:obsAet});
   }
   // nb-aet removed
   // Build tipo select for AET dynamically
@@ -4212,7 +4215,7 @@ function renderAETtbl(){
   const mes=getSelectValues('aetMes');
   const dataDe=((document.getElementById('aetDataDe')||{}).value)||'';
   const dataAte=((document.getElementById('aetDataAte')||{}).value)||'';
-  const semMap={'VENCIDA':'V','C5':'C5','C15':'C15','C30':'C30','R':'R','SD':'SD'};
+  const semMap={'VENCIDA':'V','C5':'C5','C15':'C15','C30':'C30','R':'R','H':'H','SD':'SD'};
   const f=aetData.filter(r=>{
     const refDate=parseDate(r.val)||parseDate(r.dtSol);
     if(!isAllSelection(sem)&&!sem.map(v=>semMap[v]).includes(r.sem))return false;
@@ -4236,7 +4239,7 @@ function renderAETtbl(){
       <td style="font-family:var(--font-data)">${fD(r.dtSol)}</td>
       <td style="font-family:var(--font-data)">${fD(r.dtLib)}</td>
       <td style="font-family:var(--font-data)">${fD(r.val)}</td>
-      <td style="font-family:var(--font-data);font-weight:500;color:${r.d!==null&&r.d<0?'var(--red)':r.d!==null&&r.d<=30?'var(--amber)':'var(--text3)'}">${r.d!==null?r.d+'d':'—'}</td>
+      <td style="font-family:var(--font-data);font-weight:500;color:${r.sem==='H'?'var(--text3)':r.d!==null&&r.d<0?'var(--red)':r.d!==null&&r.d<=30?'var(--amber)':'var(--text3)'}">${r.d!==null?r.d+'d':'—'}</td>
       <td>${tagAET(r.sem)}</td><td>${tagRen(r.ren)}</td>
       <td class="obs-cell">${obsCellHtml(r.frota,r.obs)}</td>
     </tr>`).join('');
@@ -4643,7 +4646,7 @@ function renderAETAll(){
   if(aetData.length)renderAETcharts();
 }
 function renderAETcharts(){
-  const semMap={'VENCIDA':'V','C5':'C5','C15':'C15','C30':'C30','R':'R','SD':'SD'};
+  const semMap={'VENCIDA':'V','C5':'C5','C15':'C15','C30':'C30','R':'R','H':'H','SD':'SD'};
   const sem=getSelectValues('aetSem');
   const tipo=getSelectValues('aetTipo');
   const ren=getSelectValues('aetRen');
@@ -4669,6 +4672,7 @@ function renderAETcharts(){
   const C15=d.filter(r=>r.sem==='C15').length;
   const C30=d.filter(r=>r.sem==='C30').length;
   const R=d.filter(r=>r.sem==='R').length;
+  const H=d.filter(r=>r.sem==='H').length;
   const SD=d.filter(r=>r.sem==='SD').length;
   const tot2=d.length||1;
   document.getElementById('a0').textContent=d.length;
@@ -4681,8 +4685,8 @@ function renderAETcharts(){
   if(el5)el5.textContent=C15;
   if(aC)aC.destroy();
   const aetNoDateColor=dark?'#7f8c9b':'#3d4559';
-document.getElementById('aLeg').innerHTML=[['#c0392b','VENCIDAS',V],['#e74c3c','CRÍTICO 5D',C5],['#e8943a','ATENÇÃO 15D',C15],['#f39c12','VENCENDO 30D',C30],['#2db87a','REGULAR',R],[aetNoDateColor,'SEM DATA',SD]].map(([c,l,v])=>`<span class="leg" style="width:100%;justify-content:space-between;padding:3px 0"><span style="display:flex;align-items:center;gap:6px"><span class="leg-dot" style="background:${c}"></span><span style="font-size:11px;text-transform:uppercase;letter-spacing:.03em">${l}</span></span><span style="font-family:var(--font-data);font-weight:600;font-size:11px;color:var(--text2)">(${v})</span></span>`).join('');
-  aC=new Chart(document.getElementById('aDonut'),{type:'doughnut',data:{labels:['Vencida','Crítico 5d','Atenção 15d','Vencendo 30d','Regular','Sem data'],datasets:[{data:[V,C5,C15,C30,R,SD],backgroundColor:['#c0392b','#e74c3c','#e8943a','#f39c12','#2db87a',aetNoDateColor],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){const t=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);const pct=t>0?Math.round(ctx.raw/t*100):0;return ' '+ctx.label+': '+ctx.raw+' ('+pct+'%)';}}}},cutout:'72%'}});
+document.getElementById('aLeg').innerHTML=[['#c0392b','VENCIDAS',V],['#e74c3c','CRÍTICO 5D',C5],['#e8943a','ATENÇÃO 15D',C15],['#f39c12','VENCENDO 30D',C30],['#2db87a','REGULAR',R],[aetNoDateColor,'HISTÓRICO',H],['#9aa4b2','SEM DATA',SD]].map(([c,l,v])=>`<span class="leg" style="width:100%;justify-content:space-between;padding:3px 0"><span style="display:flex;align-items:center;gap:6px"><span class="leg-dot" style="background:${c}"></span><span style="font-size:11px;text-transform:uppercase;letter-spacing:.03em">${l}</span></span><span style="font-family:var(--font-data);font-weight:600;font-size:11px;color:var(--text2)">(${v})</span></span>`).join('');
+  aC=new Chart(document.getElementById('aDonut'),{type:'doughnut',data:{labels:['Vencida','Crítico 5d','Atenção 15d','Vencendo 30d','Regular','Histórico','Sem data'],datasets:[{data:[V,C5,C15,C30,R,H,SD],backgroundColor:['#c0392b','#e74c3c','#e8943a','#f39c12','#2db87a',aetNoDateColor,'#9aa4b2'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){const t=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);const pct=t>0?Math.round(ctx.raw/t*100):0;return ' '+ctx.label+': '+ctx.raw+' ('+pct+'%)';}}}},cutout:'72%'}});
   const tipos={};d.forEach(r=>{if(r.tipo)tipos[r.tipo]=(tipos[r.tipo]||0)+1;});
   const ts=Object.entries(tipos).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const mx=ts[0]?ts[0][1]:1;
@@ -6497,7 +6501,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=25',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=26',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
