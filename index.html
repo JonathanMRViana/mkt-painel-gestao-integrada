@@ -1285,12 +1285,6 @@ tbody tr:hover td{background:var(--surface2)}
             <label class="select-label">Mês</label>
             <select class="f-select" id="patMes" onchange="renderPATtbl()">
               <option value="TODOS">Todos</option>
-              <option value="1">Janeiro</option><option value="2">Fevereiro</option>
-              <option value="3">Março</option><option value="4">Abril</option>
-              <option value="5">Maio</option><option value="6">Junho</option>
-              <option value="7">Julho</option><option value="8">Agosto</option>
-              <option value="9">Setembro</option><option value="10">Outubro</option>
-              <option value="11">Novembro</option><option value="12">Dezembro</option>
             </select>
           </div>
           <div class="select-group"><label class="select-label">Data De</label><input class="f-select" type="date" id="patDataDe" onchange="syncPATDate(this,'patDataDeBot')"></div>
@@ -1366,12 +1360,6 @@ tbody tr:hover td{background:var(--surface2)}
                 <label class="select-label">Mês</label>
                 <select class="f-select" id="patMesBot" onchange="document.getElementById('patMes').value=this.value;renderPATtbl()">
                   <option value="TODOS">Todos</option>
-                  <option value="1">Janeiro</option><option value="2">Fevereiro</option>
-                  <option value="3">Março</option><option value="4">Abril</option>
-                  <option value="5">Maio</option><option value="6">Junho</option>
-                  <option value="7">Julho</option><option value="8">Agosto</option>
-                  <option value="9">Setembro</option><option value="10">Outubro</option>
-                  <option value="11">Novembro</option><option value="12">Dezembro</option>
                 </select>
               </div>
               <div class="select-group"><label class="select-label">Data De</label><input class="f-select" type="date" id="patDataDeBot" onchange="syncPATDate(this,'patDataDe')"></div>
@@ -4497,6 +4485,18 @@ function patMatchNonDate(r,state){
   if(state.q&&!r.ativ.toLowerCase().includes(state.q)&&!r.frota.toLowerCase().includes(state.q)&&!r.frotaMKT.toLowerCase().includes(state.q))return false;
   return true;
 }
+function refreshPATMonthOptions(){
+  const state=getPATFilterState();
+  const months=[...new Set(patData.filter(r=>{
+    if(!patMatchNonDate(r,state))return false;
+    const year=getDateYear(r.dtId);
+    if(!year)return false;
+    if(!isAllSelection(state.ano)&&!matchesValue(String(year),state.ano))return false;
+    if((state.dataDe||state.dataAte)&&!dateInRange(r.dtId,state.dataDe,state.dataAte))return false;
+    return true;
+  }).map(r=>getDateMonth(r.dtId)).filter(Boolean))].sort((a,b)=>a-b);
+  fillSelectOptions(['patMes','patMesBot'],months,'Todos',month=>BUDGET_MONTHS[Number(month)-1]||month);
+}
 function getPATFilteredData(rangeOverride){
   const state=getPATFilterState();
   return patData.filter(r=>{
@@ -5128,6 +5128,7 @@ function renderPAT(){
 }
 function renderPATtbl(){
   try{
+    refreshPATMonthOptions();
     const f=getPATFilteredData();
     // Update KPIs
     const tot2=f.length||1;
@@ -6512,7 +6513,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=28',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=30',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
