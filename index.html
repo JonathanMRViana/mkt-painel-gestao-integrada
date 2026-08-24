@@ -2118,8 +2118,12 @@ tbody tr:hover td{background:var(--surface2)}
     <div id="panel-tools" class="panel">
       <div class="loading" id="freightLoad"><div class="spinner"></div><span>Carregando tabela de fretes...</span></div>
       <div id="freightBody" style="display:none">
-        <div class="tool-tabs"><button class="ftag on" type="button">Calculadora de Frete</button></div>
+        <div class="tool-tabs">
+          <button class="ftag on" id="freightViewCalculator" type="button" onclick="setFreightView('calculator')">Calculadora de Frete</button>
+          <button class="ftag" id="freightViewTable" type="button" onclick="setFreightView('table')">Tabela de Frete</button>
+        </div>
 
+        <div id="freightCalculatorView">
         <div class="freight-layout">
           <div class="card">
             <div class="card-head"><span class="card-title">Dados do Frete</span><span class="count-tag" id="freightRateStatus">Tabela não carregada</span></div>
@@ -2168,10 +2172,13 @@ tbody tr:hover td{background:var(--surface2)}
             <div class="freight-formula" id="freightFormula">Adicione as cargas e informe a distância para visualizar a memória de cálculo.</div>
           </div>
         </div>
+        </div>
 
+        <div id="freightTableView" style="display:none">
         <div class="tbl-card">
           <div class="tbl-head"><span class="tbl-title">Tabela de Referência</span><span class="count-tag" id="freightRateCount">0 tipos</span></div>
           <div class="tbl-wrap"><table><thead><tr><th>Tipo</th><th>Descrição</th><th>Valor KM Máximo</th><th>KM Vazio 85%</th><th>Diária</th></tr></thead><tbody id="freightRateTable"></tbody></table></div>
+        </div>
         </div>
       </div>
     </div>
@@ -5430,6 +5437,18 @@ function setFreightText(id,value){
   const el=document.getElementById(id);
   if(el)el.textContent=value;
 }
+let freightViewMode='calculator';
+function setFreightView(mode){
+  freightViewMode=mode==='table'?'table':'calculator';
+  const calculatorButton=document.getElementById('freightViewCalculator');
+  const tableButton=document.getElementById('freightViewTable');
+  const calculatorView=document.getElementById('freightCalculatorView');
+  const tableView=document.getElementById('freightTableView');
+  if(calculatorButton)calculatorButton.classList.toggle('on',freightViewMode==='calculator');
+  if(tableButton)tableButton.classList.toggle('on',freightViewMode==='table');
+  if(calculatorView)calculatorView.style.display=freightViewMode==='calculator'?'block':'none';
+  if(tableView)tableView.style.display=freightViewMode==='table'?'block':'none';
+}
 
 function processFreightRates(rows){
   const selected=(document.getElementById('freightType')||{}).value||'';
@@ -5461,6 +5480,7 @@ function processFreightRates(rows){
   const body=document.getElementById('freightBody');
   if(load)load.style.display='none';
   if(body)body.style.display='block';
+  setFreightView(freightViewMode);
   setFreightText('freightRateStatus',freightRates.length?'Google Sheets conectado':'Base indisponível');
   setFreightText('freightRateCount',`${freightRates.length} ${freightRates.length===1?'tipo':'tipos'}`);
   const table=document.getElementById('freightRateTable');
@@ -6747,7 +6767,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=32',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=33',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
