@@ -309,6 +309,29 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .empty-panel-icon{width:44px;height:44px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text3);background:var(--surface3)}
 .empty-panel-title{font-size:13px;font-weight:600;color:var(--text2);font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.06em}
 .empty-panel-sub{font-size:12px;color:var(--text3);font-family:var(--font-data)}
+.tool-tabs{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.freight-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:16px;margin-bottom:20px}
+.freight-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.freight-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.freight-field-wide{grid-column:1/-1}
+.freight-field label{font-family:var(--font-ui);font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text3)}
+.freight-control{width:100%;height:40px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);padding:0 12px;font-family:var(--font-ui);font-size:13px;outline:none;box-sizing:border-box}
+.freight-control:focus{border-color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 18%,transparent)}
+.freight-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;grid-column:1/-1;padding-top:2px}
+.freight-primary-btn{height:36px;border:0;border-radius:6px;padding:0 14px;background:var(--mk-blue);color:#fff;font-family:var(--font-ui);font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.freight-primary-btn:hover{filter:brightness(1.08)}
+.freight-primary-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.freight-result{display:flex;flex-direction:column;min-height:100%;box-sizing:border-box}
+.freight-route{font-family:var(--font-data);font-size:11px;color:var(--text3);margin-bottom:16px;min-height:16px}
+.freight-total-label{font-family:var(--font-ui);font-size:10px;text-transform:uppercase;font-weight:600;color:var(--text3)}
+.freight-total{font-family:var(--font-data);font-size:34px;line-height:1.1;color:var(--green);margin:8px 0 18px}
+.freight-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:auto}
+.freight-metric{border-top:1px solid var(--border);padding-top:10px;min-width:0}
+.freight-metric-k{font-family:var(--font-ui);font-size:9px;text-transform:uppercase;color:var(--text3);font-weight:600}
+.freight-metric-v{font-family:var(--font-data);font-size:15px;color:var(--text);margin-top:5px;overflow-wrap:anywhere}
+.freight-formula{margin-top:16px;padding:11px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);font-family:var(--font-data);font-size:10px;line-height:1.6;color:var(--text2)}
+.freight-note{font-size:11px;color:var(--text3);line-height:1.55;margin-top:12px}
+@media(max-width:900px){.freight-layout{grid-template-columns:1fr}.freight-form{grid-template-columns:1fr}.freight-field-wide,.freight-actions{grid-column:auto}.freight-total{font-size:28px}}
 .legend{display:flex;flex-wrap:wrap;gap:8px}.legend.vert{flex-direction:column;gap:6px}
 .leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
 .leg-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
@@ -810,6 +833,13 @@ tbody tr:hover td{background:var(--surface2)}
   <div class="nav-item" id="nav-budget" data-tip="Resultado da Unidade" data-sub="Orçado x realizado por unidade e cavalo" onclick="goTo('budget')">
     <svg class="nav-icon nav-finance-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
     <span class="nav-lbl">Resultado da Unidade</span>
+  </div>
+
+  <div class="sb-section">Ferramentas</div>
+
+  <div class="nav-item" id="nav-tools" data-tip="Ferramentas" data-sub="Calculadora de frete" onclick="goTo('tools')">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
+    <span class="nav-lbl">Ferramentas</span>
   </div>
 
   </div>
@@ -2072,12 +2102,68 @@ tbody tr:hover td{background:var(--surface2)}
       </div>
     </div>
 
+    <!-- TOOLS PANEL -->
+    <div id="panel-tools" class="panel">
+      <div class="loading" id="freightLoad"><div class="spinner"></div><span>Carregando tabela de fretes...</span></div>
+      <div id="freightBody" style="display:none">
+        <div class="tool-tabs"><button class="ftag on" type="button">Calculadora de Frete</button></div>
+
+        <div class="freight-layout">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Dados do Frete</span><span class="count-tag" id="freightRateStatus">Tabela não carregada</span></div>
+            <div class="freight-form">
+              <div class="freight-field freight-field-wide">
+                <label for="freightType">Tipo de conjunto</label>
+                <select class="freight-control" id="freightType" onchange="renderFreightCalculator()"><option value="">Selecione</option></select>
+              </div>
+              <div class="freight-field">
+                <label for="freightOrigin">Origem</label>
+                <input class="freight-control" id="freightOrigin" type="text" placeholder="Cidade/UF" oninput="renderFreightCalculator()">
+              </div>
+              <div class="freight-field">
+                <label for="freightDestination">Destino</label>
+                <input class="freight-control" id="freightDestination" type="text" placeholder="Cidade/UF" oninput="renderFreightCalculator()">
+              </div>
+              <div class="freight-field freight-field-wide">
+                <label for="freightDistance">Distância rodoviária (KM)</label>
+                <input class="freight-control" id="freightDistance" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex.: 742,4" oninput="renderFreightCalculator()">
+              </div>
+              <div class="freight-actions">
+                <button class="freight-primary-btn" type="button" onclick="openFreightRoute()" title="Consultar rota no Google Maps"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 22s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z"/></svg>Consultar rota</button>
+                <button class="clear-filters-btn" type="button" onclick="clearFreightCalculator()">Limpar</button>
+              </div>
+            </div>
+            <div class="freight-note">Informe a distância da rota rodoviária. O painel não utiliza distância em linha reta e arredonda o KM para cima antes do cálculo.</div>
+          </div>
+
+          <div class="card freight-result">
+            <div class="card-head"><span class="card-title">Estimativa</span><span class="count-tag">Frete vazio · 85%</span></div>
+            <div class="freight-route" id="freightRoute">Origem → Destino</div>
+            <div class="freight-total-label">Frete vazio estimado</div>
+            <div class="freight-total" id="freightTotal">R$ 0,00</div>
+            <div class="freight-metrics">
+              <div class="freight-metric"><div class="freight-metric-k">KM faturável</div><div class="freight-metric-v" id="freightBillableKm">0 km</div></div>
+              <div class="freight-metric"><div class="freight-metric-k">Tarifa KM vazio</div><div class="freight-metric-v" id="freightEmptyRate">R$ 0,00</div></div>
+              <div class="freight-metric"><div class="freight-metric-k">Frete carregado</div><div class="freight-metric-v" id="freightLoadedReference">R$ 0,00</div></div>
+              <div class="freight-metric"><div class="freight-metric-k">Diária cadastrada</div><div class="freight-metric-v" id="freightDaily">R$ 0,00</div></div>
+            </div>
+            <div class="freight-formula" id="freightFormula">Selecione o conjunto e informe a distância para visualizar a memória de cálculo.</div>
+          </div>
+        </div>
+
+        <div class="tbl-card">
+          <div class="tbl-head"><span class="tbl-title">Tabela de Referência</span><span class="count-tag" id="freightRateCount">0 tipos</span></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Tipo</th><th>Descrição</th><th>Valor KM Máximo</th><th>KM Vazio 85%</th><th>Diária</th></tr></thead><tbody id="freightRateTable"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <!-- v1778869583 -->
 <script>
-let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
+let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],freightRates=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
 window._aet=()=>aetData;
 window._mob=()=>mobData;
 
@@ -2089,6 +2175,7 @@ const pages={aet:{t:'Gestão de AET\'s',s:'licenças especiais de trânsito'},mo
   efl:{t:'Relatório de Eficiência Logística',s:'eficiência de KM por frota · operação diária'},
   exec:{t:'Resumo Executivo',s:'visão gerencial consolidada das operações'},
   budget:{t:'Resultado da Unidade',s:'orçado x realizado por unidade e cavalo'},
+  tools:{t:'Ferramentas',s:'calculadora de frete e utilidades operacionais'},
   rpd:{t:'Relatório de Frotas em Manutenção (RPD)',s:'frotas em manutenção · operação diária'}};
 
 pages.prog={t:'Programação Logística Semanal',s:'planejamento operacional por semanas'};
@@ -2174,6 +2261,14 @@ const panelPremises={
     ['RPD','Quando uma frota orçada está parada, o Resumo Executivo estima a exposição potencial pela ROB mensal dividida pelos dias do mês e multiplicada pelos dias indisponíveis.'],
     ['Comparabilidade','O realizado do BI é exibido somente na visão consolidada, pois a extração atual não possui frota, conjunto ou contrato. Em filtros detalhados, mostrar o total da unidade seria uma comparação incorreta.'],
     ['Ponto de atenção','A exposição da RPD é gerencial e potencial. Ela não substitui a apuração de faturamento, disponibilidade contratual ou reconhecimento contábil.']
+  ],
+  tools:[
+    ['Objetivo','Estimar o frete vazio por tipo de conjunto a partir da tabela oficial publicada no Google Sheets.'],
+    ['Origem dos dados','As tarifas máximas por KM e os valores de diária vêm da aba de precificação com GID 1374757392.'],
+    ['Distância','A distância deve ser a rodoviária apurada entre origem e destino. O painel não calcula distância em linha reta.'],
+    ['Arredondamento','O KM informado é sempre arredondado para o próximo número inteiro antes da multiplicação.'],
+    ['Frete vazio','A tarifa vazia corresponde a 85% do valor máximo por KM do conjunto. O cálculo é: KM faturável × tarifa vazia.'],
+    ['Diária','A diária é mostrada somente como referência e não é somada automaticamente ao frete.']
   ]
 };
 
@@ -2268,6 +2363,7 @@ function goTo(id){
     if(id==='mat'&&(matData.length>0||matSafetyData.length>0)){if(mAC){mAC.destroy();mAC=null;}renderMAT();}
     if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}renderBUDGET();}
     if(id==='exec'){setExecTab(execActiveTab||'overview');renderEXEC();}
+    if(id==='tools')renderFreightCalculator();
   },50);
 }
 
@@ -2588,6 +2684,7 @@ const CSV_MAT_SAFETY = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1E33A1
 const CSV_RPD="https://docs.google.com/spreadsheets/d/e/2PACX-1vS_rfQGQXLNr0XsYzPab32cj30MbIJ2VLisoCZqio-qc_XP1p2J532LuNOEFNhu9fg52UW_zRTfQyN3/pub?gid=1614487064&single=true&output=csv";
 const CSV_BUDGET="https://docs.google.com/spreadsheets/d/e/2PACX-1vS3kOKgLiA9Gh4JzI38Xd1X3zspFMlmbgXnBuRxEcyVWJMJm1I7Pf1_n2efdxOSPVJBJfBymZmkygUZ/pub?output=csv";
 const CSV_RESULT_BI="https://docs.google.com/spreadsheets/d/e/2PACX-1vRJCb4qUO4Rv6umak_zGHWGExLaOPQpZWNjPi2frLNbwOTJyzh6y06XOGMH_TugjU6iqF46ypDlSOCt/pub?output=csv";
+const CSV_FREIGHT_RATES="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1374757392";
 const CSV_MOB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_Ry7aRW5A3zpaLdCu2u_xb3vgfOjnfHRmSH_OyvVX3wzmxvh4fSZBFvZakDRF2eDNA3DWJk9OFbml/pub?output=csv&gid=1729222115";
 const PROG_SHEETS=[
   {week:'W28',gid:'97434237',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=97434237'},
@@ -2631,9 +2728,9 @@ function parseCSV(text){
 async function loadAll(){
   document.getElementById('updTxt').textContent='atualizando...';
   const safeFetch=async(url)=>{try{const r=await fetch(url+'&t='+Date.now());return await r.text();}catch(e){console.warn('fetch failed:',url,e.message);return '';}};
-  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,progTexts]=await Promise.all([
+  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFreight,progTexts]=await Promise.all([
     safeFetch(CSV_AET),safeFetch(CSV_MOB),safeFetch(CSV_MAT),safeFetch(CSV_MAT_SAFETY),
-    safeFetch(CSV_PATIO),safeFetch(CSV_PATIO_INVENTORY),safeFetch(CSV_INEF),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url))),safeFetch(CSV_RPD),safeFetch(CSV_BUDGET),safeFetch(CSV_RESULT_BI),
+    safeFetch(CSV_PATIO),safeFetch(CSV_PATIO_INVENTORY),safeFetch(CSV_INEF),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url))),safeFetch(CSV_RPD),safeFetch(CSV_BUDGET),safeFetch(CSV_RESULT_BI),safeFetch(CSV_FREIGHT_RATES),
     Promise.all(PROG_SHEETS.map(s=>safeFetch(s.url)))
   ]);
   try{processAET(parseCSV(txtAet));}catch(e){console.error('processAET error:',e.message);}
@@ -2646,6 +2743,7 @@ async function loadAll(){
   try{processRPD(parseCSV(txtRpd));}catch(e){console.error('processRPD error:',e.message);}
   try{processBUDGET(parseCSV(txtBudget));}catch(e){console.error('processBUDGET error:',e.message);}
   try{processRESULT(parseCSV(txtResultBI));}catch(e){console.error('processRESULT error:',e.message);}
+  try{processFreightRates(parseCSV(txtFreight));}catch(e){console.error('processFreightRates error:',e.message);}
   try{processPROG(progTexts.map((txt,i)=>({meta:PROG_SHEETS[i],rows:parseCSV(txt)})));}catch(e){console.error('processPROG error:',e.message);}
   try{renderEXEC();}catch(e){console.error('renderEXEC error:',e.message);}
   requestAnimationFrame(refreshTableScrollbars);
@@ -5309,6 +5407,81 @@ function parseMoney(v){
 function fMoney(v){
   return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
+function setFreightText(id,value){
+  const el=document.getElementById(id);
+  if(el)el.textContent=value;
+}
+
+function processFreightRates(rows){
+  const selected=(document.getElementById('freightType')||{}).value||'';
+  const headerIndex=rows.findIndex(row=>row.some(cell=>normText(cell).includes('VALOR KM - MAXIMO')));
+  freightRates=[];
+  if(headerIndex>=0){
+    for(let i=headerIndex+1;i<rows.length;i++){
+      const row=rows[i]||[];
+      const type=String(row[0]||'').trim().toUpperCase();
+      if(normText(type).includes('LOCACAO'))break;
+      const loadedRate=budgetNumber(row[2]);
+      if(!type||type==='TIPO'||loadedRate==null||loadedRate<=0)continue;
+      freightRates.push({
+        type,
+        description:String(row[1]||'').trim(),
+        loadedRate,
+        emptyRate:Number((loadedRate*.85).toFixed(2)),
+        daily:budgetNumber(row[4])||0
+      });
+    }
+  }
+  freightRates.sort((a,b)=>a.type.localeCompare(b.type,'pt-BR',{numeric:true}));
+  const typeEl=document.getElementById('freightType');
+  if(typeEl){
+    typeEl.innerHTML='<option value="">Selecione</option>'+freightRates.map(rate=>`<option value="${budgetEsc(rate.type)}">${budgetEsc(rate.type)} · ${budgetEsc(rate.description)}</option>`).join('');
+    if(freightRates.some(rate=>rate.type===selected))typeEl.value=selected;
+  }
+  const load=document.getElementById('freightLoad');
+  const body=document.getElementById('freightBody');
+  if(load)load.style.display='none';
+  if(body)body.style.display='block';
+  setFreightText('freightRateStatus',freightRates.length?'Google Sheets conectado':'Base indisponível');
+  setFreightText('freightRateCount',`${freightRates.length} ${freightRates.length===1?'tipo':'tipos'}`);
+  const table=document.getElementById('freightRateTable');
+  if(table)table.innerHTML=freightRates.length?freightRates.map(rate=>`<tr><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(rate.type)}</td><td>${budgetEsc(rate.description||'—')}</td><td>${fMoney(rate.loadedRate)}</td><td>${fMoney(rate.emptyRate)}</td><td>${fMoney(rate.daily)}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Tabela de fretes indisponível</td></tr>';
+  renderFreightCalculator();
+}
+function renderFreightCalculator(){
+  const typeEl=document.getElementById('freightType');
+  if(!typeEl)return;
+  const rate=freightRates.find(item=>item.type===typeEl.value);
+  const origin=String((document.getElementById('freightOrigin')||{}).value||'').trim();
+  const destination=String((document.getElementById('freightDestination')||{}).value||'').trim();
+  const rawDistance=Number((document.getElementById('freightDistance')||{}).value||0);
+  const billableKm=Number.isFinite(rawDistance)&&rawDistance>0?Math.ceil(rawDistance):0;
+  const emptyTotal=rate?billableKm*rate.emptyRate:0;
+  const loadedTotal=rate?billableKm*rate.loadedRate:0;
+  setFreightText('freightRoute',`${origin||'Origem'} → ${destination||'Destino'}`);
+  setFreightText('freightTotal',fMoney(emptyTotal));
+  setFreightText('freightBillableKm',`${billableKm.toLocaleString('pt-BR')} km`);
+  setFreightText('freightEmptyRate',fMoney(rate?rate.emptyRate:0));
+  setFreightText('freightLoadedReference',fMoney(loadedTotal));
+  setFreightText('freightDaily',fMoney(rate?rate.daily:0));
+  const formula=document.getElementById('freightFormula');
+  if(formula){
+    formula.textContent=rate&&billableKm
+      ?`${rawDistance.toLocaleString('pt-BR',{maximumFractionDigits:1})} km informados → ${billableKm.toLocaleString('pt-BR')} km faturáveis × ${fMoney(rate.emptyRate)}/km = ${fMoney(emptyTotal)}`
+      :'Selecione o conjunto e informe a distância para visualizar a memória de cálculo.';
+  }
+}
+function clearFreightCalculator(){
+  ['freightType','freightOrigin','freightDestination','freightDistance'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderFreightCalculator();
+}
+function openFreightRoute(){
+  const origin=String((document.getElementById('freightOrigin')||{}).value||'').trim();
+  const destination=String((document.getElementById('freightDestination')||{}).value||'').trim();
+  if(!origin||!destination){const target=document.getElementById(!origin?'freightOrigin':'freightDestination');if(target)target.focus();return;}
+  const url=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+  window.open(url,'_blank','noopener,noreferrer');
+}
 
 function processINEF(rows){
   let hi=-1;
@@ -6513,7 +6686,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=30',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=31',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
