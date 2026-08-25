@@ -356,13 +356,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .freight-note{font-size:11px;color:var(--text3);line-height:1.55;margin-top:12px}
 .freight-plan{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px}
 .freight-plan-empty{padding:18px 12px;text-align:center;color:var(--text3);font-size:11px;line-height:1.5}
-.freight-plan-row{display:grid;grid-template-columns:minmax(0,1fr) 108px 112px 32px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.freight-plan-row{display:grid;grid-template-columns:minmax(0,1fr) 108px 126px 112px 32px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--border);background:var(--surface2)}
 .freight-plan-row:last-child{border-bottom:0}
 .freight-plan-name{min-width:0;font-size:11px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .freight-plan-sub{font-family:var(--font-ui);font-size:9px;color:var(--text3);margin-top:2px}
 .freight-plan-stepper{display:grid;grid-template-columns:30px 48px 30px;align-items:center}
 .freight-plan-stepper .freight-plan-qty{height:30px;padding:0 4px;text-align:center;border-radius:0}
 .freight-plan-stepper .freight-step-btn{height:30px}
+.freight-plan-leg{height:30px;padding:0 8px;font-size:10px}
 .freight-plan-value{text-align:right;font-family:var(--font-ui);font-size:11px;font-weight:600;color:var(--text)}
 .freight-empty-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 .freight-empty-option{position:relative;min-width:0}
@@ -373,8 +374,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .freight-remove{width:30px;height:30px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .freight-remove:hover{color:var(--red);border-color:color-mix(in srgb,var(--red) 55%,var(--border))}
 .freight-remove svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-@media(max-width:900px){.freight-layout{grid-template-columns:1fr}.freight-form{grid-template-columns:1fr}.freight-field-wide,.freight-actions{grid-column:auto}.freight-total{font-size:28px}}
-@media(max-width:430px){.freight-plan-row{grid-template-columns:minmax(0,1fr) 108px 32px}.freight-plan-value{grid-column:1/3;text-align:left}.freight-plan-name{white-space:normal}}
+@media(max-width:1180px){.freight-layout{grid-template-columns:1fr}}
+@media(max-width:900px){.freight-form{grid-template-columns:1fr}.freight-field-wide,.freight-actions{grid-column:auto}.freight-total{font-size:28px}}
+@media(max-width:430px){.freight-plan-row{grid-template-columns:minmax(0,1fr) 108px 32px}.freight-plan-leg{grid-column:1/3;grid-row:2}.freight-plan-value{grid-column:1/3;grid-row:3;text-align:left}.freight-plan-row .freight-remove{grid-column:3;grid-row:1}.freight-plan-name{white-space:normal}}
 @media(max-width:430px){.freight-empty-options{grid-template-columns:1fr}.freight-empty-option span{justify-content:flex-start;padding:0 12px}}
 @media(max-width:430px){.freight-calc-head,.freight-calc-item-head{flex-direction:column;align-items:flex-start}.freight-calc-line,.freight-calc-total{align-items:flex-start}.freight-calc-line{flex-direction:column;gap:1px;margin-top:5px}.freight-calc-distance,.freight-calc-item-total{text-align:left}.freight-calc-item-total,.freight-calc-total strong{white-space:normal}}
 .legend{display:flex;flex-wrap:wrap;gap:8px}.legend.vert{flex-direction:column;gap:6px}
@@ -2190,11 +2192,11 @@ tbody tr:hover td{background:var(--surface2)}
                 </div>
               </div>
               <div class="freight-field freight-field-wide">
-                <label>Trecho vazio adicional</label>
-                <div class="freight-empty-options" role="radiogroup" aria-label="Trecho vazio adicional">
-                  <label class="freight-empty-option"><input type="radio" name="freightEmptyLeg" value="none" checked onchange="renderFreightCalculator()"><span>Sem trecho vazio</span></label>
-                  <label class="freight-empty-option"><input type="radio" name="freightEmptyLeg" value="descent" onchange="renderFreightCalculator()"><span>Descida vazia</span></label>
-                  <label class="freight-empty-option"><input type="radio" name="freightEmptyLeg" value="return" onchange="renderFreightCalculator()"><span>Volta vazia</span></label>
+                <label>Trecho vazio deste lote</label>
+                <div class="freight-empty-options" role="radiogroup" aria-label="Trecho vazio deste lote">
+                  <label class="freight-empty-option"><input type="radio" name="freightEmptyLegDraft" value="none" checked><span>Sem trecho vazio</span></label>
+                  <label class="freight-empty-option"><input type="radio" name="freightEmptyLegDraft" value="descent"><span>Descida vazia</span></label>
+                  <label class="freight-empty-option"><input type="radio" name="freightEmptyLegDraft" value="return"><span>Volta vazia</span></label>
                 </div>
               </div>
               <div class="freight-actions">
@@ -5536,6 +5538,12 @@ function processFreightRates(rows){
   if(table)table.innerHTML=freightRates.length?freightRates.map(rate=>`<tr><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(rate.type)}</td><td>${budgetEsc(rate.description||'—')}</td><td>${fMoney(rate.loadedRate)}</td><td>${fMoney(rate.emptyRate)}</td><td>${fMoney(rate.daily)}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Tabela de fretes indisponível</td></tr>';
   renderFreightCalculator();
 }
+function freightLegLabel(value){
+  return value==='descent'?'Descida vazia':value==='return'?'Volta vazia':'Sem trecho vazio';
+}
+function freightDraftLeg(){
+  return String((document.querySelector('input[name="freightEmptyLegDraft"]:checked')||{}).value||'none');
+}
 function renderFreightCalculator(){
   if(!document.getElementById('freightType'))return;
   const origin=String((document.getElementById('freightOrigin')||{}).value||'').trim();
@@ -5544,14 +5552,15 @@ function renderFreightCalculator(){
   const billableKm=Number.isFinite(rawDistance)&&rawDistance>0?Math.ceil(rawDistance):0;
   const canCalculate=Boolean(origin&&destination&&billableKm>0);
   const calculationKm=canCalculate?billableKm:0;
-  const emptyLeg=String((document.querySelector('input[name="freightEmptyLeg"]:checked')||{}).value||'none');
-  const hasEmptyLeg=emptyLeg!=='none';
-  const emptyLegLabel=emptyLeg==='descent'?'Descida vazia':emptyLeg==='return'?'Volta vazia':'Sem trecho vazio';
   let emptyTotal=0,loadedTotal=0,dailyTotal=0,totalQuantity=0;
+  const legQuantities={none:0,descent:0,return:0};
   const planRows=freightPlan.map((item,index)=>{
     const rate=freightRates.find(entry=>entry.type===item.type);
     if(!rate)return '';
     const quantity=Math.max(1,Math.floor(Number(item.quantity)||1));
+    const itemLeg=['none','descent','return'].includes(item.emptyLeg)?item.emptyLeg:'none';
+    const hasEmptyLeg=itemLeg!=='none';
+    const emptyLegLabel=freightLegLabel(itemLeg);
     const loadedSubtotal=calculationKm*rate.loadedRate*quantity;
     const emptySubtotal=hasEmptyLeg?calculationKm*rate.emptyRate*quantity:0;
     const subtotal=loadedSubtotal+emptySubtotal;
@@ -5559,19 +5568,24 @@ function renderFreightCalculator(){
     loadedTotal+=loadedSubtotal;
     dailyTotal+=rate.daily*quantity;
     totalQuantity+=quantity;
+    legQuantities[itemLeg]+=quantity;
     const rateText=hasEmptyLeg?`${fMoney(rate.loadedRate)}/km + ${fMoney(rate.emptyRate)}/km vazio`:`${fMoney(rate.loadedRate)}/km carregado`;
-    return `<div class="freight-plan-row"><div><div class="freight-plan-name">${budgetEsc(rate.type)} · ${budgetEsc(rate.description)}</div><div class="freight-plan-sub">${rateText}</div></div><div class="freight-plan-stepper"><button class="freight-step-btn" type="button" onclick="adjustFreightPlanQty(${index},-1)" title="Diminuir quantidade" aria-label="Diminuir quantidade de ${budgetEsc(rate.type)}"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><input class="freight-control freight-plan-qty" type="number" min="1" step="1" value="${quantity}" aria-label="Quantidade de ${budgetEsc(rate.type)}" onchange="updateFreightPlanQty(${index},this.value)"><button class="freight-step-btn" type="button" onclick="adjustFreightPlanQty(${index},1)" title="Aumentar quantidade" aria-label="Aumentar quantidade de ${budgetEsc(rate.type)}"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div><div class="freight-plan-value">${fMoney(subtotal)}</div><button class="freight-remove" type="button" onclick="removeFreightPlanItem(${index})" title="Remover ${budgetEsc(rate.type)}" aria-label="Remover ${budgetEsc(rate.type)}"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/></svg></button></div>`;
+    return `<div class="freight-plan-row"><div><div class="freight-plan-name">${budgetEsc(rate.type)} · ${budgetEsc(rate.description)}</div><div class="freight-plan-sub">${rateText}</div></div><div class="freight-plan-stepper"><button class="freight-step-btn" type="button" onclick="adjustFreightPlanQty(${index},-1)" title="Diminuir quantidade" aria-label="Diminuir quantidade de ${budgetEsc(rate.type)}"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><input class="freight-control freight-plan-qty" type="number" min="1" step="1" value="${quantity}" aria-label="Quantidade de ${budgetEsc(rate.type)}" onchange="updateFreightPlanQty(${index},this.value)"><button class="freight-step-btn" type="button" onclick="adjustFreightPlanQty(${index},1)" title="Aumentar quantidade" aria-label="Aumentar quantidade de ${budgetEsc(rate.type)}"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div><select class="freight-control freight-plan-leg" aria-label="Trecho vazio de ${budgetEsc(rate.type)}" onchange="updateFreightPlanLeg(${index},this.value)"><option value="none"${itemLeg==='none'?' selected':''}>Sem vazio</option><option value="descent"${itemLeg==='descent'?' selected':''}>Descida vazia</option><option value="return"${itemLeg==='return'?' selected':''}>Volta vazia</option></select><div class="freight-plan-value">${fMoney(subtotal)}</div><button class="freight-remove" type="button" onclick="removeFreightPlanItem(${index})" title="Remover ${budgetEsc(rate.type)}" aria-label="Remover ${budgetEsc(rate.type)}"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/></svg></button></div>`;
   }).filter(Boolean);
   const rowsEl=document.getElementById('freightPlanRows');
   if(rowsEl)rowsEl.innerHTML=planRows.length?planRows.join(''):'<div class="freight-plan-empty">Adicione as cargas para montar o plano.</div>';
   const grandTotal=loadedTotal+emptyTotal;
-  setFreightText('freightRoute',`${origin||'Origem'} → ${destination||'Destino'} · ${emptyLegLabel}`);
+  const configParts=[];
+  if(legQuantities.none)configParts.push(`${legQuantities.none} sem vazio`);
+  if(legQuantities.descent)configParts.push(`${legQuantities.descent} descida`);
+  if(legQuantities.return)configParts.push(`${legQuantities.return} volta`);
+  setFreightText('freightRoute',`${origin||'Origem'} → ${destination||'Destino'}`);
   setFreightText('freightTotal',fMoney(grandTotal));
   setFreightText('freightBillableKm',`${billableKm.toLocaleString('pt-BR')} km`);
   setFreightText('freightPlanQuantity',totalQuantity.toLocaleString('pt-BR'));
   setFreightText('freightLoadedReference',fMoney(loadedTotal));
   setFreightText('freightEmptyReference',fMoney(emptyTotal));
-  setFreightText('freightEmptyLegLabel',emptyLegLabel);
+  setFreightText('freightEmptyLegLabel',configParts.join(' · ')||'Por lote');
   setFreightText('freightDaily',fMoney(dailyTotal));
   const formula=document.getElementById('freightFormula');
   if(formula){
@@ -5581,6 +5595,9 @@ function renderFreightCalculator(){
         const rate=freightRates.find(entry=>entry.type===item.type);
         if(!rate)return '';
         const quantity=Math.max(1,Math.floor(Number(item.quantity)||1));
+        const itemLeg=['none','descent','return'].includes(item.emptyLeg)?item.emptyLeg:'none';
+        const hasEmptyLeg=itemLeg!=='none';
+        const emptyLegLabel=freightLegLabel(itemLeg);
         const loadedSubtotal=quantity*billableKm*rate.loadedRate;
         const emptySubtotal=hasEmptyLeg?quantity*billableKm*rate.emptyRate:0;
         const emptyLine=hasEmptyLeg?`<div class="freight-calc-line"><span>${budgetEsc(emptyLegLabel)}: ${quantity} × ${billableKm.toLocaleString('pt-BR')} km × ${fMoney(rate.emptyRate)}</span><span>${fMoney(emptySubtotal)}</span></div>`:'';
@@ -5610,10 +5627,11 @@ function addFreightPlanItem(){
   }
   const type=String((typeEl||{}).value||'');
   const quantity=Math.max(1,Math.floor(Number((quantityEl||{}).value)||1));
+  const emptyLeg=freightDraftLeg();
   if(!freightRates.some(rate=>rate.type===type)){if(typeEl)typeEl.focus();return;}
-  const existing=freightPlan.find(item=>item.type===type);
+  const existing=freightPlan.find(item=>item.type===type&&(item.emptyLeg||'none')===emptyLeg);
   if(existing)existing.quantity+=quantity;
-  else freightPlan.push({type,quantity});
+  else freightPlan.push({type,quantity,emptyLeg});
   if(typeEl)typeEl.value='';
   if(quantityEl)quantityEl.value='1';
   renderFreightCalculator();
@@ -5621,6 +5639,11 @@ function addFreightPlanItem(){
 function updateFreightPlanQty(index,value){
   if(!freightPlan[index])return;
   freightPlan[index].quantity=Math.max(1,Math.floor(Number(value)||1));
+  renderFreightCalculator();
+}
+function updateFreightPlanLeg(index,value){
+  if(!freightPlan[index])return;
+  freightPlan[index].emptyLeg=['none','descent','return'].includes(value)?value:'none';
   renderFreightCalculator();
 }
 function adjustFreightPlanQty(index,delta){
@@ -5635,7 +5658,7 @@ function clearFreightCalculator(){
   freightPlan=[];
   ['freightType','freightOrigin','freightDestination','freightDistance'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const quantity=document.getElementById('freightQuantity');if(quantity)quantity.value='1';
-  const noEmpty=document.querySelector('input[name="freightEmptyLeg"][value="none"]');if(noEmpty)noEmpty.checked=true;
+  const noEmpty=document.querySelector('input[name="freightEmptyLegDraft"][value="none"]');if(noEmpty)noEmpty.checked=true;
   renderFreightCalculator();
 }
 function openFreightRoute(){
@@ -6849,7 +6872,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=40',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=41',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
