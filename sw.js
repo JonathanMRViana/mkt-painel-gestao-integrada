@@ -1,4 +1,4 @@
-const CACHE_NAME='makro-gestao-integrada-v34';
+const CACHE_NAME='makro-gestao-integrada-v35';
 const APP_SHELL=[
   './',
   './index.html',
