@@ -310,7 +310,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .empty-panel-title{font-size:13px;font-weight:600;color:var(--text2);font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.06em}
 .empty-panel-sub{font-size:12px;color:var(--text3);font-family:var(--font-data)}
 .tool-tabs{display:flex;align-items:center;gap:8px;margin-bottom:16px}
-.freight-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:16px;margin-bottom:20px}
+.freight-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:16px;margin-bottom:20px;align-items:start}
 .freight-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .freight-field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .freight-field-wide{grid-column:1/-1}
@@ -331,15 +331,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .freight-primary-btn{height:36px;border:0;border-radius:6px;padding:0 14px;background:var(--mk-blue);color:#fff;font-family:var(--font-ui);font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
 .freight-primary-btn:hover{filter:brightness(1.08)}
 .freight-primary-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.freight-result{display:flex;flex-direction:column;min-height:100%;box-sizing:border-box}
-.freight-route{font-family:var(--font-data);font-size:11px;color:var(--text3);margin-bottom:16px;min-height:16px}
+.freight-result{display:flex;flex-direction:column;min-height:0;box-sizing:border-box}
+.freight-route{font-family:var(--font-ui);font-size:11px;color:var(--text3);margin-bottom:16px;min-height:16px}
 .freight-total-label{font-family:var(--font-ui);font-size:10px;text-transform:uppercase;font-weight:600;color:var(--text3)}
-.freight-total{font-family:var(--font-data);font-size:34px;line-height:1.1;color:var(--green);margin:8px 0 18px}
-.freight-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:auto}
+.freight-total{font-family:var(--font-ui);font-size:34px;font-weight:500;line-height:1.1;color:var(--green);margin:8px 0 18px}
+.freight-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .freight-metric{border-top:1px solid var(--border);padding-top:10px;min-width:0}
 .freight-metric-k{font-family:var(--font-ui);font-size:9px;text-transform:uppercase;color:var(--text3);font-weight:600}
-.freight-metric-v{font-family:var(--font-data);font-size:15px;color:var(--text);margin-top:5px;overflow-wrap:anywhere}
-.freight-formula{margin-top:16px;padding:11px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);font-family:var(--font-data);font-size:10px;line-height:1.6;color:var(--text2)}
+.freight-metric-v{font-family:var(--font-ui);font-size:15px;font-weight:600;color:var(--text);margin-top:5px;overflow-wrap:anywhere}
+.freight-formula{margin-top:16px;padding:11px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);font-family:var(--font-ui);font-size:10px;line-height:1.6;color:var(--text2)}
 .freight-calc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid var(--border)}
 .freight-calc-title{font-family:var(--font-ui);font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text)}
 .freight-calc-distance{font-size:9px;color:var(--text3);text-align:right}
@@ -350,18 +350,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .freight-calc-line{display:flex;justify-content:space-between;gap:12px;color:var(--text3);font-size:9px;line-height:1.55}
 .freight-calc-line span:last-child{color:var(--text2);white-space:nowrap}
 .freight-calc-total{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:10px;font-family:var(--font-ui);font-size:10px;font-weight:600;color:var(--text)}
-.freight-calc-total strong{font-family:var(--font-data);font-size:13px;color:var(--green);white-space:nowrap}
+.freight-calc-total strong{font-family:var(--font-ui);font-size:13px;color:var(--green);white-space:nowrap}
 .freight-note{font-size:11px;color:var(--text3);line-height:1.55;margin-top:12px}
 .freight-plan{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px}
 .freight-plan-empty{padding:18px 12px;text-align:center;color:var(--text3);font-size:11px;line-height:1.5}
 .freight-plan-row{display:grid;grid-template-columns:minmax(0,1fr) 108px 112px 32px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--border);background:var(--surface2)}
 .freight-plan-row:last-child{border-bottom:0}
 .freight-plan-name{min-width:0;font-size:11px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.freight-plan-sub{font-family:var(--font-data);font-size:9px;color:var(--text3);margin-top:2px}
+.freight-plan-sub{font-family:var(--font-ui);font-size:9px;color:var(--text3);margin-top:2px}
 .freight-plan-stepper{display:grid;grid-template-columns:30px 48px 30px;align-items:center}
 .freight-plan-stepper .freight-plan-qty{height:30px;padding:0 4px;text-align:center;border-radius:0}
 .freight-plan-stepper .freight-step-btn{height:30px}
-.freight-plan-value{text-align:right;font-family:var(--font-data);font-size:11px;color:var(--text)}
+.freight-plan-value{text-align:right;font-family:var(--font-ui);font-size:11px;font-weight:600;color:var(--text)}
 .freight-empty-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 .freight-empty-option{position:relative;min-width:0}
 .freight-empty-option input{position:absolute;opacity:0;pointer-events:none}
@@ -6847,7 +6847,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=38',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=39',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
