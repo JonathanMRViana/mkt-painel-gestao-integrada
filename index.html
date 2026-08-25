@@ -328,9 +328,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .freight-step-btn:focus-visible{outline:2px solid var(--blue);outline-offset:1px;z-index:2}
 .freight-step-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .freight-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;grid-column:1/-1;padding-top:2px}
-.freight-primary-btn{height:36px;border:0;border-radius:6px;padding:0 14px;background:var(--mk-blue);color:#fff;font-family:var(--font-ui);font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.freight-primary-btn{height:36px;border:1px solid var(--makro-blue);border-radius:6px;padding:0 14px;background:var(--makro-blue);color:#fff;font-family:var(--font-ui);font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
 .freight-primary-btn:hover{filter:brightness(1.08)}
 .freight-primary-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+[data-theme="dark"] .freight-primary-btn{background:rgba(110,163,220,.16);border-color:rgba(110,163,220,.55);color:#e9f3ff}
+[data-theme="dark"] .freight-primary-btn:hover{background:rgba(110,163,220,.25);filter:none}
 .freight-result{display:flex;flex-direction:column;min-height:0;box-sizing:border-box}
 .freight-route{font-family:var(--font-ui);font-size:11px;color:var(--text3);margin-bottom:16px;min-height:16px}
 .freight-total-label{font-family:var(--font-ui);font-size:10px;text-transform:uppercase;font-weight:600;color:var(--text3)}
@@ -6847,7 +6849,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=39',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=40',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
