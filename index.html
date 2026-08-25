@@ -2160,30 +2160,30 @@ tbody tr:hover td{background:var(--surface2)}
             <div class="card-head"><span class="card-title">Dados do Frete</span></div>
             <div class="freight-form">
               <div class="freight-field">
-                <label for="freightOrigin">Origem</label>
-                <input class="freight-control" id="freightOrigin" type="text" placeholder="Cidade/UF" oninput="renderFreightCalculator()">
+                <label for="freightOrigin">Origem *</label>
+                <input class="freight-control" id="freightOrigin" type="text" placeholder="Cidade/UF" required aria-required="true" oninput="renderFreightCalculator()">
               </div>
               <div class="freight-field">
-                <label for="freightDestination">Destino</label>
-                <input class="freight-control" id="freightDestination" type="text" placeholder="Cidade/UF" oninput="renderFreightCalculator()">
+                <label for="freightDestination">Destino *</label>
+                <input class="freight-control" id="freightDestination" type="text" placeholder="Cidade/UF" required aria-required="true" oninput="renderFreightCalculator()">
               </div>
               <div class="freight-field freight-field-wide">
-                <label for="freightDistance">Distância rodoviária (KM)</label>
+                <label for="freightDistance">Distância rodoviária (KM) *</label>
                 <div class="freight-stepper">
-                  <button class="freight-step-btn" type="button" onclick="stepFreightInput('freightDistance',-1,0)" title="Diminuir 1 km" aria-label="Diminuir 1 km"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
-                  <input class="freight-control" id="freightDistance" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex.: 742,4" oninput="renderFreightCalculator()">
-                  <button class="freight-step-btn" type="button" onclick="stepFreightInput('freightDistance',1,0)" title="Aumentar 1 km" aria-label="Aumentar 1 km"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+                  <button class="freight-step-btn" type="button" onclick="stepFreightInput('freightDistance',-1,0.1)" title="Diminuir 1 km" aria-label="Diminuir 1 km"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+                  <input class="freight-control" id="freightDistance" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="Ex.: 742,4" required aria-required="true" oninput="renderFreightCalculator()">
+                  <button class="freight-step-btn" type="button" onclick="stepFreightInput('freightDistance',1,0.1)" title="Aumentar 1 km" aria-label="Aumentar 1 km"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
                 </div>
               </div>
               <div class="freight-field">
-                <label for="freightType">Tipo de conjunto</label>
-                <select class="freight-control" id="freightType"><option value="">Selecione</option></select>
+                <label for="freightType">Tipo de conjunto *</label>
+                <select class="freight-control" id="freightType" required aria-required="true"><option value="">Selecione</option></select>
               </div>
               <div class="freight-field">
-                <label for="freightQuantity">Quantidade de cargas</label>
+                <label for="freightQuantity">Quantidade de cargas *</label>
                 <div class="freight-stepper">
                   <button class="freight-step-btn" type="button" onclick="stepFreightInput('freightQuantity',-1,1)" title="Diminuir quantidade" aria-label="Diminuir quantidade"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
-                  <input class="freight-control" id="freightQuantity" type="number" min="1" step="1" inputmode="numeric" value="1">
+                  <input class="freight-control" id="freightQuantity" type="number" min="1" step="1" inputmode="numeric" value="1" required aria-required="true">
                   <button class="freight-step-btn" type="button" onclick="stepFreightInput('freightQuantity',1,1)" title="Aumentar quantidade" aria-label="Aumentar quantidade"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
                 </div>
               </div>
@@ -2201,7 +2201,6 @@ tbody tr:hover td{background:var(--surface2)}
                 <button class="clear-filters-btn" type="button" onclick="clearFreightCalculator()">Limpar</button>
               </div>
             </div>
-            <div class="freight-note">Adicione quantos tipos de carga precisar. A rota é comum ao plano, não utiliza distância em linha reta e tem o KM arredondado para cima antes do cálculo.</div>
           </div>
 
           <div class="card freight-result">
@@ -2218,7 +2217,7 @@ tbody tr:hover td{background:var(--surface2)}
               <div class="freight-metric"><div class="freight-metric-k">Configuração</div><div class="freight-metric-v" id="freightEmptyLegLabel">Sem trecho vazio</div></div>
               <div class="freight-metric"><div class="freight-metric-k">Diárias de referência</div><div class="freight-metric-v" id="freightDaily">R$ 0,00</div></div>
             </div>
-            <div class="freight-formula" id="freightFormula">Adicione as cargas e informe a distância para visualizar a memória de cálculo.</div>
+            <div class="freight-formula" id="freightFormula" style="display:none"></div>
           </div>
         </div>
         </div>
@@ -5541,6 +5540,8 @@ function renderFreightCalculator(){
   const destination=String((document.getElementById('freightDestination')||{}).value||'').trim();
   const rawDistance=Number((document.getElementById('freightDistance')||{}).value||0);
   const billableKm=Number.isFinite(rawDistance)&&rawDistance>0?Math.ceil(rawDistance):0;
+  const canCalculate=Boolean(origin&&destination&&billableKm>0);
+  const calculationKm=canCalculate?billableKm:0;
   const emptyLeg=String((document.querySelector('input[name="freightEmptyLeg"]:checked')||{}).value||'none');
   const hasEmptyLeg=emptyLeg!=='none';
   const emptyLegLabel=emptyLeg==='descent'?'Descida vazia':emptyLeg==='return'?'Volta vazia':'Sem trecho vazio';
@@ -5549,8 +5550,8 @@ function renderFreightCalculator(){
     const rate=freightRates.find(entry=>entry.type===item.type);
     if(!rate)return '';
     const quantity=Math.max(1,Math.floor(Number(item.quantity)||1));
-    const loadedSubtotal=billableKm*rate.loadedRate*quantity;
-    const emptySubtotal=hasEmptyLeg?billableKm*rate.emptyRate*quantity:0;
+    const loadedSubtotal=calculationKm*rate.loadedRate*quantity;
+    const emptySubtotal=hasEmptyLeg?calculationKm*rate.emptyRate*quantity:0;
     const subtotal=loadedSubtotal+emptySubtotal;
     emptyTotal+=emptySubtotal;
     loadedTotal+=loadedSubtotal;
@@ -5572,7 +5573,8 @@ function renderFreightCalculator(){
   setFreightText('freightDaily',fMoney(dailyTotal));
   const formula=document.getElementById('freightFormula');
   if(formula){
-    if(freightPlan.length&&billableKm){
+    if(freightPlan.length&&canCalculate){
+      formula.style.display='block';
       const items=freightPlan.map(item=>{
         const rate=freightRates.find(entry=>entry.type===item.type);
         if(!rate)return '';
@@ -5583,10 +5585,9 @@ function renderFreightCalculator(){
         return `<div class="freight-calc-item"><div class="freight-calc-item-head"><span class="freight-calc-item-name">${quantity}× ${budgetEsc(rate.type)} · ${budgetEsc(rate.description)}</span><span class="freight-calc-item-total">${fMoney(loadedSubtotal+emptySubtotal)}</span></div><div class="freight-calc-line"><span>Carregado: ${quantity} × ${billableKm.toLocaleString('pt-BR')} km × ${fMoney(rate.loadedRate)}</span><span>${fMoney(loadedSubtotal)}</span></div>${emptyLine}</div>`;
       }).filter(Boolean);
       formula.innerHTML=`<div class="freight-calc-head"><span class="freight-calc-title">Memória de cálculo</span><span class="freight-calc-distance">${rawDistance.toLocaleString('pt-BR',{maximumFractionDigits:1})} km informados · ${billableKm.toLocaleString('pt-BR')} km faturáveis</span></div>${items.join('')}<div class="freight-calc-total"><span>Frete total</span><strong>${fMoney(grandTotal)}</strong></div>`;
-    }else if(freightPlan.length){
-      formula.textContent=`Plano com ${totalQuantity} ${totalQuantity===1?'carga':'cargas'}. Informe a distância rodoviária para calcular o total.`;
     }else{
-      formula.textContent='Adicione as cargas e informe a distância para visualizar a memória de cálculo.';
+      formula.style.display='none';
+      formula.textContent='';
     }
   }
 }
@@ -5600,6 +5601,11 @@ function stepFreightInput(id,delta,min){
 function addFreightPlanItem(){
   const typeEl=document.getElementById('freightType');
   const quantityEl=document.getElementById('freightQuantity');
+  const requiredFields=['freightOrigin','freightDestination','freightDistance','freightType','freightQuantity'];
+  for(const id of requiredFields){
+    const field=document.getElementById(id);
+    if(field&&!field.checkValidity()){field.reportValidity();field.focus();return;}
+  }
   const type=String((typeEl||{}).value||'');
   const quantity=Math.max(1,Math.floor(Number((quantityEl||{}).value)||1));
   if(!freightRates.some(rate=>rate.type===type)){if(typeEl)typeEl.focus();return;}
@@ -6841,7 +6847,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=37',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=38',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
