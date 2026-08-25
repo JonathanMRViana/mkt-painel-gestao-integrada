@@ -340,6 +340,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .freight-metric-k{font-family:var(--font-ui);font-size:9px;text-transform:uppercase;color:var(--text3);font-weight:600}
 .freight-metric-v{font-family:var(--font-data);font-size:15px;color:var(--text);margin-top:5px;overflow-wrap:anywhere}
 .freight-formula{margin-top:16px;padding:11px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);font-family:var(--font-data);font-size:10px;line-height:1.6;color:var(--text2)}
+.freight-calc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.freight-calc-title{font-family:var(--font-ui);font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text)}
+.freight-calc-distance{font-size:9px;color:var(--text3);text-align:right}
+.freight-calc-item{padding:10px 0;border-bottom:1px solid var(--border)}
+.freight-calc-item-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px}
+.freight-calc-item-name{font-family:var(--font-ui);font-size:10px;font-weight:600;color:var(--text)}
+.freight-calc-item-total{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap}
+.freight-calc-line{display:flex;justify-content:space-between;gap:12px;color:var(--text3);font-size:9px;line-height:1.55}
+.freight-calc-line span:last-child{color:var(--text2);white-space:nowrap}
+.freight-calc-total{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:10px;font-family:var(--font-ui);font-size:10px;font-weight:600;color:var(--text)}
+.freight-calc-total strong{font-family:var(--font-data);font-size:13px;color:var(--green);white-space:nowrap}
 .freight-note{font-size:11px;color:var(--text3);line-height:1.55;margin-top:12px}
 .freight-plan{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px}
 .freight-plan-empty{padding:18px 12px;text-align:center;color:var(--text3);font-size:11px;line-height:1.5}
@@ -363,6 +374,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 @media(max-width:900px){.freight-layout{grid-template-columns:1fr}.freight-form{grid-template-columns:1fr}.freight-field-wide,.freight-actions{grid-column:auto}.freight-total{font-size:28px}}
 @media(max-width:430px){.freight-plan-row{grid-template-columns:minmax(0,1fr) 108px 32px}.freight-plan-value{grid-column:1/3;text-align:left}.freight-plan-name{white-space:normal}}
 @media(max-width:430px){.freight-empty-options{grid-template-columns:1fr}.freight-empty-option span{justify-content:flex-start;padding:0 12px}}
+@media(max-width:430px){.freight-calc-head,.freight-calc-item-head{flex-direction:column;align-items:flex-start}.freight-calc-line,.freight-calc-total{align-items:flex-start}.freight-calc-line{flex-direction:column;gap:1px;margin-top:5px}.freight-calc-distance,.freight-calc-item-total{text-align:left}.freight-calc-item-total,.freight-calc-total strong{white-space:normal}}
 .legend{display:flex;flex-wrap:wrap;gap:8px}.legend.vert{flex-direction:column;gap:6px}
 .leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
 .leg-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
@@ -5561,13 +5573,16 @@ function renderFreightCalculator(){
   const formula=document.getElementById('freightFormula');
   if(formula){
     if(freightPlan.length&&billableKm){
-      const parts=freightPlan.map(item=>{
+      const items=freightPlan.map(item=>{
         const rate=freightRates.find(entry=>entry.type===item.type);
         if(!rate)return '';
-        const rates=hasEmptyLeg?`(${fMoney(rate.loadedRate)} + ${fMoney(rate.emptyRate)} vazio)/km`:`${fMoney(rate.loadedRate)}/km`;
-        return `${item.quantity} ${rate.type} × ${billableKm.toLocaleString('pt-BR')} km × ${rates}`;
+        const quantity=Math.max(1,Math.floor(Number(item.quantity)||1));
+        const loadedSubtotal=quantity*billableKm*rate.loadedRate;
+        const emptySubtotal=hasEmptyLeg?quantity*billableKm*rate.emptyRate:0;
+        const emptyLine=hasEmptyLeg?`<div class="freight-calc-line"><span>${budgetEsc(emptyLegLabel)}: ${quantity} × ${billableKm.toLocaleString('pt-BR')} km × ${fMoney(rate.emptyRate)}</span><span>${fMoney(emptySubtotal)}</span></div>`:'';
+        return `<div class="freight-calc-item"><div class="freight-calc-item-head"><span class="freight-calc-item-name">${quantity}× ${budgetEsc(rate.type)} · ${budgetEsc(rate.description)}</span><span class="freight-calc-item-total">${fMoney(loadedSubtotal+emptySubtotal)}</span></div><div class="freight-calc-line"><span>Carregado: ${quantity} × ${billableKm.toLocaleString('pt-BR')} km × ${fMoney(rate.loadedRate)}</span><span>${fMoney(loadedSubtotal)}</span></div>${emptyLine}</div>`;
       }).filter(Boolean);
-      formula.textContent=`${rawDistance.toLocaleString('pt-BR',{maximumFractionDigits:1})} km informados → ${billableKm.toLocaleString('pt-BR')} km faturáveis. ${parts.join(' + ')} = ${fMoney(grandTotal)}.`;
+      formula.innerHTML=`<div class="freight-calc-head"><span class="freight-calc-title">Memória de cálculo</span><span class="freight-calc-distance">${rawDistance.toLocaleString('pt-BR',{maximumFractionDigits:1})} km informados · ${billableKm.toLocaleString('pt-BR')} km faturáveis</span></div>${items.join('')}<div class="freight-calc-total"><span>Frete total</span><strong>${fMoney(grandTotal)}</strong></div>`;
     }else if(freightPlan.length){
       formula.textContent=`Plano com ${totalQuantity} ${totalQuantity===1?'carga':'cargas'}. Informe a distância rodoviária para calcular o total.`;
     }else{
@@ -6826,7 +6841,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=36',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=37',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
