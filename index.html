@@ -868,9 +868,9 @@ tbody tr:hover td{background:var(--surface2)}
 
   <div class="sb-section">Ferramentas</div>
 
-  <div class="nav-item" id="nav-tools" data-tip="Ferramentas" data-sub="Calculadora de frete" onclick="goTo('tools')">
+  <div class="nav-item" id="nav-tools" data-tip="Calculadora de Frete" data-sub="Plano de cargas e tabela de fretes" onclick="goTo('tools')">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
-    <span class="nav-lbl">Ferramentas</span>
+    <span class="nav-lbl">Calculadora de Frete</span>
   </div>
 
   </div>
@@ -2237,7 +2237,7 @@ const pages={aet:{t:'Gestão de AET\'s',s:'licenças especiais de trânsito'},mo
   efl:{t:'Relatório de Eficiência Logística',s:'eficiência de KM por frota · operação diária'},
   exec:{t:'Resumo Executivo',s:'visão gerencial consolidada das operações'},
   budget:{t:'Resultado da Unidade',s:'orçado x realizado por unidade e cavalo'},
-  tools:{t:'Ferramentas',s:'calculadora de frete e utilidades operacionais'},
+  tools:{t:'Calculadora de Frete',s:'plano de cargas e consulta de tarifas'},
   rpd:{t:'Relatório de Frotas em Manutenção (RPD)',s:'frotas em manutenção · operação diária'}};
 
 pages.prog={t:'Programação Logística Semanal',s:'planejamento operacional por semanas'};
@@ -6826,7 +6826,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=35',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=36',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
