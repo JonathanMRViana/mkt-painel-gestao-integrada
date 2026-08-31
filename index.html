@@ -2124,9 +2124,23 @@ tbody tr:hover td{background:var(--surface2)}
           <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Ineficiência Orçada</div><div class="kpi-value" id="budgetInefficiency">0%</div><div class="kpi-sub">média total das premissas</div></div>
         </div>
 
+        <div class="card-head" style="margin-top:6px"><span class="card-title">Orçado x Executado MKT</span><span class="count-tag">medição disponível em jul/ago</span></div>
+        <div class="kpi-row exec-kpis exec-five" style="margin-top:0">
+          <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">Orçado MKT</div><div class="kpi-value" id="budgetMktBudget">N/D</div><div class="kpi-sub" id="budgetMktBudgetSub">julho e agosto</div></div>
+          <div class="kpi c-green"><div class="kpi-stripe"></div><div class="kpi-label">Executado MKT</div><div class="kpi-value" id="budgetMktActual">N/D</div><div class="kpi-sub" id="budgetMktActualSub">prévia operacional</div></div>
+          <div class="kpi c-teal"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="budgetMktAttainment">N/D</div><div class="kpi-sub" id="budgetMktAttainmentSub">executado ÷ orçado</div></div>
+          <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Realizado Contábil</div><div class="kpi-value" id="budgetMktBi">N/D</div><div class="kpi-sub" id="budgetMktBiSub">BI oficial</div></div>
+          <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Diferença MKT x BI</div><div class="kpi-value" id="budgetMktGap">N/D</div><div class="kpi-sub" id="budgetMktGapSub">conciliação das fontes</div></div>
+        </div>
+
         <div class="grid-2">
           <div class="card"><div class="card-head"><span class="card-title" id="budgetMonthTitle">Evolução Mensal: ROB Orçada x Realizado</span><span class="count-tag" id="budgetMonthInfo">12 meses</span></div><div style="height:300px"><canvas id="budgetMonthChart"></canvas></div></div>
           <div class="card"><div class="card-head"><span class="card-title">Concentração por Frota</span><div class="chart-nav"><span class="count-tag" id="budgetFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollBUDGETFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollBUDGETFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div><div style="height:300px"><canvas id="budgetFleetChart"></canvas></div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card"><div class="card-head"><span class="card-title">Orçado x Executado MKT por Mês</span><span class="count-tag" id="budgetMktMonthInfo">jul/ago</span></div><div style="height:300px"><canvas id="budgetMktMonthChart"></canvas></div></div>
+          <div class="card"><div class="card-head"><span class="card-title">Composição do Executado MKT</span><span class="count-tag" id="budgetMktCompositionInfo">componentes informados</span></div><div class="bar-list" id="budgetMktComposition"></div></div>
         </div>
 
         <div class="grid-2">
@@ -2146,6 +2160,11 @@ tbody tr:hover td{background:var(--surface2)}
             <button class="clear-filters-btn" onclick="clearBUDGETFilters()">Limpar</button>
           </div>
           <div class="tbl-wrap"><table><thead><tr><th>Mês</th><th>Frota</th><th>Tipo</th><th>Situação</th><th>Unidade</th><th>Conjunto</th><th>Contrato</th><th>Ocupação</th><th>Inef. Logística</th><th>Inef. Comercial</th><th>Inef. Operacional</th><th>Inef. Mecânica</th><th>Horas Orç.</th><th>Horas Extras</th><th>ROB Orçada</th></tr></thead><tbody id="budgetTable"></tbody></table></div>
+        </div>
+
+        <div class="tbl-card">
+          <div class="tbl-head"><span class="tbl-title">Faturamento Operacional por Frota</span><div class="chart-nav"><span class="count-tag" id="budgetMktCount">0 registros</span><button class="chart-arrow" onclick="scrollBUDGETMktTable(-1)" title="Página anterior" aria-label="Página anterior do faturamento operacional">‹</button><button class="chart-arrow" onclick="scrollBUDGETMktTable(1)" title="Próxima página" aria-label="Próxima página do faturamento operacional">›</button></div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Mês</th><th>Frota</th><th>Conjunto</th><th>Situação</th><th>Categoria</th><th>ROB Orçada MKT</th><th>ROB Executada MKT</th><th>Variação</th><th>Atingimento</th><th>Mov. Interna</th><th>Frete</th><th>Diária</th><th>Locação</th><th>KM Vazio Cobrado</th><th>Observação</th></tr></thead><tbody id="budgetMktTable"></tbody></table></div>
         </div>
       </div>
     </div>
@@ -2241,7 +2260,7 @@ tbody tr:hover td{background:var(--surface2)}
 
 <!-- v1778869583 -->
 <script>
-let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],freightRates=[],freightPlan=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
+let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],freightRates=[],freightPlan=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,budgetMktMonthChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
 window._aet=()=>aetData;
 window._mob=()=>mobData;
 
@@ -2332,7 +2351,7 @@ const panelPremises={
   budget:[
     ['Objetivo','Consolidar orçamento, prévia de faturamento e resultado contábil da unidade, com leitura total e por cavalo.'],
     ['Situação atual','A ROB orçada detalhada e o resultado mensal do BI estão conectados. O faturamento por cavalo permanece indisponível até a publicação da base com esse nível de detalhe.'],
-    ['Origem dos dados','A ROB detalhada vem do orçamento anual publicado no Google Sheets. O Orçado BI e o Realizado Contábil vêm da extração mensal do BI de resultado da unidade.'],
+    ['Origem dos dados','A ROB detalhada vem do orçamento anual publicado no Google Sheets. O Executado MKT por frota está disponível somente para julho e agosto. O Realizado Contábil vem da extração mensal do BI e permanece como fonte oficial.'],
     ['ROB orçada','Representa receita operacional bruta planejada. Não é faturamento realizado, valor cobrado ou receita contábil reconhecida.'],
     ['Frotas com ROB','A contagem usa frotas únicas com valor orçado maior que zero, evitando multiplicar a mesma frota pelos doze meses.'],
     ['Ocupação e ineficiência','São médias simples das premissas preenchidas nas linhas filtradas. A ineficiência total soma logística, comercial, operacional e mecânica antes da média.'],
@@ -2440,7 +2459,7 @@ function goTo(id){
     if(id==='rpd'&&rpdData.length>0){if(rpdChart){rpdChart.destroy();rpdChart=null;}renderRPD();}
     if(id==='prog'&&progSheetsData.length>0){if(progStatusChart){progStatusChart.destroy();progStatusChart=null;}if(progClientChart){progClientChart.destroy();progClientChart=null;}if(progLoadChart){progLoadChart.destroy();progLoadChart=null;}if(progTrendChart){progTrendChart.destroy();progTrendChart=null;}renderPROG();}
     if(id==='mat'&&(matData.length>0||matSafetyData.length>0)){if(mAC){mAC.destroy();mAC=null;}renderMAT();}
-    if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}renderBUDGET();}
+    if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}if(budgetMktMonthChart){budgetMktMonthChart.destroy();budgetMktMonthChart=null;}renderBUDGET();}
     if(id==='exec'){setExecTab(execActiveTab||'overview');renderEXEC();}
     if(id==='tools')renderFreightCalculator();
   },50);
@@ -2482,6 +2501,7 @@ function toggleTheme(){
   if(progTrendChart){progTrendChart.destroy();progTrendChart=null;}
   if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}
   if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}
+  if(budgetMktMonthChart){budgetMktMonthChart.destroy();budgetMktMonthChart=null;}
   if(activeId==='aet'&&aetData.length)renderAETAll();
   if(activeId==='mob'&&mobData.length)renderMOB();
   if(activeId==='mat'&&(matData.length||matSafetyData.length))renderMAT();
@@ -2763,6 +2783,7 @@ const CSV_MAT_SAFETY = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1E33A1
 const CSV_RPD="https://docs.google.com/spreadsheets/d/e/2PACX-1vS_rfQGQXLNr0XsYzPab32cj30MbIJ2VLisoCZqio-qc_XP1p2J532LuNOEFNhu9fg52UW_zRTfQyN3/pub?gid=1614487064&single=true&output=csv";
 const CSV_BUDGET="https://docs.google.com/spreadsheets/d/e/2PACX-1vS3kOKgLiA9Gh4JzI38Xd1X3zspFMlmbgXnBuRxEcyVWJMJm1I7Pf1_n2efdxOSPVJBJfBymZmkygUZ/pub?output=csv";
 const CSV_RESULT_BI="https://docs.google.com/spreadsheets/d/e/2PACX-1vRJCb4qUO4Rv6umak_zGHWGExLaOPQpZWNjPi2frLNbwOTJyzh6y06XOGMH_TugjU6iqF46ypDlSOCt/pub?output=csv";
+const CSV_FLEET_BILLING="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1256794079";
 const CSV_FREIGHT_RATES="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1374757392";
 const CSV_MOB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_Ry7aRW5A3zpaLdCu2u_xb3vgfOjnfHRmSH_OyvVX3wzmxvh4fSZBFvZakDRF2eDNA3DWJk9OFbml/pub?output=csv&gid=1729222115";
 const PROG_SHEETS=[
@@ -2807,10 +2828,15 @@ function parseCSV(text){
 
 async function loadAll(){
   document.getElementById('updTxt').textContent='atualizando...';
-  const safeFetch=async(url)=>{try{const r=await fetch(url+'&t='+Date.now());return await r.text();}catch(e){console.warn('fetch failed:',url,e.message);return '';}};
-  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFreight,progTexts]=await Promise.all([
+  const safeFetch=async(url)=>{
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),30000);
+    try{const r=await fetch(url+'&t='+Date.now(),{signal:controller.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text();}
+    catch(e){console.warn('fetch failed:',url,e.name==='AbortError'?'tempo limite excedido':e.message);return '';}
+    finally{clearTimeout(timeout);}
+  };
+  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFleetBilling,txtFreight,progTexts]=await Promise.all([
     safeFetch(CSV_AET),safeFetch(CSV_MOB),safeFetch(CSV_MAT),safeFetch(CSV_MAT_SAFETY),
-    safeFetch(CSV_PATIO),safeFetch(CSV_PATIO_INVENTORY),safeFetch(CSV_INEF),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url))),safeFetch(CSV_RPD),safeFetch(CSV_BUDGET),safeFetch(CSV_RESULT_BI),safeFetch(CSV_FREIGHT_RATES),
+    safeFetch(CSV_PATIO),safeFetch(CSV_PATIO_INVENTORY),safeFetch(CSV_INEF),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url))),safeFetch(CSV_RPD),safeFetch(CSV_BUDGET),safeFetch(CSV_RESULT_BI),safeFetch(CSV_FLEET_BILLING),safeFetch(CSV_FREIGHT_RATES),
     Promise.all(PROG_SHEETS.map(s=>safeFetch(s.url)))
   ]);
   try{processAET(parseCSV(txtAet));}catch(e){console.error('processAET error:',e.message);}
@@ -2823,6 +2849,7 @@ async function loadAll(){
   try{processRPD(parseCSV(txtRpd));}catch(e){console.error('processRPD error:',e.message);}
   try{processBUDGET(parseCSV(txtBudget));}catch(e){console.error('processBUDGET error:',e.message);}
   try{processRESULT(parseCSV(txtResultBI));}catch(e){console.error('processRESULT error:',e.message);}
+  try{processFLEETBILLING(parseCSV(txtFleetBilling));}catch(e){console.error('processFLEETBILLING error:',e.message);}
   try{processFreightRates(parseCSV(txtFreight));}catch(e){console.error('processFreightRates error:',e.message);}
   try{processPROG(progTexts.map((txt,i)=>({meta:PROG_SHEETS[i],rows:parseCSV(txt)})));}catch(e){console.error('processPROG error:',e.message);}
   try{renderEXEC();}catch(e){console.error('renderEXEC error:',e.message);}
@@ -2831,14 +2858,14 @@ async function loadAll(){
 }
 
 const BUDGET_MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-let budgetFleetPage=0,budgetTablePage=0;
+let budgetFleetPage=0,budgetTablePage=0,budgetMktTablePage=0;
 function budgetText(v){return String(v==null?'':v).trim();}
 function budgetKey(v){return budgetText(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
 function budgetEsc(v){return String(v==null?'':v).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
 function budgetNumber(v){
   const raw=budgetText(v).replace(/R\$|\s/g,'');
   if(!raw||raw==='-')return null;
-  const normalized=raw.includes(',')?raw.replace(/\./g,'').replace(',','.'):raw;
+  const normalized=raw.includes(',')?raw.replace(/\./g,'').replace(',','.'):/^-?\d{1,3}(?:\.\d{3})+$/.test(raw)?raw.replace(/\./g,''):raw;
   const n=parseFloat(normalized.replace(/[^0-9.-]/g,''));
   return Number.isFinite(n)?n:null;
 }
@@ -2859,7 +2886,7 @@ function budgetMoneyCompact(v){
   return 'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0});
 }
 function budgetHeaderIndex(headers,aliases,fallback){
-  for(const alias of aliases){const key=budgetKey(alias);const index=headers.findIndex(h=>h===key||h.includes(key)||key.includes(h));if(index>=0)return index;}
+  for(const alias of aliases){const key=budgetKey(alias);const index=headers.findIndex(h=>h&&(h===key||h.includes(key)||key.includes(h)));if(index>=0)return index;}
   return fallback;
 }
 function processBUDGET(rows){
@@ -2892,6 +2919,27 @@ function processRESULT(rows){
   }).filter(Boolean).sort((a,b)=>a.mes-b.mes);
   if(budgetData.length)renderBUDGET();
 }
+function fleetBillingType(category){
+  const key=budgetKey(category);
+  if(key.includes('CAVALO'))return'CAVALO';
+  if(key.includes('CARRETA')||key.includes('PRANCHA')||key.includes('IMPLEMENTO'))return'IMPLEMENTO';
+  if(key.includes('ESCOLTA'))return'ESCOLTA';
+  return budgetText(category);
+}
+function processFLEETBILLING(rows){
+  const headerIndex=rows.findIndex(row=>{const keys=row.map(budgetKey);return keys.includes('MES')&&keys.includes('FROTA')&&keys.includes('ROBREAL')&&keys.includes('ROBORCADA');});
+  if(headerIndex<0){fleetBillingData=[];if(budgetData.length)renderBUDGET();return;}
+  const headers=rows[headerIndex].map(budgetKey);
+  const col=(aliases,fallback=-1)=>budgetHeaderIndex(headers,aliases,fallback);
+  const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:col(['VALOR COBRADO KM VAZIO']),observacao:headers.findIndex((h,i)=>h==='OBSERVACAO'&&i>col(['VALOR COBRADO KM VAZIO']))};
+  fleetBillingData=rows.slice(headerIndex+1).map((row,rowIndex)=>{
+    const mes=budgetMonthNumber(row[ix.mes]),frota=budgetText(row[ix.frota]);
+    if(![7,8].includes(mes)||!frota)return null;
+    const categoria=budgetText(row[ix.categoria]);
+    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo:fleetBillingType(categoria),unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:budgetNumber(row[ix.orcado])||0,realizado:budgetNumber(row[ix.realizado])||0,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao:budgetNumber(row[ix.locacao])||0,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):''};
+  }).filter(Boolean);
+  if(budgetData.length)renderBUDGET();
+}
 function budgetFilterState(){return {mes:getSelectValues('budgetMes'),situacao:getSelectValues('budgetSituacao'),tipo:getSelectValues('budgetTipo'),unidade:getSelectValues('budgetUnidade'),contrato:getSelectValues('budgetContrato')};}
 function budgetMatches(row,state,skip,query,exactFleet){
   if(skip!=='mes'&&!matchesValue(String(row.mes),state.mes))return false;
@@ -2920,12 +2968,22 @@ function getBUDGETFiltered(){
   const exactFleet=!!query&&budgetData.some(row=>row.frota.toLowerCase()===query);
   return budgetData.filter(row=>budgetMatches(row,state,'',query,exactFleet));
 }
-function syncBUDGETSearch(src,targetId){const target=document.getElementById(targetId);if(target&&target!==src)target.value=src.value;budgetFleetPage=0;budgetTablePage=0;renderBUDGET();}
-function syncBUDGETSelect(src,targetId){syncSelectValues(src,targetId);budgetFleetPage=0;budgetTablePage=0;renderBUDGET();}
+function getFLEETBILLINGFiltered(){
+  const query=((document.getElementById('budgetSearch')||{}).value||'').toLowerCase().trim(),state=budgetFilterState();
+  const exactFleet=!!query&&fleetBillingData.some(row=>row.frota.toLowerCase()===query);
+  return fleetBillingData.filter(row=>{
+    if(!matchesValue(String(row.mes),state.mes)||!matchesValue(row.situacao,state.situacao)||!matchesValue(row.tipo,state.tipo)||!matchesValue(row.unidade,state.unidade))return false;
+    if(!isAllSelection(state.contrato))return false;
+    if(query){if(exactFleet)return row.frota.toLowerCase()===query;const hay=[row.frota,row.conjunto,row.situacao,row.categoria,row.classe,row.observacao].join(' ').toLowerCase();if(!hay.includes(query))return false;}
+    return true;
+  });
+}
+function syncBUDGETSearch(src,targetId){const target=document.getElementById(targetId);if(target&&target!==src)target.value=src.value;budgetFleetPage=0;budgetTablePage=0;budgetMktTablePage=0;renderBUDGET();}
+function syncBUDGETSelect(src,targetId){syncSelectValues(src,targetId);budgetFleetPage=0;budgetTablePage=0;budgetMktTablePage=0;renderBUDGET();}
 function clearBUDGETFilters(){
   ['budgetMes','budgetMesBot','budgetSituacao','budgetSituacaoBot','budgetTipo','budgetTipoBot','budgetUnidade','budgetUnidadeBot','budgetContrato','budgetContratoBot'].forEach(id=>setSelectValues(id,['TODOS']));
   ['budgetSearch','budgetSearchBot'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  budgetFleetPage=0;budgetTablePage=0;renderBUDGET();
+  budgetFleetPage=0;budgetTablePage=0;budgetMktTablePage=0;renderBUDGET();
 }
 function renderBUDGET(){
   if(!budgetData.length)return;
@@ -2944,7 +3002,7 @@ function renderBUDGET(){
   set('budgetFleets',fleets.length.toLocaleString('pt-BR'));set('budgetFleetsSub',`${fleets.length.toLocaleString('pt-BR')} com ROB de ${allFleets.length.toLocaleString('pt-BR')} ${allFleets.length===1?'frota':'frotas'} no recorte`);
   set('budgetOccupancy',occupancy.length?(occupancy.reduce((a,b)=>a+b,0)/occupancy.length*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'N/D');
   set('budgetInefficiency',ineff.length?(ineff.reduce((a,b)=>a+b,0)/ineff.length*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'N/D');
-  renderBUDGETMonthChart(rows);renderBUDGETFleetChart(rows);renderBUDGETSituation(rows);renderBUDGETRead(rows,total);
+  renderBUDGETMonthChart(rows);renderBUDGETFleetChart(rows);renderBUDGETMkt();renderBUDGETSituation(rows);renderBUDGETRead(rows,total);
   const sortedRows=rows.slice().sort((a,b)=>a.mes-b.mes||a.frota.localeCompare(b.frota,'pt-BR',{numeric:true}));
   const tablePageSize=responsiveChartPageSize(100,40),tablePages=Math.ceil(sortedRows.length/tablePageSize)||1;
   budgetTablePage=Math.max(0,Math.min(tablePages-1,budgetTablePage));
@@ -2975,6 +3033,69 @@ function renderBUDGETMonthChart(rows){
   if(title)title.textContent=canCompare?'Evolução Mensal: ROB Orçada x Realizado':'Evolução Mensal da ROB Orçada';
   if(info)info.textContent=canCompare&&latestRealizedMonth?`${data.length} ${data.length===1?'mês':'meses'} · BI até ${BUDGET_MONTHS[latestRealizedMonth-1].slice(0,3).toLowerCase()}.`:`${data.length} ${data.length===1?'mês':'meses'} · ${resultData.length?'BI sem detalhe':'BI indisponível'}`;
 }
+function aggregateFLEETBILLING(rows){
+  const map=new Map();
+  (rows||[]).forEach(row=>{
+    const key=row.mes+'|'+budgetKey(row.frota),item=map.get(key)||{...row,orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,observacoes:[]};
+    ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio'].forEach(field=>item[field]+=row[field]||0);
+    if(row.observacao&&!item.observacoes.includes(row.observacao))item.observacoes.push(row.observacao);
+    map.set(key,item);
+  });
+  return[...map.values()].map(row=>({...row,observacao:row.observacoes.join(' · ')}));
+}
+function renderBUDGETMkt(){
+  const rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered()),set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  const orcado=rows.reduce((sum,row)=>sum+row.orcado,0),executado=rows.reduce((sum,row)=>sum+row.realizado,0),atingimento=orcado>0?executado/orcado*100:null;
+  const months=[...new Set(rows.map(row=>row.mes))].sort((a,b)=>a-b),monthLabel=months.map(m=>BUDGET_MONTHS[m-1].slice(0,3).toLowerCase()).join('/');
+  if(rows.length){
+    set('budgetMktBudget',fMoney(orcado));set('budgetMktBudgetSub',`${rows.length.toLocaleString('pt-BR')} frotas-mês · ${monthLabel}`);
+    set('budgetMktActual',fMoney(executado));set('budgetMktActualSub','prévia operacional por frota');
+    set('budgetMktAttainment',atingimento==null?'N/D':atingimento.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%');set('budgetMktAttainmentSub','executado ÷ orçado MKT');
+  }else{
+    set('budgetMktBudget','N/D');set('budgetMktBudgetSub','disponível somente em jul/ago');
+    set('budgetMktActual','N/D');set('budgetMktActualSub','sem medição no recorte');
+    set('budgetMktAttainment','N/D');set('budgetMktAttainmentSub','sem base comparável');
+  }
+  const canUseBi=rows.length&&budgetResultComparable()&&resultData.length;
+  const resultMap=new Map(resultData.map(row=>[row.mes,row.realizado]));
+  const biActual=canUseBi?months.reduce((sum,month)=>sum+(resultMap.get(month)||0),0):null;
+  if(biActual!=null){
+    const gap=executado-biActual;
+    set('budgetMktBi',fMoney(biActual));set('budgetMktBiSub',`${monthLabel} · fonte contábil oficial`);
+    set('budgetMktGap',fMoney(Math.abs(gap)));set('budgetMktGapSub',gap===0?'fontes conciliadas':`MKT ${gap>0?'acima':'abaixo'} do BI`);
+  }else{
+    set('budgetMktBi','N/D');set('budgetMktBiSub',rows.length?'BI sem detalhe para este filtro':'sem recorte operacional');
+    set('budgetMktGap','N/D');set('budgetMktGapSub','conciliação no consolidado');
+  }
+  renderBUDGETMktMonthChart(rows);
+  renderBUDGETMktComposition(rows);
+  renderBUDGETMktTable(rows);
+}
+function renderBUDGETMktMonthChart(rows){
+  if(budgetMktMonthChart){budgetMktMonthChart.destroy();budgetMktMonthChart=null;}
+  const canvas=document.getElementById('budgetMktMonthChart');if(!canvas)return;
+  const byMonth=new Map();rows.forEach(row=>{const item=byMonth.get(row.mes)||{orcado:0,realizado:0};item.orcado+=row.orcado;item.realizado+=row.realizado;byMonth.set(row.mes,item);});
+  const data=[...byMonth.entries()].sort((a,b)=>a[0]-b[0]),ct=chartTheme();
+  const info=document.getElementById('budgetMktMonthInfo');if(info)info.textContent=data.length?data.map(row=>BUDGET_MONTHS[row[0]-1].slice(0,3).toLowerCase()).join('/'):'sem medição no recorte';
+  budgetMktMonthChart=new Chart(canvas,{type:'bar',plugins:[progBarValueLabelsPlugin],data:{labels:data.map(row=>BUDGET_MONTHS[row[0]-1]),datasets:[
+    {label:'Orçado MKT',data:data.map(row=>row[1].orcado),backgroundColor:ct.blueFill,borderColor:ct.blue,borderWidth:1,borderRadius:4},
+    {label:'Executado MKT',data:data.map(row=>row[1].realizado),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:10,formatter:value=>budgetMoneyCompact(value)},legend:{display:data.length>0,position:'bottom',labels:{color:ct.text3,boxWidth:10,boxHeight:10,padding:14,font:{family:'IBM Plex Mono',size:9}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fMoney(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
+}
+function renderBUDGETMktComposition(rows){
+  const values=[['Mov. Interna',rows.reduce((s,r)=>s+r.movInterna,0)],['Frete',rows.reduce((s,r)=>s+r.frete,0)],['Diária',rows.reduce((s,r)=>s+r.diaria,0)],['Locação',rows.reduce((s,r)=>s+r.locacao,0)],['KM Vazio Cobrado',rows.reduce((s,r)=>s+r.kmVazio,0)]].filter(row=>row[1]>0).sort((a,b)=>b[1]-a[1]);
+  const total=values.reduce((s,row)=>s+row[1],0),max=Math.max(1,...values.map(row=>row[1])),el=document.getElementById('budgetMktComposition'),info=document.getElementById('budgetMktCompositionInfo');
+  if(info)info.textContent=values.length?`${budgetMoneyCompact(total)} informado`:'não detalhado no recorte';
+  if(el)el.innerHTML=values.length?values.map(([label,value])=>`<div class="bar-row"><div class="bar-lbl" title="${label}">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${value/max*100}%;background:var(--teal)"></div></div><div class="bar-num" style="width:100px">${budgetMoneyCompact(value)}</div></div>`).join(''):'<div style="color:var(--text3);font-size:12px;padding:12px 0">A fonte não possui a abertura dos componentes para este recorte.</div>';
+}
+function renderBUDGETMktTable(rows){
+  const sorted=rows.slice().sort((a,b)=>a.mes-b.mes||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})),pageSize=responsiveChartPageSize(50,25),pages=Math.ceil(sorted.length/pageSize)||1;
+  budgetMktTablePage=Math.max(0,Math.min(pages-1,budgetMktTablePage));
+  const slice=sorted.slice(budgetMktTablePage*pageSize,(budgetMktTablePage+1)*pageSize),start=sorted.length?budgetMktTablePage*pageSize+1:0,end=Math.min((budgetMktTablePage+1)*pageSize,sorted.length),cnt=document.getElementById('budgetMktCount'),table=document.getElementById('budgetMktTable');
+  if(cnt)cnt.textContent=sorted.length?`${start}-${end} de ${sorted.length.toLocaleString('pt-BR')}`:'0 registros';
+  if(table)table.innerHTML=slice.length?slice.map(row=>{const variance=row.realizado-row.orcado,attainment=row.orcado>0?row.realizado/row.orcado*100:null;return`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.conjunto||'—')}</td><td>${budgetEsc(budgetSituationLabel(row.situacao))}</td><td>${budgetEsc(row.categoria||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600;color:var(--green)">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data);color:${variance>=0?'var(--green)':'var(--red)'}">${variance<0?'−':''}${fMoney(Math.abs(variance))}</td><td style="font-family:var(--font-data);font-weight:600">${attainment==null?'N/D':attainment.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.movInterna?fMoney(row.movInterna):'—'}</td><td>${row.frete?fMoney(row.frete):'—'}</td><td>${row.diaria?fMoney(row.diaria):'—'}</td><td>${row.locacao?fMoney(row.locacao):'—'}</td><td>${row.kmVazio?fMoney(row.kmVazio):'—'}</td><td title="${budgetEsc(row.observacao)}">${budgetEsc(row.observacao||'—')}</td></tr>`;}).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Sem medição operacional para o recorte. A fonte está disponível somente em julho e agosto.</td></tr>';
+}
+function scrollBUDGETMktTable(dir){const rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered()),pageSize=responsiveChartPageSize(50,25),pages=Math.ceil(rows.length/pageSize)||1;budgetMktTablePage=Math.max(0,Math.min(pages-1,budgetMktTablePage+dir));renderBUDGETMktTable(rows);}
 function budgetFleetTotals(rows){const map=new Map();rows.forEach(row=>{if(row.rob>0)map.set(row.frota,(map.get(row.frota)||0)+row.rob);});return [...map.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR',{numeric:true}));}
 function renderBUDGETFleetChart(rows){
   if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}
@@ -3011,6 +3132,11 @@ function renderBUDGETRead(rows,total){
     const realizedRead=closedRows.length?`No BI contábil, o realizado acumulado até <strong>${BUDGET_MONTHS[latestSelected-1]}</strong> é <strong>${fMoney(realized)}</strong>${attainment==null?'':`, equivalente a <strong>${attainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%</strong> do Orçado BI no mesmo período`}.`:'O período selecionado ainda não possui realizado contábil disponível no BI.';
     resultText=`<br><br>${realizedRead} ${Math.abs(reconciliation)>=.01?`A base detalhada e o Orçado BI divergem em <strong>${fMoney(Math.abs(reconciliation))}</strong> no recorte e precisam ser conciliados antes do fechamento.`:'As duas fontes orçadas estão conciliadas no recorte.'}`;
   }else if(resultData.length)resultText='<br><br>O realizado contábil não é exibido neste filtro porque a extração atual do BI possui apenas o total mensal da unidade, sem detalhamento por frota, conjunto ou contrato.';
+  const mktRows=aggregateFLEETBILLING(getFLEETBILLINGFiltered());
+  if(mktRows.length){
+    const mktBudget=mktRows.reduce((sum,row)=>sum+row.orcado,0),mktActual=mktRows.reduce((sum,row)=>sum+row.realizado,0),mktAttainment=mktBudget>0?mktActual/mktBudget*100:null,mktMonths=[...new Set(mktRows.map(row=>row.mes))].sort((a,b)=>a-b).map(month=>BUDGET_MONTHS[month-1]).join(' e ');
+    resultText+=`<br><br>Na medição operacional da MKT para <strong>${mktMonths}</strong>, o executado por frota é <strong>${fMoney(mktActual)}</strong> sobre <strong>${fMoney(mktBudget)}</strong> orçados${mktAttainment==null?'':`, com atingimento de <strong>${mktAttainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%</strong>`}. Essa série não é projetada para os demais meses.`;
+  }
   el.innerHTML=`A ROB orçada no recorte é <strong>${fMoney(total)}</strong>. ${peak?`O maior mês é <strong>${BUDGET_MONTHS[peak[0]-1]}</strong>, com ${fMoney(peak[1])}.`:''} ${top?`A frota <strong>${budgetEsc(top[0])}</strong> concentra ${topShare.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}% do valor filtrado.`:''}${resultText}<br><br>${zeroRows.toLocaleString('pt-BR')} registros não possuem ROB própria. Isso não significa necessariamente falta de orçamento: implementos podem estar associados à receita do equipamento ou conjunto. ${duplicates.length?'Foram identificadas chaves repetidas de mês e frota e a base deve ser revisada.':'Não há duplicidade de mês e frota no recorte.'}`;
 }
 
@@ -4365,7 +4491,7 @@ function applyMultiSelectFilters(){
   const afterAET=()=>{updateAETFilterCount();renderAETAll();};
   const afterMOB=()=>{updateMOBFilterCount();renderMOBtbl();if(mobData.length)renderMOBcharts();};
   const afterEFL=()=>{eflChartPage=0;eflFrotaMesPage=0;renderEFL();};
-  const afterBUDGET=()=>{budgetFleetPage=0;budgetTablePage=0;renderBUDGET();};
+  const afterBUDGET=()=>{budgetFleetPage=0;budgetTablePage=0;budgetMktTablePage=0;renderBUDGET();};
   const bindPair=(firstId,secondId,afterChange)=>{
     bind(firstId,function(){syncSelectValues(this,secondId);afterChange();});
     bind(secondId,function(){syncSelectValues(this,firstId);afterChange();});
