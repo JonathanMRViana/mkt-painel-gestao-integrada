@@ -288,6 +288,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-inef-value{font-family:var(--font-data);font-size:20px;color:var(--text)}
 .exec-date-value{font-size:20px!important;white-space:nowrap}
 .exec-data-table{table-layout:auto!important;min-width:760px}
+.exec-billing-gap-table{min-width:1380px!important}
 .exec-dre-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px;margin-bottom:20px}
 .exec-dre-stack{display:grid;gap:10px}
 .exec-dre-line{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
@@ -2096,6 +2097,15 @@ tbody tr:hover td{background:var(--surface2)}
         </div>
 
         <div class="exec-tab-content" id="execContentBilling">
+          <div class="top-filter-bar">
+            <span class="top-filter-bar-title">Filtros</span>
+            <div class="filter-divider"></div>
+            <div class="select-group"><label class="select-label">Mês</label><select class="f-select" id="execBillingMonthFilter" onchange="renderEXEC()"><option value="TODOS">Todos</option></select></div>
+            <button class="clear-filters-btn" onclick="clearEXECBillingFilters()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Limpar
+            </button>
+          </div>
           <div class="kpi-row exec-kpis">
             <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada no Mês</div><div class="kpi-value" id="execBudgetMonth">N/D</div><div class="kpi-sub" id="execBudgetMonthSub">orçamento MKT do mês</div></div>
             <div class="kpi c-green"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada Anual</div><div class="kpi-value" id="execBudgetAnnual">N/D</div><div class="kpi-sub">orçamento detalhado da unidade</div></div>
@@ -2105,7 +2115,7 @@ tbody tr:hover td{background:var(--surface2)}
           <div class="exec-awaiting" style="margin-bottom:20px"><div class="exec-awaiting-title">Faturamento operacional por frota</div><div class="exec-awaiting-text" id="execBillingText">A ROB Real MKT é consolidada a partir da base mensal por frota.</div></div>
           <div class="tbl-card">
             <div class="tbl-head"><span class="tbl-title">Principais Gaps de Receita por Equipamento</span><span class="count-tag" id="execBillingGapCount">N/D</span></div>
-            <div class="tbl-wrap"><table class="exec-data-table"><thead><tr><th>Equipamento</th><th>Categoria</th><th>ROB Orçada</th><th>ROB Real</th><th>Gap de Receita</th><th>Atingimento</th><th>Observação (X)</th></tr></thead><tbody id="execBillingGapTbl"></tbody></table></div>
+            <div class="tbl-wrap"><table class="exec-data-table exec-billing-gap-table"><thead><tr><th>Equipamento</th><th>Categoria</th><th>ROB Orçada</th><th>ROB Real</th><th>Mov. Interna</th><th>Frete</th><th>Diária</th><th>Locação</th><th>Gap de Receita</th><th>Atingimento</th><th>Observação (X)</th></tr></thead><tbody id="execBillingGapTbl"></tbody></table></div>
           </div>
         </div>
 
@@ -3703,6 +3713,10 @@ function setExecTab(tab){
   });
   requestAnimationFrame(refreshTableScrollbars);
 }
+function clearEXECBillingFilters(){
+  setSelectValues('execBillingMonthFilter',['TODOS']);
+  renderEXEC();
+}
 function execParseSheetDate(label){
   const parts=String(label||'').trim().split(/[\/\-]/);
   if(parts.length<3)return null;
@@ -4185,7 +4199,11 @@ function renderEXEC(){
   const currentBudgetRows=budgetData.filter(row=>row.mes===today.getMonth()+1);
   const currentBudget=currentBudgetRows.reduce((sum,row)=>sum+row.rob,0);
   const annualBudget=budgetData.reduce((sum,row)=>sum+row.rob,0);
-  const billingRowsAll=aggregateFLEETBILLING(fleetBillingData);
+  const billingMonths=[...new Set(fleetBillingData.map(row=>row.mes).filter(Boolean))].sort((a,b)=>a-b);
+  fillSelectOptions(['execBillingMonthFilter'],billingMonths,'Todos',month=>BUDGET_MONTHS[Number(month)-1]||month);
+  const billingMonthSelection=getSelectValues('execBillingMonthFilter');
+  const billingMonthFilter=isAllSelection(billingMonthSelection)?0:Number(billingMonthSelection[0]);
+  const billingRowsAll=aggregateFLEETBILLING(billingMonthFilter?fleetBillingData.filter(row=>row.mes===billingMonthFilter):fleetBillingData);
   const latestBillingMonth=Math.max(0,...billingRowsAll.filter(row=>row.realizado!==0).map(row=>row.mes));
   const billingRows=billingRowsAll.filter(row=>row.mes===latestBillingMonth);
   const billingBudget=billingRows.reduce((sum,row)=>sum+row.orcado,0);
@@ -4193,7 +4211,7 @@ function renderEXEC(){
   const billingAttainment=billingBudget>0?billingRealized/billingBudget*100:null;
   const billingAttainmentText=billingAttainment==null?'N/D':billingAttainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
   const billingIsCurrent=latestBillingMonth===today.getMonth()+1;
-  const billingReferenceLabel=latestBillingMonth?`${BUDGET_MONTHS[latestBillingMonth-1]}${billingIsCurrent?' · parcial':' · último disponível'}`:'sem faturamento disponível';
+  const billingReferenceLabel=latestBillingMonth?`${BUDGET_MONTHS[latestBillingMonth-1]}${billingIsCurrent?' · parcial':billingMonthFilter?' · competência filtrada':' · último disponível'}`:'sem faturamento disponível';
   const billingFleets=new Set(billingRows.filter(row=>row.realizado!==0).map(row=>budgetKey(row.frota))).size;
   const inRange=(d,start,end)=>!!d&&d>=start&&d<=end;
   const isoWeekMonday=(year,weekNum)=>{
@@ -4342,7 +4360,7 @@ function renderEXEC(){
   set('execBudgetMonth',latestBillingMonth?budgetMoneyCompact(billingBudget):'N/D');
   set('execBudgetMonthSub',latestBillingMonth?`${BUDGET_MONTHS[latestBillingMonth-1]} · ROB orçada MKT`:'orçamento MKT indisponível');
   set('execBudgetAnnual',budgetData.length?budgetMoneyCompact(annualBudget):'N/D');
-  set('execBillingText',latestBillingMonth?`Em ${BUDGET_MONTHS[latestBillingMonth-1]}, a ROB Real MKT é ${fMoney(billingRealized)} frente a ${fMoney(billingBudget)} de ROB orçada, atingindo ${billingAttainmentText}. A competência reúne ${billingRows.length.toLocaleString('pt-BR')} registros e ${billingFleets.toLocaleString('pt-BR')} frotas com faturamento. ${billingIsCurrent?'O mês está em andamento e o valor é parcial.':'Essa é a última competência com execução preenchida.'} O resultado contábil oficial permanece na Análise de Resultado.`:'A fonte operacional ainda não possui competência com ROB Real preenchida.');
+  set('execBillingText',latestBillingMonth?`Em ${BUDGET_MONTHS[latestBillingMonth-1]}, a ROB Real MKT é ${fMoney(billingRealized)} frente a ${fMoney(billingBudget)} de ROB orçada, atingindo ${billingAttainmentText}. A competência reúne ${billingRows.length.toLocaleString('pt-BR')} registros e ${billingFleets.toLocaleString('pt-BR')} frotas com faturamento. ${billingIsCurrent?'O mês está em andamento e o valor é parcial.':billingMonthFilter?'Esta é a competência selecionada no filtro.':'Essa é a última competência com execução preenchida.'} O resultado contábil oficial permanece na Análise de Resultado.`:'A fonte operacional ainda não possui competência com ROB Real preenchida.');
   const billingGaps=billingRows.map(row=>({...row,gap:row.realizado-row.orcado,attainment:row.orcado>0?row.realizado/row.orcado*100:null})).filter(row=>Math.abs(row.gap)>.005);
   const billingDeficits=billingGaps.filter(row=>row.gap<0).sort((a,b)=>a.gap-b.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,10);
   const billingSurpluses=billingGaps.filter(row=>row.gap>0).sort((a,b)=>b.gap-a.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,5);
@@ -4351,8 +4369,8 @@ function renderEXEC(){
   html('execBillingGapTbl',billingGapHighlights.length?billingGapHighlights.map(row=>{
     const gapText=`${row.gap>0?'+':'−'} ${fMoney(Math.abs(row.gap))}`;
     const attainmentText=row.attainment==null?(row.realizado>0?'Sem orçamento':'N/D'):row.attainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
-    return`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.frota||'—')}</td><td>${execEsc(row.categoria||row.tipo||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data);font-weight:700;color:${row.gap<0?'var(--red)':'var(--green)'}">${gapText}</td><td style="font-family:var(--font-data)">${attainmentText}</td><td title="${execEsc(row.observacao||'')}">${execEsc(row.observacao||'—')}</td></tr>`;
-  }).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px">Sem gaps de receita disponíveis na competência.</td></tr>');
+    return`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.frota||'—')}</td><td>${execEsc(row.categoria||row.tipo||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data)">${row.movInterna?fMoney(row.movInterna):'—'}</td><td style="font-family:var(--font-data)">${row.frete?fMoney(row.frete):'—'}</td><td style="font-family:var(--font-data)">${row.diaria?fMoney(row.diaria):'—'}</td><td style="font-family:var(--font-data)">${row.locacao?fMoney(row.locacao):'—'}</td><td style="font-family:var(--font-data);font-weight:700;color:${row.gap<0?'var(--red)':'var(--green)'}">${gapText}</td><td style="font-family:var(--font-data)">${attainmentText}</td><td title="${execEsc(row.observacao||'')}">${execEsc(row.observacao||'—')}</td></tr>`;
+  }).join(''):'<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px">Sem gaps de receita disponíveis na competência.</td></tr>');
   set('execOverviewAdh',pct(latestWeek&&latestWeek.value));
   set('execOverviewAdhSub',latestWeek?`${latestWeek.label} · ${latestWeek.total.toLocaleString('pt-BR')} cargas`:'programação indisponível');
   set('execOverviewRpd',stopped.length.toLocaleString('pt-BR'));
@@ -4368,7 +4386,7 @@ function renderEXEC(){
     {title:'Aderência da programação',level:latestWeek&&latestWeek.value!=null?'informativo':'indisponivel',body:latestWeek?(latestWeek.value==null?`${latestWeek.label} ainda não tem fechamento completo de cargas não entregues.`:`${latestWeek.label}: ${pct(latestWeek.value)} de aderência, com ${latestWeek.notDelivered.toLocaleString('pt-BR')} cargas não entregues de ${latestWeek.total.toLocaleString('pt-BR')} planejadas.`):'A programação semanal não está disponível.'},
     {title:'Indisponibilidade RPD',level:stopped.length?'atencao':'positivo',body:stopped.length?`${stopped.length.toLocaleString('pt-BR')} equipamentos únicos estão parados; ${impacted.length.toLocaleString('pt-BR')} têm impacto no cliente. Exposição potencial no mês: ${budgetData.length?fMoney(rpdExposure):'N/D'}, com ROB para ${rpdBudgetCoverage} frotas.`:'Nenhum equipamento parado na leitura atual.'},
     {title:'Espera operacional',level:weekCovered?(weekWaitTotal?'atencao':'positivo'):'indisponivel',body:weekCovered?`${weekWaitTotal.toLocaleString('pt-BR')} frota-dias de espera na semana: ${weekWait.doc} DOC F, ${weekWait.ac} AC e ${weekWait.ad} AD.`:'Sem leitura efetiva do Relatório de Eficiência na semana atual.'},
-    {title:'Faturamento operacional',level:latestBillingMonth?'informativo':'indisponivel',body:latestBillingMonth?`${BUDGET_MONTHS[latestBillingMonth-1]} registra ${fMoney(billingRealized)} de ROB Real MKT frente a ${fMoney(billingBudget)} de ROB orçada (${billingAttainmentText}). ${billingIsCurrent?'Leitura parcial do mês em andamento.':'Última competência com execução preenchida.'}`:'Faturamento operacional indisponível.'},
+    {title:'Faturamento operacional',level:latestBillingMonth?'informativo':'indisponivel',body:latestBillingMonth?`${BUDGET_MONTHS[latestBillingMonth-1]} registra ${fMoney(billingRealized)} de ROB Real MKT frente a ${fMoney(billingBudget)} de ROB orçada (${billingAttainmentText}). ${billingIsCurrent?'Leitura parcial do mês em andamento.':billingMonthFilter?'Competência selecionada no filtro de faturamento.':'Última competência com execução preenchida.'}`:'Faturamento operacional indisponível.'},
     {title:'Rodagem D-1',level:d1Covered?(d1Below.length?'atencao':'positivo'):'indisponivel',body:d1Covered?`${d1Below.length.toLocaleString('pt-BR')} de ${d1Operational.length.toLocaleString('pt-BR')} frotas OP rodaram menos de 350 km em ${fmtDate(yesterday)}.`:`Sem leitura efetiva para ${fmtDate(yesterday)}; último dado válido em ${fmtDate(latestDataDate)}.`}
   ];
   html('execOverviewRead',overviewAlerts.map((item,index)=>`<div class="exec-alert"><div class="exec-alert-head"><div class="exec-alert-title">${index+1}. ${execEsc(item.title)}</div><span class="tag ${execTagClass(item.level)}">${execEsc(execLevelLabel(item.level))}</span></div><div class="exec-alert-body">${execEsc(item.body)}</div></div>`).join(''));
