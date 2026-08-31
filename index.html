@@ -2249,7 +2249,7 @@ tbody tr:hover td{background:var(--surface2)}
         <div id="freightTableView" style="display:none">
         <div class="tbl-card">
           <div class="tbl-head"><span class="tbl-title">Tabela de Referência</span><span class="count-tag" id="freightRateCount">0 tipos</span></div>
-          <div class="tbl-wrap"><table><thead><tr><th>Tipo</th><th>Descrição</th><th>Valor KM Máximo</th><th>KM Vazio 85%</th><th>Diária</th></tr></thead><tbody id="freightRateTable"></tbody></table></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Tipo</th><th>Descrição</th><th>Valor KM Máximo</th><th>KM Vazio 85%</th><th>Diária</th><th>Locação</th></tr></thead><tbody id="freightRateTable"></tbody></table></div>
         </div>
         </div>
       </div>
@@ -5646,8 +5646,18 @@ function processFreightRates(rows){
         description:String(row[1]||'').trim(),
         loadedRate,
         emptyRate:Number((loadedRate*.85).toFixed(2)),
-        daily:budgetNumber(row[4])||0
+        daily:budgetNumber(row[4])||0,
+        rental:0
       });
+    }
+    const rentalSection=rows.findIndex((row,index)=>index>headerIndex&&normText(row[0]).includes('LOCACAO - TIPOS DE CONJUNTO'));
+    if(rentalSection>=0){
+      for(let i=rentalSection+2;i<rows.length;i++){
+        const row=rows[i]||[],type=String(row[0]||'').trim().toUpperCase(),rental=budgetNumber(row[2]);
+        if(!type||type==='TIPO'||rental==null||rental<=0)continue;
+        const rate=freightRates.find(item=>item.type===type);
+        if(rate)rate.rental=rental;
+      }
     }
   }
   freightRates.sort((a,b)=>a.type.localeCompare(b.type,'pt-BR',{numeric:true}));
@@ -5663,7 +5673,7 @@ function processFreightRates(rows){
   setFreightView(freightViewMode);
   setFreightText('freightRateCount',`${freightRates.length} ${freightRates.length===1?'tipo':'tipos'}`);
   const table=document.getElementById('freightRateTable');
-  if(table)table.innerHTML=freightRates.length?freightRates.map(rate=>`<tr><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(rate.type)}</td><td>${budgetEsc(rate.description||'—')}</td><td>${fMoney(rate.loadedRate)}</td><td>${fMoney(rate.emptyRate)}</td><td>${fMoney(rate.daily)}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Tabela de fretes indisponível</td></tr>';
+  if(table)table.innerHTML=freightRates.length?freightRates.map(rate=>`<tr><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(rate.type)}</td><td>${budgetEsc(rate.description||'—')}</td><td>${fMoney(rate.loadedRate)}</td><td>${fMoney(rate.emptyRate)}</td><td>${fMoney(rate.daily)}</td><td style="font-family:var(--font-data);font-weight:${rate.rental?600:400}">${rate.rental?fMoney(rate.rental):'—'}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Tabela de fretes indisponível</td></tr>';
   renderFreightCalculator();
 }
 function freightLegLabel(value){
