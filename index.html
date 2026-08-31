@@ -2180,13 +2180,10 @@ tbody tr:hover td{background:var(--surface2)}
 
         <div class="grid-2">
           <div class="card"><div class="card-head"><span class="card-title" id="budgetMonthTitle">Evolução Mensal: ROB Orçada x Realizado</span><span class="count-tag" id="budgetMonthInfo">12 meses</span></div><div style="height:300px"><canvas id="budgetMonthChart"></canvas></div></div>
-          <div class="card"><div class="card-head"><span class="card-title">Concentração por Frota</span><div class="chart-nav"><span class="count-tag" id="budgetFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollBUDGETFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollBUDGETFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div><div style="height:300px"><canvas id="budgetFleetChart"></canvas></div></div>
+          <div class="card"><div class="card-head"><span class="card-title">Orçado x Executado por Frota</span><div class="chart-nav"><span class="count-tag" id="budgetFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollBUDGETFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollBUDGETFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div><div style="height:300px"><canvas id="budgetFleetChart"></canvas></div></div>
         </div>
 
-        <div class="grid-2">
-          <div class="card"><div class="card-head"><span class="card-title">Orçado x Executado MKT por Mês</span><span class="count-tag" id="budgetMktMonthInfo">jul/ago</span></div><div style="height:300px"><canvas id="budgetMktMonthChart"></canvas></div></div>
-          <div class="card"><div class="card-head"><span class="card-title">Composição do Executado MKT</span><span class="count-tag" id="budgetMktCompositionInfo">componentes informados</span></div><div class="bar-list" id="budgetMktComposition"></div></div>
-        </div>
+        <div class="card"><div class="card-head"><span class="card-title">Composição do Executado MKT</span><span class="count-tag" id="budgetMktCompositionInfo">componentes informados</span></div><div class="bar-list" id="budgetMktComposition"></div></div>
 
         <div class="grid-2">
           <div class="card"><div class="card-head"><span class="card-title">Composição por Situação</span><span class="count-tag">registros da base</span></div><div class="bar-list" id="budgetSituationList"></div></div>
@@ -2305,7 +2302,7 @@ tbody tr:hover td{background:var(--surface2)}
 
 <!-- v1778869583 -->
 <script>
-let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],freightRates=[],freightPlan=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,budgetMktMonthChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
+let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],freightRates=[],freightPlan=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
 window._aet=()=>aetData;
 window._mob=()=>mobData;
 
@@ -2504,7 +2501,7 @@ function goTo(id){
     if(id==='rpd'&&rpdData.length>0){if(rpdChart){rpdChart.destroy();rpdChart=null;}renderRPD();}
     if(id==='prog'&&progSheetsData.length>0){if(progStatusChart){progStatusChart.destroy();progStatusChart=null;}if(progClientChart){progClientChart.destroy();progClientChart=null;}if(progLoadChart){progLoadChart.destroy();progLoadChart=null;}if(progTrendChart){progTrendChart.destroy();progTrendChart=null;}renderPROG();}
     if(id==='mat'&&(matData.length>0||matSafetyData.length>0)){if(mAC){mAC.destroy();mAC=null;}renderMAT();}
-    if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}if(budgetMktMonthChart){budgetMktMonthChart.destroy();budgetMktMonthChart=null;}renderBUDGET();}
+    if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}renderBUDGET();}
     if(id==='exec'){setExecTab(execActiveTab||'overview');renderEXEC();}
     if(id==='tools')renderFreightCalculator();
   },50);
@@ -2546,7 +2543,6 @@ function toggleTheme(){
   if(progTrendChart){progTrendChart.destroy();progTrendChart=null;}
   if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}
   if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}
-  if(budgetMktMonthChart){budgetMktMonthChart.destroy();budgetMktMonthChart=null;}
   if(activeId==='aet'&&aetData.length)renderAETAll();
   if(activeId==='mob'&&mobData.length)renderMOB();
   if(activeId==='mat'&&(matData.length||matSafetyData.length))renderMAT();
@@ -3047,7 +3043,7 @@ function renderBUDGET(){
   set('budgetFleets',fleets.length.toLocaleString('pt-BR'));set('budgetFleetsSub',`${fleets.length.toLocaleString('pt-BR')} com ROB de ${allFleets.length.toLocaleString('pt-BR')} ${allFleets.length===1?'frota':'frotas'} no recorte`);
   set('budgetOccupancy',occupancy.length?(occupancy.reduce((a,b)=>a+b,0)/occupancy.length*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'N/D');
   set('budgetInefficiency',ineff.length?(ineff.reduce((a,b)=>a+b,0)/ineff.length*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'N/D');
-  renderBUDGETMonthChart(rows);renderBUDGETFleetChart(rows);renderBUDGETMkt();renderBUDGETSituation(rows);renderBUDGETRead(rows,total);
+  renderBUDGETMonthChart(rows);renderBUDGETFleetChart();renderBUDGETMkt();renderBUDGETSituation(rows);renderBUDGETRead(rows,total);
   const sortedRows=rows.slice().sort((a,b)=>a.mes-b.mes||a.frota.localeCompare(b.frota,'pt-BR',{numeric:true}));
   const tablePageSize=responsiveChartPageSize(100,40),tablePages=Math.ceil(sortedRows.length/tablePageSize)||1;
   budgetTablePage=Math.max(0,Math.min(tablePages-1,budgetTablePage));
@@ -3112,20 +3108,8 @@ function renderBUDGETMkt(){
     set('budgetMktBi','N/D');set('budgetMktBiSub',rows.length?'BI sem detalhe para este filtro':'sem recorte operacional');
     set('budgetMktGap','N/D');set('budgetMktGapSub','conciliação no consolidado');
   }
-  renderBUDGETMktMonthChart(rows);
   renderBUDGETMktComposition(rows);
   renderBUDGETMktTable(rows);
-}
-function renderBUDGETMktMonthChart(rows){
-  if(budgetMktMonthChart){budgetMktMonthChart.destroy();budgetMktMonthChart=null;}
-  const canvas=document.getElementById('budgetMktMonthChart');if(!canvas)return;
-  const byMonth=new Map();rows.forEach(row=>{const item=byMonth.get(row.mes)||{orcado:0,realizado:0};item.orcado+=row.orcado;item.realizado+=row.realizado;byMonth.set(row.mes,item);});
-  const data=[...byMonth.entries()].sort((a,b)=>a[0]-b[0]),ct=chartTheme();
-  const info=document.getElementById('budgetMktMonthInfo');if(info)info.textContent=data.length?data.map(row=>BUDGET_MONTHS[row[0]-1].slice(0,3).toLowerCase()).join('/'):'sem medição no recorte';
-  budgetMktMonthChart=new Chart(canvas,{type:'bar',plugins:[progBarValueLabelsPlugin],data:{labels:data.map(row=>BUDGET_MONTHS[row[0]-1]),datasets:[
-    {label:'Orçado MKT',data:data.map(row=>row[1].orcado),backgroundColor:ct.blueFill,borderColor:ct.blue,borderWidth:1,borderRadius:4},
-    {label:'Executado MKT',data:data.map(row=>row[1].realizado),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4}
-  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:10,formatter:value=>budgetMoneyCompact(value)},legend:{display:data.length>0,position:'bottom',labels:{color:ct.text3,boxWidth:10,boxHeight:10,padding:14,font:{family:'IBM Plex Mono',size:9}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fMoney(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
 }
 function renderBUDGETMktComposition(rows){
   const values=[['Mov. Interna',rows.reduce((s,r)=>s+r.movInterna,0)],['Frete',rows.reduce((s,r)=>s+r.frete,0)],['Diária',rows.reduce((s,r)=>s+r.diaria,0)],['Locação',rows.reduce((s,r)=>s+r.locacao,0)],['KM Vazio Cobrado',rows.reduce((s,r)=>s+r.kmVazio,0)]].filter(row=>row[1]>0).sort((a,b)=>b[1]-a[1]);
@@ -3142,15 +3126,24 @@ function renderBUDGETMktTable(rows){
 }
 function scrollBUDGETMktTable(dir){const rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered()),pageSize=responsiveChartPageSize(50,25),pages=Math.ceil(rows.length/pageSize)||1;budgetMktTablePage=Math.max(0,Math.min(pages-1,budgetMktTablePage+dir));renderBUDGETMktTable(rows);}
 function budgetFleetTotals(rows){const map=new Map();rows.forEach(row=>{if(row.rob>0)map.set(row.frota,(map.get(row.frota)||0)+row.rob);});return [...map.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR',{numeric:true}));}
-function renderBUDGETFleetChart(rows){
+function budgetFleetComparison(){
+  const map=new Map(),rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered());
+  rows.forEach(row=>{const key=budgetKey(row.frota),item=map.get(key)||{frota:row.frota,orcado:0,realizado:0,months:new Set()};item.orcado+=row.orcado||0;item.realizado+=row.realizado||0;item.months.add(row.mes);map.set(key,item);});
+  return[...map.values()].sort((a,b)=>b.realizado-a.realizado||b.orcado-a.orcado||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
+}
+function renderBUDGETFleetChart(){
   if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}
   const canvas=document.getElementById('budgetFleetChart');if(!canvas)return;
-  const totals=budgetFleetTotals(rows),pageSize=responsiveChartPageSize(10,5),pages=Math.ceil(totals.length/pageSize)||1;
+  const totals=budgetFleetComparison(),pageSize=responsiveChartPageSize(8,4),pages=Math.ceil(totals.length/pageSize)||1;
   budgetFleetPage=Math.max(0,Math.min(pages-1,budgetFleetPage));const slice=totals.slice(budgetFleetPage*pageSize,(budgetFleetPage+1)*pageSize),ct=chartTheme();
-  const info=document.getElementById('budgetFleetInfo');if(info)info.textContent=totals.length?`${budgetFleetPage+1}/${pages} · ${totals.length} frotas`:'0 frotas';
-  budgetFleetChart=new Chart(canvas,{type:'bar',plugins:[progBarValueLabelsPlugin],data:{labels:slice.map(row=>row[0]),datasets:[{label:'ROB Orçada',data:slice.map(row=>row[1]),backgroundColor:dark?'rgba(70,193,139,.82)':'rgba(24,153,101,.82)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:10,formatter:value=>budgetMoneyCompact(value)},legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fMoney(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
+  const months=[...new Set(totals.flatMap(row=>[...row.months]))].sort((a,b)=>a-b).map(month=>BUDGET_MONTHS[month-1].slice(0,3).toLowerCase()).join('/');
+  const info=document.getElementById('budgetFleetInfo');if(info)info.textContent=totals.length?`${budgetFleetPage+1}/${pages} · ${totals.length} frotas · ${months}`:'sem realizado no recorte';
+  budgetFleetChart=new Chart(canvas,{type:'bar',plugins:[progBarValueLabelsPlugin],data:{labels:slice.map(row=>row.frota),datasets:[
+    {label:'ROB Orçada MKT',data:slice.map(row=>row.orcado),backgroundColor:ct.blueFill,borderColor:ct.blue,borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84},
+    {label:'Executado MKT',data:slice.map(row=>row.realizado),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84}
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:9,formatter:value=>value?budgetMoneyCompact(value):''},legend:{display:totals.length>0,position:'bottom',labels:{color:ct.text3,boxWidth:10,boxHeight:10,padding:14,font:{family:'IBM Plex Mono',size:9}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fMoney(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
 }
-function scrollBUDGETFleet(dir){const totals=budgetFleetTotals(getBUDGETFiltered()),pageSize=responsiveChartPageSize(10,5),pages=Math.ceil(totals.length/pageSize)||1;budgetFleetPage=Math.max(0,Math.min(pages-1,budgetFleetPage+dir));renderBUDGETFleetChart(getBUDGETFiltered());}
+function scrollBUDGETFleet(dir){const totals=budgetFleetComparison(),pageSize=responsiveChartPageSize(8,4),pages=Math.ceil(totals.length/pageSize)||1;budgetFleetPage=Math.max(0,Math.min(pages-1,budgetFleetPage+dir));renderBUDGETFleetChart();}
 function scrollBUDGETTable(dir){const rows=getBUDGETFiltered(),pageSize=responsiveChartPageSize(100,40),pages=Math.ceil(rows.length/pageSize)||1;budgetTablePage=Math.max(0,Math.min(pages-1,budgetTablePage+dir));renderBUDGET();}
 function renderBUDGETSituation(rows){
   const map=new Map();rows.forEach(row=>{const key=budgetSituationLabel(row.situacao),item=map.get(key)||{count:0,rob:0};item.count++;item.rob+=row.rob;map.set(key,item);});
