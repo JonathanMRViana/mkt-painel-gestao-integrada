@@ -127,6 +127,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .topbar-right{display:flex;align-items:center;gap:8px}
 .refresh-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;font-family:var(--font-ui);cursor:pointer;transition:all .15s}
 .refresh-btn:hover{border-color:var(--border2);color:var(--text);background:var(--surface2)}
+.refresh-btn.is-reloading{pointer-events:none;opacity:.75}
+.refresh-btn.is-reloading svg{animation:refresh-spin .7s linear infinite}
+@keyframes refresh-spin{to{transform:rotate(360deg)}}
 .topbar .refresh-btn{border-color:var(--sidebar-border);color:var(--sidebar-text);background:rgba(255,255,255,.04)}
 .topbar .refresh-btn:hover{border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)}
 .topbar #updTxt{color:var(--sidebar-muted)!important}
@@ -947,7 +950,7 @@ tbody tr:hover td{background:var(--surface2)}
         <div class="status-dot"></div>
         <span style="font-size:11px;color:var(--text3);font-family:var(--font-data)" id="updTxt">—</span>
       </div>
-      <button class="refresh-btn" onclick="loadAll()">
+      <button class="refresh-btn" id="pageRefreshBtn" onclick="reloadDashboardPage(this)">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
         Atualizar
       </button>
@@ -2897,6 +2900,17 @@ async function loadAll(){
   try{renderEXEC();}catch(e){console.error('renderEXEC error:',e.message);}
   requestAnimationFrame(refreshTableScrollbars);
   document.getElementById('updTxt').textContent=new Date().toLocaleTimeString('pt-BR');
+}
+
+function reloadDashboardPage(button){
+  const refreshButton=button||document.getElementById('pageRefreshBtn');
+  if(refreshButton){
+    refreshButton.classList.add('is-reloading');
+    refreshButton.setAttribute('aria-busy','true');
+  }
+  const status=document.getElementById('updTxt');
+  if(status)status.textContent='recarregando...';
+  setTimeout(()=>window.location.reload(),80);
 }
 
 const BUDGET_MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
