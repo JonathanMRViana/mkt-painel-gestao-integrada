@@ -243,6 +243,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-heat-s{font-size:11px;color:var(--text3);font-family:var(--font-data);margin-top:7px;line-height:1.4}
 .exec-kpis{margin-top:0}
 .exec-kpis.exec-five{grid-template-columns:repeat(5,minmax(0,1fr))}
+.exec-kpis.exec-six{grid-template-columns:repeat(6,minmax(0,1fr))}
 .exec-card{padding:20px 20px 18px}
 .exec-card .card-head{margin-bottom:14px}
 .exec-card .count-tag{background:var(--surface2)}
@@ -309,9 +310,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 #panel-exec .kpi-sub{min-height:30px;line-height:1.4}
 #panel-exec .tbl-wrap table{table-layout:fixed}
 #panel-exec .tbl-wrap th:nth-child(1),#panel-exec .tbl-wrap td:nth-child(1){width:84px}
-@media(max-width:1350px){.exec-kpis.exec-five{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1350px){.exec-kpis.exec-five,.exec-kpis.exec-six{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:1100px){.exec-overview-grid,.exec-dre-grid{grid-template-columns:1fr}.exec-heat-grid{grid-template-columns:1fr}.exec-inef-grid{grid-template-columns:1fr}}
-@media(max-width:768px){.exec-kpis.exec-five{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:768px){.exec-kpis.exec-five,.exec-kpis.exec-six{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:768px){.exec-report-toolbar{align-items:stretch;flex-direction:column}.exec-report-actions{display:grid;grid-template-columns:1fr 1fr}.exec-export-btn{width:100%}.exec-report-toast{right:16px;bottom:16px}}
 @media(max-width:768px){.exec-dre-line{grid-template-columns:1fr 1fr;gap:10px}.exec-dre-line>div:first-child{grid-column:1/-1}.exec-dre-line-value{text-align:left}.exec-dre-table{min-width:780px}}
 #panel-exec .tbl-wrap th:nth-child(2),#panel-exec .tbl-wrap td:nth-child(2){width:110px}
@@ -641,7 +642,7 @@ tbody tr:hover td{background:var(--surface2)}
   .nav-item.active::before{display:none}
   .main-wrap,.main-wrap.col{margin-left:56px;width:calc(100% - 56px);max-width:calc(100% - 56px);min-width:0;flex:0 0 calc(100% - 56px);overflow:visible}
   .ambient-bg,.main-wrap.col .ambient-bg{left:56px}
-  .kpi-row,.exec-kpis.exec-five{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
+  .kpi-row,.exec-kpis.exec-five,.exec-kpis.exec-six{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
   .grid-2,.pat-compare-grid,.exec-overview-grid,.exec-heat-grid,.exec-inef-grid{grid-template-columns:1fr!important}
   .kv{grid-template-columns:1fr!important}
   #panel-exec .bar-lbl{width:116px}
@@ -2161,21 +2162,13 @@ tbody tr:hover td{background:var(--surface2)}
           <button class="clear-filters-btn" onclick="clearBUDGETFilters()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Limpar</button>
         </div>
 
-        <div class="kpi-row exec-kpis exec-five">
+        <div class="kpi-row exec-kpis exec-six">
           <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada</div><div class="kpi-value" id="budgetTotal">R$ 0</div><div class="kpi-sub" id="budgetTotalSub">recorte selecionado</div></div>
+          <div class="kpi c-teal"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="budgetMktAttainment">N/D</div><div class="kpi-sub" id="budgetMktAttainmentSub">executado sobre orçado</div></div>
           <div class="kpi c-green"><div class="kpi-stripe"></div><div class="kpi-label">Média Mensal</div><div class="kpi-value" id="budgetMonthlyAvg">R$ 0</div><div class="kpi-sub" id="budgetMonthlyAvgSub">meses selecionados</div></div>
           <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Frotas com ROB</div><div class="kpi-value" id="budgetFleets">0</div><div class="kpi-sub" id="budgetFleetsSub">frotas únicas</div></div>
           <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Ocupação Orçada</div><div class="kpi-value" id="budgetOccupancy">0%</div><div class="kpi-sub">média das premissas</div></div>
           <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Ineficiência Orçada</div><div class="kpi-value" id="budgetInefficiency">0%</div><div class="kpi-sub">média total das premissas</div></div>
-        </div>
-
-        <div class="card-head" style="margin-top:6px"><span class="card-title">Orçado x Executado MKT</span><span class="count-tag">medição disponível em jul/ago</span></div>
-        <div class="kpi-row exec-kpis exec-five" style="margin-top:0">
-          <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">Orçado MKT</div><div class="kpi-value" id="budgetMktBudget">N/D</div><div class="kpi-sub" id="budgetMktBudgetSub">julho e agosto</div></div>
-          <div class="kpi c-green"><div class="kpi-stripe"></div><div class="kpi-label">Executado MKT</div><div class="kpi-value" id="budgetMktActual">N/D</div><div class="kpi-sub" id="budgetMktActualSub">prévia operacional</div></div>
-          <div class="kpi c-teal"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="budgetMktAttainment">N/D</div><div class="kpi-sub" id="budgetMktAttainmentSub">executado ÷ orçado</div></div>
-          <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Realizado Contábil</div><div class="kpi-value" id="budgetMktBi">N/D</div><div class="kpi-sub" id="budgetMktBiSub">BI oficial</div></div>
-          <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Diferença MKT x BI</div><div class="kpi-value" id="budgetMktGap">N/D</div><div class="kpi-sub" id="budgetMktGapSub">conciliação das fontes</div></div>
         </div>
 
         <div class="grid-2">
@@ -3089,24 +3082,13 @@ function renderBUDGETMkt(){
   const orcado=rows.reduce((sum,row)=>sum+row.orcado,0),executado=rows.reduce((sum,row)=>sum+row.realizado,0),atingimento=orcado>0?executado/orcado*100:null;
   const months=[...new Set(rows.map(row=>row.mes))].sort((a,b)=>a-b),monthLabel=months.map(m=>BUDGET_MONTHS[m-1].slice(0,3).toLowerCase()).join('/');
   if(rows.length){
-    set('budgetMktBudget',fMoney(orcado));set('budgetMktBudgetSub',`${rows.length.toLocaleString('pt-BR')} frotas-mês · ${monthLabel}`);
-    set('budgetMktActual',fMoney(executado));set('budgetMktActualSub','prévia operacional por frota');
-    set('budgetMktAttainment',atingimento==null?'N/D':atingimento.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%');set('budgetMktAttainmentSub','executado ÷ orçado MKT');
+    const executedFleets=new Set(rows.filter(row=>row.realizado>0).map(row=>budgetKey(row.frota))).size;
+    set('budgetMktAttainment',atingimento==null?'N/D':atingimento.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%');
+    set('budgetMktAttainmentSub',`${budgetMoneyCompact(executado)} de ${budgetMoneyCompact(orcado)} · ${monthLabel}`);
+    const fleetSub=document.getElementById('budgetFleetsSub');
+    if(fleetSub)fleetSub.textContent+=` · ${executedFleets.toLocaleString('pt-BR')} executadas MKT`;
   }else{
-    set('budgetMktBudget','N/D');set('budgetMktBudgetSub','disponível somente em jul/ago');
-    set('budgetMktActual','N/D');set('budgetMktActualSub','sem medição no recorte');
-    set('budgetMktAttainment','N/D');set('budgetMktAttainmentSub','sem base comparável');
-  }
-  const canUseBi=rows.length&&budgetResultComparable()&&resultData.length;
-  const resultMap=new Map(resultData.map(row=>[row.mes,row.realizado]));
-  const biActual=canUseBi?months.reduce((sum,month)=>sum+(resultMap.get(month)||0),0):null;
-  if(biActual!=null){
-    const gap=executado-biActual;
-    set('budgetMktBi',fMoney(biActual));set('budgetMktBiSub',`${monthLabel} · fonte contábil oficial`);
-    set('budgetMktGap',fMoney(Math.abs(gap)));set('budgetMktGapSub',gap===0?'fontes conciliadas':`MKT ${gap>0?'acima':'abaixo'} do BI`);
-  }else{
-    set('budgetMktBi','N/D');set('budgetMktBiSub',rows.length?'BI sem detalhe para este filtro':'sem recorte operacional');
-    set('budgetMktGap','N/D');set('budgetMktGapSub','conciliação no consolidado');
+    set('budgetMktAttainment','N/D');set('budgetMktAttainmentSub','sem medição comparável no recorte');
   }
   renderBUDGETMktComposition(rows);
   renderBUDGETMktTable(rows);
