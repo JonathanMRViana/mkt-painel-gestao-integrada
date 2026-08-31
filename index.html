@@ -2178,11 +2178,6 @@ tbody tr:hover td{background:var(--surface2)}
 
         <div class="card"><div class="card-head"><span class="card-title">Composição do Executado MKT</span><span class="count-tag" id="budgetMktCompositionInfo">componentes informados</span></div><div class="bar-list" id="budgetMktComposition"></div></div>
 
-        <div class="grid-2">
-          <div class="card"><div class="card-head"><span class="card-title">Composição por Situação</span><span class="count-tag">registros da base</span></div><div class="bar-list" id="budgetSituationList"></div></div>
-          <div class="card"><div class="card-head"><span class="card-title">Leitura Gerencial</span><span class="count-tag">orçamento, não realizado</span></div><div class="exec-body-copy" id="budgetManagementRead"></div></div>
-        </div>
-
         <div class="tbl-card">
           <div class="tbl-head"><span class="tbl-title">Detalhamento do Orçamento</span><div class="chart-nav"><span class="count-tag" id="budgetCount">0 registros</span><button class="chart-arrow" onclick="scrollBUDGETTable(-1)" title="Página anterior" aria-label="Página anterior do detalhamento">‹</button><button class="chart-arrow" onclick="scrollBUDGETTable(1)" title="Próxima página" aria-label="Próxima página do detalhamento">›</button></div></div>
           <div class="filter-bar-row">
@@ -2923,6 +2918,10 @@ function budgetHeaderIndex(headers,aliases,fallback){
   for(const alias of aliases){const key=budgetKey(alias);const index=headers.findIndex(h=>h&&(h===key||h.includes(key)||key.includes(h)));if(index>=0)return index;}
   return fallback;
 }
+function budgetIsImplement(...values){
+  const key=budgetKey(values.filter(Boolean).join(' '));
+  return['IMPLEMENTO','CARRETA','PRANCHA','DOLLY','REBOQUE','SEMIRREBOQUE'].some(token=>key.includes(token));
+}
 function processBUDGET(rows){
   let headerIndex=rows.findIndex(row=>{const keys=row.map(budgetKey);return keys.includes('MES')&&keys.includes('FROTA')&&keys.some(k=>k.includes('ROBORCADA'));});
   if(headerIndex<0)headerIndex=0;
@@ -2934,7 +2933,8 @@ function processBUDGET(rows){
     const mes=budgetMonthNumber(row[ix.mes]);
     const frota=budgetText(row[ix.frota]);
     if(!mes||!frota)return null;
-    return {rowIndex:rowIndex+headerIndex+2,mes,frota,coligada:budgetText(row[ix.coligada]),tipo:budgetText(row[ix.tipo]),situacao:budgetText(row[ix.situacao]),unidade:budgetText(row[ix.unidade]),conjunto:budgetText(row[ix.conjunto]),contrato:budgetText(row[ix.contrato]),categoria:budgetText(row[ix.categoria]),capacidade:budgetText(row[ix.capacidade]),classe:budgetText(row[ix.classe]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),rob:budgetNumber(row[ix.rob])||0};
+    const tipo=budgetText(row[ix.tipo]),categoria=budgetText(row[ix.categoria]),classe=budgetText(row[ix.classe]);
+    return {rowIndex:rowIndex+headerIndex+2,mes,frota,coligada:budgetText(row[ix.coligada]),tipo,situacao:budgetText(row[ix.situacao]),unidade:budgetText(row[ix.unidade]),conjunto:budgetText(row[ix.conjunto]),contrato:budgetText(row[ix.contrato]),categoria,capacidade:budgetText(row[ix.capacidade]),classe,regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),rob:budgetIsImplement(tipo,categoria,classe)?0:budgetNumber(row[ix.rob])||0};
   }).filter(Boolean);
   refreshBUDGETFilters();
   const load=document.getElementById('budgetLoad'),body=document.getElementById('budgetBody');
@@ -2956,7 +2956,7 @@ function processRESULT(rows){
 function fleetBillingType(category){
   const key=budgetKey(category);
   if(key.includes('CAVALO'))return'CAVALO';
-  if(key.includes('CARRETA')||key.includes('PRANCHA')||key.includes('IMPLEMENTO'))return'IMPLEMENTO';
+  if(budgetIsImplement(category))return'IMPLEMENTO';
   if(key.includes('ESCOLTA'))return'ESCOLTA';
   return budgetText(category);
 }
@@ -2969,8 +2969,8 @@ function processFLEETBILLING(rows){
   fleetBillingData=rows.slice(headerIndex+1).map((row,rowIndex)=>{
     const mes=budgetMonthNumber(row[ix.mes]),frota=budgetText(row[ix.frota]);
     if(![7,8].includes(mes)||!frota)return null;
-    const categoria=budgetText(row[ix.categoria]);
-    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo:fleetBillingType(categoria),unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:budgetNumber(row[ix.orcado])||0,realizado:budgetNumber(row[ix.realizado])||0,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao:budgetNumber(row[ix.locacao])||0,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):''};
+    const categoria=budgetText(row[ix.categoria]),tipo=fleetBillingType(categoria),locacao=budgetNumber(row[ix.locacao])||0,realizado=budgetNumber(row[ix.realizado])||0;
+    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:tipo==='IMPLEMENTO'?0:budgetNumber(row[ix.orcado])||0,realizado:realizado||(tipo==='IMPLEMENTO'?locacao:0),movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):''};
   }).filter(Boolean);
   if(budgetData.length)renderBUDGET();
 }
@@ -3036,7 +3036,7 @@ function renderBUDGET(){
   set('budgetFleets',fleets.length.toLocaleString('pt-BR'));set('budgetFleetsSub',`${fleets.length.toLocaleString('pt-BR')} com ROB de ${allFleets.length.toLocaleString('pt-BR')} ${allFleets.length===1?'frota':'frotas'} no recorte`);
   set('budgetOccupancy',occupancy.length?(occupancy.reduce((a,b)=>a+b,0)/occupancy.length*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'N/D');
   set('budgetInefficiency',ineff.length?(ineff.reduce((a,b)=>a+b,0)/ineff.length*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'N/D');
-  renderBUDGETMonthChart(rows);renderBUDGETFleetChart();renderBUDGETMkt();renderBUDGETSituation(rows);renderBUDGETRead(rows,total);
+  renderBUDGETMonthChart(rows);renderBUDGETFleetChart();renderBUDGETMkt();
   const sortedRows=rows.slice().sort((a,b)=>a.mes-b.mes||a.frota.localeCompare(b.frota,'pt-BR',{numeric:true}));
   const tablePageSize=responsiveChartPageSize(100,40),tablePages=Math.ceil(sortedRows.length/tablePageSize)||1;
   budgetTablePage=Math.max(0,Math.min(tablePages-1,budgetTablePage));
@@ -3107,11 +3107,10 @@ function renderBUDGETMktTable(rows){
   if(table)table.innerHTML=slice.length?slice.map(row=>{const variance=row.realizado-row.orcado,attainment=row.orcado>0?row.realizado/row.orcado*100:null;return`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.conjunto||'—')}</td><td>${budgetEsc(budgetSituationLabel(row.situacao))}</td><td>${budgetEsc(row.categoria||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600;color:var(--green)">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data);color:${variance>=0?'var(--green)':'var(--red)'}">${variance<0?'−':''}${fMoney(Math.abs(variance))}</td><td style="font-family:var(--font-data);font-weight:600">${attainment==null?'N/D':attainment.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.movInterna?fMoney(row.movInterna):'—'}</td><td>${row.frete?fMoney(row.frete):'—'}</td><td>${row.diaria?fMoney(row.diaria):'—'}</td><td>${row.locacao?fMoney(row.locacao):'—'}</td><td>${row.kmVazio?fMoney(row.kmVazio):'—'}</td><td title="${budgetEsc(row.observacao)}">${budgetEsc(row.observacao||'—')}</td></tr>`;}).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Sem medição operacional para o recorte. A fonte está disponível somente em julho e agosto.</td></tr>';
 }
 function scrollBUDGETMktTable(dir){const rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered()),pageSize=responsiveChartPageSize(50,25),pages=Math.ceil(rows.length/pageSize)||1;budgetMktTablePage=Math.max(0,Math.min(pages-1,budgetMktTablePage+dir));renderBUDGETMktTable(rows);}
-function budgetFleetTotals(rows){const map=new Map();rows.forEach(row=>{if(row.rob>0)map.set(row.frota,(map.get(row.frota)||0)+row.rob);});return [...map.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR',{numeric:true}));}
 function budgetFleetComparison(){
   const map=new Map(),rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered());
   rows.forEach(row=>{const key=budgetKey(row.frota),item=map.get(key)||{frota:row.frota,orcado:0,realizado:0,months:new Set()};item.orcado+=row.orcado||0;item.realizado+=row.realizado||0;item.months.add(row.mes);map.set(key,item);});
-  return[...map.values()].sort((a,b)=>b.realizado-a.realizado||b.orcado-a.orcado||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
+  return[...map.values()].filter(row=>row.orcado>0||row.realizado>0).sort((a,b)=>b.realizado-a.realizado||b.orcado-a.orcado||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
 }
 function renderBUDGETFleetChart(){
   if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}
@@ -3127,39 +3126,6 @@ function renderBUDGETFleetChart(){
 }
 function scrollBUDGETFleet(dir){const totals=budgetFleetComparison(),pageSize=responsiveChartPageSize(8,4),pages=Math.ceil(totals.length/pageSize)||1;budgetFleetPage=Math.max(0,Math.min(pages-1,budgetFleetPage+dir));renderBUDGETFleetChart();}
 function scrollBUDGETTable(dir){const rows=getBUDGETFiltered(),pageSize=responsiveChartPageSize(100,40),pages=Math.ceil(rows.length/pageSize)||1;budgetTablePage=Math.max(0,Math.min(pages-1,budgetTablePage+dir));renderBUDGET();}
-function renderBUDGETSituation(rows){
-  const map=new Map();rows.forEach(row=>{const key=budgetSituationLabel(row.situacao),item=map.get(key)||{count:0,rob:0};item.count++;item.rob+=row.rob;map.set(key,item);});
-  const data=[...map.entries()].sort((a,b)=>b[1].count-a[1].count),max=Math.max(1,...data.map(row=>row[1].count));
-  const el=document.getElementById('budgetSituationList');if(!el)return;
-  el.innerHTML=data.length?data.map(([label,item])=>`<div class="bar-row"><div class="bar-lbl" title="${budgetEsc(label)}">${budgetEsc(label)}</div><div class="bar-track"><div class="bar-fill" style="width:${item.count/max*100}%;background:var(--makro-blue)"></div></div><div class="bar-num" style="width:126px">${item.count.toLocaleString('pt-BR')} · ${budgetMoneyCompact(item.rob)}</div></div>`).join(''):'<div style="color:var(--text3);font-size:12px;padding:12px 0">Sem dados no recorte</div>';
-}
-function renderBUDGETRead(rows,total){
-  const monthMap=new Map();rows.forEach(row=>monthMap.set(row.mes,(monthMap.get(row.mes)||0)+row.rob));
-  const peak=[...monthMap.entries()].sort((a,b)=>b[1]-a[1])[0];const fleets=budgetFleetTotals(rows),top=fleets[0];
-  const zeroRows=rows.filter(row=>row.rob<=0).length;const duplicateKeys=new Set(),duplicates=[];
-  rows.forEach(row=>{const key=row.mes+'|'+budgetKey(row.frota);if(duplicateKeys.has(key))duplicates.push(key);else duplicateKeys.add(key);});
-  const el=document.getElementById('budgetManagementRead');if(!el)return;
-  if(!rows.length){el.textContent='Nenhum registro atende aos filtros selecionados.';return;}
-  const topShare=top&&total>0?top[1]/total*100:0;
-  let resultText='';
-  if(resultData.length&&budgetResultComparable()){
-    const latest=Math.max(0,...resultData.filter(row=>row.realizado!==0).map(row=>row.mes));
-    const selectedMonths=new Set(monthMap.keys()),resultRows=resultData.filter(row=>selectedMonths.has(row.mes));
-    const closedRows=resultRows.filter(row=>row.mes<=latest),realized=closedRows.reduce((sum,row)=>sum+row.realizado,0),biBudgetYtd=closedRows.reduce((sum,row)=>sum+row.orcado,0);
-    const latestSelected=Math.max(0,...closedRows.map(row=>row.mes));
-    const biBudgetSelected=resultRows.reduce((sum,row)=>sum+row.orcado,0),reconciliation=total-biBudgetSelected;
-    const attainment=biBudgetYtd>0?realized/biBudgetYtd*100:null;
-    const realizedRead=closedRows.length?`No BI contábil, o realizado acumulado até <strong>${BUDGET_MONTHS[latestSelected-1]}</strong> é <strong>${fMoney(realized)}</strong>${attainment==null?'':`, equivalente a <strong>${attainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%</strong> do Orçado BI no mesmo período`}.`:'O período selecionado ainda não possui realizado contábil disponível no BI.';
-    resultText=`<br><br>${realizedRead} ${Math.abs(reconciliation)>=.01?`A base detalhada e o Orçado BI divergem em <strong>${fMoney(Math.abs(reconciliation))}</strong> no recorte e precisam ser conciliados antes do fechamento.`:'As duas fontes orçadas estão conciliadas no recorte.'}`;
-  }else if(resultData.length)resultText='<br><br>O realizado contábil não é exibido neste filtro porque a extração atual do BI possui apenas o total mensal da unidade, sem detalhamento por frota, conjunto ou contrato.';
-  const mktRows=aggregateFLEETBILLING(getFLEETBILLINGFiltered());
-  if(mktRows.length){
-    const mktBudget=mktRows.reduce((sum,row)=>sum+row.orcado,0),mktActual=mktRows.reduce((sum,row)=>sum+row.realizado,0),mktAttainment=mktBudget>0?mktActual/mktBudget*100:null,mktMonths=[...new Set(mktRows.map(row=>row.mes))].sort((a,b)=>a-b).map(month=>BUDGET_MONTHS[month-1]).join(' e ');
-    resultText+=`<br><br>Na medição operacional da MKT para <strong>${mktMonths}</strong>, o executado por frota é <strong>${fMoney(mktActual)}</strong> sobre <strong>${fMoney(mktBudget)}</strong> orçados${mktAttainment==null?'':`, com atingimento de <strong>${mktAttainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%</strong>`}. Essa série não é projetada para os demais meses.`;
-  }
-  el.innerHTML=`A ROB orçada no recorte é <strong>${fMoney(total)}</strong>. ${peak?`O maior mês é <strong>${BUDGET_MONTHS[peak[0]-1]}</strong>, com ${fMoney(peak[1])}.`:''} ${top?`A frota <strong>${budgetEsc(top[0])}</strong> concentra ${topShare.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}% do valor filtrado.`:''}${resultText}<br><br>${zeroRows.toLocaleString('pt-BR')} registros não possuem ROB própria. Isso não significa necessariamente falta de orçamento: implementos podem estar associados à receita do equipamento ou conjunto. ${duplicates.length?'Foram identificadas chaves repetidas de mês e frota e a base deve ser revisada.':'Não há duplicidade de mês e frota no recorte.'}`;
-}
-
 function progTxt(v){return String(v==null?'':v).trim();}
 function progKey(v){return progTxt(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
 function progEsc(v){return String(v==null?'':v).replace(/[&<>'"]/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]);});}
