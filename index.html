@@ -2379,7 +2379,7 @@ const panelPremises={
   budget:[
     ['Objetivo','Consolidar orçamento, prévia de faturamento e resultado contábil da unidade, com leitura total e por cavalo.'],
     ['Situação atual','A ROB orçada detalhada e o resultado mensal do BI estão conectados. O faturamento por cavalo permanece indisponível até a publicação da base com esse nível de detalhe.'],
-    ['Origem dos dados','A ROB detalhada vem do orçamento anual publicado no Google Sheets. O Executado MKT por frota está disponível somente para julho e agosto. O Realizado Contábil vem da extração mensal do BI e permanece como fonte oficial.'],
+    ['Origem dos dados','A ROB detalhada vem do orçamento anual publicado no Google Sheets. O Executado MKT por frota incorpora automaticamente os meses que possuam execução preenchida. O Realizado Contábil vem da extração mensal do BI e permanece como fonte oficial.'],
     ['ROB orçada','Representa receita operacional bruta planejada. Não é faturamento realizado, valor cobrado ou receita contábil reconhecida.'],
     ['Frotas com ROB','A contagem usa frotas únicas com valor orçado maior que zero, evitando multiplicar a mesma frota pelos doze meses.'],
     ['Ocupação e ineficiência','São médias simples das premissas preenchidas nas linhas filtradas. A ineficiência total soma logística, comercial, operacional e mecânica antes da média.'],
@@ -2964,9 +2964,11 @@ function processFLEETBILLING(rows){
   const headers=rows[headerIndex].map(budgetKey);
   const col=(aliases,fallback=-1)=>budgetHeaderIndex(headers,aliases,fallback);
   const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:col(['VALOR COBRADO KM VAZIO']),observacao:headers.findIndex((h,i)=>h==='OBSERVACAO'&&i>col(['VALOR COBRADO KM VAZIO']))};
-  fleetBillingData=rows.slice(headerIndex+1).map((row,rowIndex)=>{
+  const sourceRows=rows.slice(headerIndex+1),executionFields=[ix.realizado,ix.movInterna,ix.frete,ix.diaria,ix.locacao,ix.kmVazio].filter(index=>index>=0);
+  const activeMonths=new Set(sourceRows.filter(row=>budgetMonthNumber(row[ix.mes])>=7&&executionFields.some(index=>Math.abs(budgetNumber(row[index])||0)>.001)).map(row=>budgetMonthNumber(row[ix.mes])));
+  fleetBillingData=sourceRows.map((row,rowIndex)=>{
     const mes=budgetMonthNumber(row[ix.mes]),frota=budgetText(row[ix.frota]);
-    if(![7,8].includes(mes)||!frota)return null;
+    if(!activeMonths.has(mes)||!frota)return null;
     const categoria=budgetText(row[ix.categoria]),tipo=fleetBillingType(categoria),locacao=budgetNumber(row[ix.locacao])||0,realizado=budgetNumber(row[ix.realizado])||0;
     return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:tipo==='IMPLEMENTO'?0:budgetNumber(row[ix.orcado])||0,realizado:realizado||(tipo==='IMPLEMENTO'?locacao:0),movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):''};
   }).filter(Boolean);
@@ -3078,11 +3080,10 @@ function aggregateFLEETBILLING(rows){
 function renderBUDGETMkt(){
   const rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered()),set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   const orcado=rows.reduce((sum,row)=>sum+row.orcado,0),executado=rows.reduce((sum,row)=>sum+row.realizado,0),atingimento=orcado>0?executado/orcado*100:null;
-  const months=[...new Set(rows.map(row=>row.mes))].sort((a,b)=>a-b),monthLabel=months.map(m=>BUDGET_MONTHS[m-1].slice(0,3).toLowerCase()).join('/');
   if(rows.length){
     const executedFleets=new Set(rows.filter(row=>row.realizado>0).map(row=>budgetKey(row.frota))).size;
     set('budgetMktAttainment',atingimento==null?'N/D':atingimento.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%');
-    set('budgetMktAttainmentSub',`${budgetMoneyCompact(executado)} de ${budgetMoneyCompact(orcado)} · ${monthLabel}`);
+    set('budgetMktAttainmentSub',`${budgetMoneyCompact(executado)} de ${budgetMoneyCompact(orcado)}`);
     const fleetSub=document.getElementById('budgetFleetsSub');
     if(fleetSub)fleetSub.textContent+=` · ${executedFleets.toLocaleString('pt-BR')} executadas MKT`;
   }else{
@@ -3095,7 +3096,7 @@ function renderBUDGETMktTable(rows){
   budgetMktTablePage=Math.max(0,Math.min(pages-1,budgetMktTablePage));
   const slice=sorted.slice(budgetMktTablePage*pageSize,(budgetMktTablePage+1)*pageSize),start=sorted.length?budgetMktTablePage*pageSize+1:0,end=Math.min((budgetMktTablePage+1)*pageSize,sorted.length),cnt=document.getElementById('budgetMktCount'),table=document.getElementById('budgetMktTable');
   if(cnt)cnt.textContent=sorted.length?`${start}-${end} de ${sorted.length.toLocaleString('pt-BR')}`:'0 registros';
-  if(table)table.innerHTML=slice.length?slice.map(row=>{const variance=row.realizado-row.orcado,attainment=row.orcado>0?row.realizado/row.orcado*100:null;return`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.conjunto||'—')}</td><td>${budgetEsc(budgetSituationLabel(row.situacao))}</td><td>${budgetEsc(row.categoria||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600;color:var(--green)">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data);color:${variance>=0?'var(--green)':'var(--red)'}">${variance<0?'−':''}${fMoney(Math.abs(variance))}</td><td style="font-family:var(--font-data);font-weight:600">${attainment==null?'N/D':attainment.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.movInterna?fMoney(row.movInterna):'—'}</td><td>${row.frete?fMoney(row.frete):'—'}</td><td>${row.diaria?fMoney(row.diaria):'—'}</td><td>${row.locacao?fMoney(row.locacao):'—'}</td><td>${row.kmVazio?fMoney(row.kmVazio):'—'}</td><td title="${budgetEsc(row.observacao)}">${budgetEsc(row.observacao||'—')}</td></tr>`;}).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Sem medição operacional para o recorte. A fonte está disponível somente em julho e agosto.</td></tr>';
+  if(table)table.innerHTML=slice.length?slice.map(row=>{const variance=row.realizado-row.orcado,attainment=row.orcado>0?row.realizado/row.orcado*100:null;return`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.conjunto||'—')}</td><td>${budgetEsc(budgetSituationLabel(row.situacao))}</td><td>${budgetEsc(row.categoria||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600;color:var(--green)">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data);color:${variance>=0?'var(--green)':'var(--red)'}">${variance<0?'−':''}${fMoney(Math.abs(variance))}</td><td style="font-family:var(--font-data);font-weight:600">${attainment==null?'N/D':attainment.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.movInterna?fMoney(row.movInterna):'—'}</td><td>${row.frete?fMoney(row.frete):'—'}</td><td>${row.diaria?fMoney(row.diaria):'—'}</td><td>${row.locacao?fMoney(row.locacao):'—'}</td><td>${row.kmVazio?fMoney(row.kmVazio):'—'}</td><td title="${budgetEsc(row.observacao)}">${budgetEsc(row.observacao||'—')}</td></tr>`;}).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Sem medição operacional para o recorte.</td></tr>';
 }
 function scrollBUDGETMktTable(dir){const rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered()),pageSize=responsiveChartPageSize(50,25),pages=Math.ceil(rows.length/pageSize)||1;budgetMktTablePage=Math.max(0,Math.min(pages-1,budgetMktTablePage+dir));renderBUDGETMktTable(rows);}
 function budgetFleetComparison(){
@@ -3108,8 +3109,7 @@ function renderBUDGETFleetChart(){
   const canvas=document.getElementById('budgetFleetChart');if(!canvas)return;
   const totals=budgetFleetComparison(),pageSize=responsiveChartPageSize(8,4),pages=Math.ceil(totals.length/pageSize)||1;
   budgetFleetPage=Math.max(0,Math.min(pages-1,budgetFleetPage));const slice=totals.slice(budgetFleetPage*pageSize,(budgetFleetPage+1)*pageSize),ct=chartTheme();
-  const months=[...new Set(totals.flatMap(row=>[...row.months]))].sort((a,b)=>a-b).map(month=>BUDGET_MONTHS[month-1].slice(0,3).toLowerCase()).join('/');
-  const info=document.getElementById('budgetFleetInfo');if(info)info.textContent=totals.length?`${budgetFleetPage+1}/${pages} · ${totals.length} frotas · ${months}`:'sem realizado no recorte';
+  const info=document.getElementById('budgetFleetInfo');if(info)info.textContent=totals.length?`${budgetFleetPage+1}/${pages} · ${totals.length} frotas`:'sem realizado no recorte';
   budgetFleetChart=new Chart(canvas,{type:'bar',plugins:[progBarValueLabelsPlugin],data:{labels:slice.map(row=>row.frota),datasets:[
     {label:'ROB Orçada MKT',data:slice.map(row=>row.orcado),backgroundColor:ct.blueFill,borderColor:ct.blue,borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84},
     {label:'Executado MKT',data:slice.map(row=>row.realizado),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84}
