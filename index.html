@@ -286,6 +286,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-inef-value{font-family:var(--font-data);font-size:20px;color:var(--text)}
 .exec-date-value{font-size:20px!important;white-space:nowrap}
 .exec-data-table{table-layout:auto!important;min-width:760px}
+.exec-dre-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px;margin-bottom:20px}
+.exec-dre-stack{display:grid;gap:10px}
+.exec-dre-line{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.exec-dre-line:last-child{border-bottom:none}
+.exec-dre-line-label{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase}
+.exec-dre-line-sub{font:10px/1.45 var(--font-data);color:var(--text3);margin-top:4px}
+.exec-dre-line-value{text-align:right;font:600 13px var(--font-data);color:var(--text);white-space:nowrap}
+.exec-dre-line-value.negative{color:var(--red)}
+.exec-dre-line-value.positive{color:var(--green)}
+.exec-dre-note{margin-top:14px;padding:12px 14px;border-left:3px solid var(--amber);background:var(--amber-dim);color:var(--text2);font-size:11px;line-height:1.6}
+.exec-dre-table{min-width:900px}
+.exec-dre-table td:nth-child(n+2):not(:last-child),.exec-dre-table th:nth-child(n+2):not(:last-child){text-align:right}
+.exec-dre-fleets{max-width:300px;white-space:normal;color:var(--text2)}
 #panel-exec .tbl-card{padding-top:16px}
 #panel-exec .tbl-title{font-size:10px}
 #panel-exec .bar-lbl{width:144px}
@@ -296,9 +309,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 #panel-exec .tbl-wrap table{table-layout:fixed}
 #panel-exec .tbl-wrap th:nth-child(1),#panel-exec .tbl-wrap td:nth-child(1){width:84px}
 @media(max-width:1350px){.exec-kpis.exec-five{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:1100px){.exec-overview-grid{grid-template-columns:1fr}.exec-heat-grid{grid-template-columns:1fr}.exec-inef-grid{grid-template-columns:1fr}}
+@media(max-width:1100px){.exec-overview-grid,.exec-dre-grid{grid-template-columns:1fr}.exec-heat-grid{grid-template-columns:1fr}.exec-inef-grid{grid-template-columns:1fr}}
 @media(max-width:768px){.exec-kpis.exec-five{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:768px){.exec-report-toolbar{align-items:stretch;flex-direction:column}.exec-report-actions{display:grid;grid-template-columns:1fr 1fr}.exec-export-btn{width:100%}.exec-report-toast{right:16px;bottom:16px}}
+@media(max-width:768px){.exec-dre-line{grid-template-columns:1fr 1fr;gap:10px}.exec-dre-line>div:first-child{grid-column:1/-1}.exec-dre-line-value{text-align:left}.exec-dre-table{min-width:780px}}
 #panel-exec .tbl-wrap th:nth-child(2),#panel-exec .tbl-wrap td:nth-child(2){width:110px}
 #panel-exec .tbl-wrap th:nth-child(3),#panel-exec .tbl-wrap td:nth-child(3){width:140px}
 #panel-exec .tbl-wrap th:nth-child(4),#panel-exec .tbl-wrap td:nth-child(4){width:110px}
@@ -2020,6 +2034,7 @@ tbody tr:hover td{background:var(--surface2)}
           <button class="ftag" id="execTabRpd" onclick="setExecTab('rpd')">RPD</button>
           <button class="ftag" id="execTabInef" onclick="setExecTab('inef')">Ineficiências</button>
           <button class="ftag" id="execTabBilling" onclick="setExecTab('billing')">Faturamento</button>
+          <button class="ftag" id="execTabDre" onclick="setExecTab('dre')">Análise de DRE</button>
           <button class="ftag" id="execTabKm" onclick="setExecTab('km')">KM por Frota</button>
         </div>
 
@@ -2086,6 +2101,35 @@ tbody tr:hover td{background:var(--surface2)}
             <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento</div><div class="kpi-value" id="execBillAttainment">N/D</div><div class="kpi-sub">realizado ÷ orçado BI</div></div>
           </div>
           <div class="exec-awaiting"><div class="exec-awaiting-title">Resultado contábil conectado; detalhamento por cavalo em construção</div><div class="exec-awaiting-text" id="execBillingText">A visão mensal do BI já está disponível. O detalhamento do realizado por cavalo depende da próxima base.</div></div>
+        </div>
+
+        <div class="exec-tab-content" id="execContentDre">
+          <div class="kpi-row exec-kpis">
+            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Receita Bruta DRE</div><div class="kpi-value" id="execDreRevenue">R$ 1,30 mi</div><div class="kpi-sub" id="execDreRevenueSub">realizado x orçado</div></div>
+            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Combustíveis</div><div class="kpi-value" id="execDreFuel">R$ 371 mil</div><div class="kpi-sub" id="execDreFuelSub">realizado x orçado</div></div>
+            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Adicionais de Salários</div><div class="kpi-value" id="execDreSalary">R$ 57 mil</div><div class="kpi-sub" id="execDreSalarySub">realizado x orçado</div></div>
+            <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Viagens e Estadias</div><div class="kpi-value" id="execDreTravel">R$ 154 mil</div><div class="kpi-sub" id="execDreTravelSub">realizado x orçado</div></div>
+          </div>
+          <div class="exec-dre-grid">
+            <div class="card exec-card">
+              <div class="card-head"><span class="card-title">Conciliação da Receita de Julho</span><span class="count-tag">competência jul/2026</span></div>
+              <div class="exec-dre-stack" id="execDreReconciliation"></div>
+              <div class="exec-dre-note" id="execDreReconciliationNote"></div>
+            </div>
+            <div class="card exec-card">
+              <div class="card-head"><span class="card-title">Leitura Gerencial</span><span class="count-tag">DRE MKT</span></div>
+              <div class="exec-alerts" id="execDreRead"></div>
+            </div>
+          </div>
+          <div class="tbl-card" style="margin-bottom:20px">
+            <div class="tbl-head"><span class="tbl-title">Dias de Ineficiência Estratificados</span><span class="count-tag" id="execDreInefPeriod">julho/2026</span></div>
+            <div class="tbl-wrap"><table class="exec-data-table exec-dre-table"><thead><tr><th>Natureza</th><th>Frota-dias</th><th>Dias no calendário</th><th>Frotas afetadas</th><th>Participação</th><th>Frotas com maior incidência</th></tr></thead><tbody id="execDreInefTbl"></tbody></table></div>
+            <div class="exec-source-note" id="execDreInefNote"></div>
+          </div>
+          <div class="tbl-card">
+            <div class="tbl-head"><span class="tbl-title">Principais Indisponibilidades Mecânicas da Análise</span><span class="count-tag">dias acumulados informados</span></div>
+            <div class="tbl-wrap"><table class="exec-data-table"><thead><tr><th>Frota</th><th>Dias parados</th><th>Ocorrências</th><th>Cenário potencial a 85%</th><th>Falhas registradas</th></tr></thead><tbody id="execDreMechanicalTbl"></tbody></table></div>
+          </div>
         </div>
 
         <div class="exec-tab-content" id="execContentKm">
@@ -3542,6 +3586,7 @@ const EXEC_REPORT_SECTIONS=Object.freeze([
   {key:'rpd',id:'execContentRpd',label:'RPD'},
   {key:'inef',id:'execContentInef',label:'Ineficiências'},
   {key:'billing',id:'execContentBilling',label:'Faturamento'},
+  {key:'dre',id:'execContentDre',label:'Análise de DRE'},
   {key:'km',id:'execContentKm',label:'KM por Frota'}
 ]);
 let execReportToastTimer=null;
@@ -3715,6 +3760,7 @@ function setExecTab(tab){
     rpd:['execTabRpd','execContentRpd'],
     inef:['execTabInef','execContentInef'],
     billing:['execTabBilling','execContentBilling'],
+    dre:['execTabDre','execContentDre'],
     km:['execTabKm','execContentKm']
   };
   Object.entries(map).forEach(([key,ids])=>{
@@ -4098,6 +4144,101 @@ const faixa=r.km>0&&r.km<350?'Baixa rodagem':'Status crítico';
 }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Nenhum desvio crítico identificado no D-1</td></tr>');
 }
 
+const DRE_JULY_ANALYSIS=Object.freeze({
+  revenue:{actual:1297993.02,budget:2041000},fuel:{actual:371000,budget:247000},
+  salary:{actual:57000,budget:27000},travel:{actual:154000,budget:113000},
+  horses:{actual:1201460.04,budget:1340160,count:46},operationalSourceExpected:1260961.02,
+  missingRental:37032,dailyRevenue:34400
+});
+const DRE_JULY_MECHANICAL=Object.freeze([
+  {fleet:'327',days:40,occurrences:2,potential85:244800,failures:'Escape, freio motor e embreagem; inspeção, backlog e revitalização'},
+  {fleet:'618',days:31,occurrences:2,potential85:395250,failures:'Ar-condicionado e problema no motor'},
+  {fleet:'971',days:29,occurrences:1,potential85:133110,failures:'Reprovado no teste de carga'},
+  {fleet:'964',days:21,occurrences:1,potential85:96390,failures:'Pane eletrônica'},
+  {fleet:'332',days:19,occurrences:1,potential85:87210,failures:'Backlog, preventiva e itens de cabine'},
+  {fleet:'617',days:16,occurrences:1,potential85:77520,failures:'5ª roda, suspensão e farol'},
+  {fleet:'871',days:14,occurrences:1,potential85:79135,failures:'Compressor, correia, alternador, turbina e interclima'},
+  {fleet:'623',days:11,occurrences:1,potential85:89760,failures:'Sensor de óleo, arrefecimento, cabine e ar-condicionado'},
+  {fleet:'425',days:11,occurrences:1,potential85:62177.50,failures:'Elétrica, climatização, câmbio, freios e tanque'},
+  {fleet:'624',days:10,occurrences:1,potential85:61200,failures:'Perda de potência'}
+]);
+function renderDREAnalysis(meaningfulDays,waitType,set,html){
+  const dre=DRE_JULY_ANALYSIS;
+  const attainment=(actual,budget)=>budget>0?actual/budget*100:0;
+  const variance=(actual,budget)=>actual-budget;
+  const signedCompact=value=>`${value<0?'−':'+'}${budgetMoneyCompact(Math.abs(value))}`;
+  set('execDreRevenue',budgetMoneyCompact(dre.revenue.actual));
+  set('execDreRevenueSub',`${attainment(dre.revenue.actual,dre.revenue.budget).toLocaleString('pt-BR',{maximumFractionDigits:1})}% do orçado · desvio ${signedCompact(variance(dre.revenue.actual,dre.revenue.budget))}`);
+  set('execDreFuel',budgetMoneyCompact(dre.fuel.actual));
+  set('execDreFuelSub',`${attainment(dre.fuel.actual,dre.fuel.budget).toLocaleString('pt-BR',{maximumFractionDigits:1})}% do orçado · ${signedCompact(variance(dre.fuel.actual,dre.fuel.budget))}`);
+  set('execDreSalary',budgetMoneyCompact(dre.salary.actual));
+  set('execDreSalarySub',`${attainment(dre.salary.actual,dre.salary.budget).toLocaleString('pt-BR',{maximumFractionDigits:1})}% do orçado · ${signedCompact(variance(dre.salary.actual,dre.salary.budget))}`);
+  set('execDreTravel',budgetMoneyCompact(dre.travel.actual));
+  set('execDreTravelSub',`${attainment(dre.travel.actual,dre.travel.budget).toLocaleString('pt-BR',{maximumFractionDigits:1})}% do orçado · ${signedCompact(variance(dre.travel.actual,dre.travel.budget))}`);
+
+  const julyFleetRows=fleetBillingData.filter(row=>row.mes===7);
+  const operationalActual=julyFleetRows.reduce((sum,row)=>sum+(row.realizado||0),0);
+  const operationalBudget=julyFleetRows.reduce((sum,row)=>sum+(row.orcado||0),0);
+  const julyResult=resultData.find(row=>row.mes===7)||null;
+  const reconciliation=[
+    ['DRE contábil consolidada','Referência do relatório gerencial',dre.revenue.actual,dre.revenue.budget],
+    ['Fonte operacional por frota',`${julyFleetRows.length||'—'} registros medidos em julho`,operationalActual||dre.operationalSourceExpected,operationalBudget],
+    [`Recorte de ${dre.horses.count} cavalos mecânicos`,'Escopo comparável da análise',dre.horses.actual,dre.horses.budget],
+    ['BI oficial da unidade','Extração contábil conectada ao painel',julyResult?julyResult.realizado:0,julyResult?julyResult.orcado:0]
+  ];
+  html('execDreReconciliation',reconciliation.map(([label,sub,actual,budget])=>{
+    const diff=budget?actual-budget:null;
+    return `<div class="exec-dre-line"><div><div class="exec-dre-line-label">${execEsc(label)}</div><div class="exec-dre-line-sub">${execEsc(sub)}</div></div><div class="exec-dre-line-value ${diff==null?'':diff>=0?'positive':'negative'}">${actual?fMoney(actual):'N/D'}<div class="exec-dre-line-sub">realizado</div></div><div class="exec-dre-line-value">${budget?fMoney(budget):'N/D'}<div class="exec-dre-line-sub">orçado</div></div></div>`;
+  }).join(''));
+  const sourceActual=operationalActual||dre.operationalSourceExpected;
+  set('execDreReconciliationNote',`A fonte operacional por frota fica ${fMoney(dre.revenue.actual-sourceActual)} abaixo da DRE. Na análise fornecida, a diferença é explicada pela locação de ${fMoney(dre.missingRental)} da frota 489, presente na consolidação e ausente da fonte por frota. As linhas têm escopos diferentes e não devem ser tratadas como versões concorrentes do mesmo número.`);
+
+  const julyDays=meaningfulDays.filter(row=>row.date&&row.date.getFullYear()===2026&&row.date.getMonth()===6);
+  const classify=row=>{
+    const wait=waitType(row.cond);if(wait)return wait;
+    const key=execStatusKey(row.cond),tokens=key.split(/[^A-Z0-9]+/).filter(Boolean);
+    if(tokens.includes('MI')||key.includes('MOV INTERNA')||key.includes('MOVIMENTACAO INTERNA'))return'movement';
+    if(tokens.some(token=>['MC','MP','MNT','MANUT','MANUTENCAO'].includes(token))||key.includes('MANUT'))return'mechanical';
+    return'';
+  };
+  const classified=julyDays.map(row=>({...row,dreType:classify(row)})).filter(row=>row.dreType);
+  const definitions=[
+    ['doc','Documentação fiscal (DOC F)','Operacional'],['ac','Aguardando carregamento (AC)','Operacional'],
+    ['ad','Aguardando descarregamento (AD)','Operacional'],['movement','Movimentação interna','Operacional'],
+    ['mechanical','Manutenção / indisponibilidade','Mecânica']
+  ];
+  const summarize=(key,label,nature)=>{
+    const rows=classified.filter(row=>row.dreType===key),fleetMap=new Map();
+    rows.forEach(row=>fleetMap.set(row.frota,(fleetMap.get(row.frota)||0)+1));
+    const top=[...fleetMap.entries()].sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0]),'pt-BR',{numeric:true})).slice(0,5);
+    return{key,label,nature,frotaDays:rows.length,calendarDays:new Set(rows.map(row=>row.dateKey)).size,fleets:fleetMap.size,top};
+  };
+  const summaries=definitions.map(def=>summarize(...def));
+  const operationalRows=classified.filter(row=>row.dreType!=='mechanical'),operationalFleetMap=new Map();
+  operationalRows.forEach(row=>operationalFleetMap.set(row.frota,(operationalFleetMap.get(row.frota)||0)+1));
+  const totalClassified=classified.length;
+  const tableRows=summaries.map(item=>{
+    const share=totalClassified?item.frotaDays/totalClassified*100:0;
+    const topText=item.top.length?item.top.map(([fleet,days])=>`${fleet} (${days}d)`).join(' · '):'Sem registro classificado';
+    return `<tr><td><strong>${execEsc(item.label)}</strong><div class="exec-dre-line-sub">${execEsc(item.nature)}</div></td><td style="font-family:var(--font-data);font-weight:700">${item.frotaDays.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data)">${item.calendarDays.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data)">${item.fleets.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data)">${share.toLocaleString('pt-BR',{maximumFractionDigits:1})}%</td><td class="exec-dre-fleets">${execEsc(topText)}</td></tr>`;
+  });
+  const operationalTop=[...operationalFleetMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5).map(([fleet,days])=>`${fleet} (${days}d)`).join(' · ')||'Sem registro classificado';
+  tableRows.push(`<tr style="background:var(--surface2)"><td><strong>Total operacional sem manutenção</strong><div class="exec-dre-line-sub">DOC F + AC + AD + movimentação interna</div></td><td style="font-family:var(--font-data);font-weight:700">${operationalRows.length.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700">${new Set(operationalRows.map(row=>row.dateKey)).size.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700">${operationalFleetMap.size.toLocaleString('pt-BR')}</td><td>—</td><td class="exec-dre-fleets">${execEsc(operationalTop)}</td></tr>`);
+  html('execDreInefTbl',julyDays.length?tableRows.join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Sem leitura diária de julho no Relatório de Eficiência</td></tr>');
+  set('execDreInefPeriod',julyDays.length?`${julyDays.length.toLocaleString('pt-BR')} leituras frota-dia · jul/2026`:'jul/2026 · sem base diária');
+  const docSummary=summaries.find(item=>item.key==='doc');
+  const docRevision=docSummary&&docSummary.frotaDays!==4?` A base diária atual identifica ${docSummary.frotaDays} frota-dias de DOC F, enquanto a análise enviada registrava 4; a diferença atual inclui a frota 818 e deve ser validada antes de uma nova emissão contábil.`:'';
+  set('execDreInefNote',`Frota-dias mede a duração acumulada: duas frotas no mesmo dia somam dois. Dias no calendário conta quantas datas diferentes tiveram o motivo, e frotas afetadas elimina repetição. A manutenção aparece separada do total operacional. As categorias não são somadas aos cenários financeiros de perda, pois podem se sobrepor por frota e período.${docRevision}`);
+  html('execDreMechanicalTbl',DRE_JULY_MECHANICAL.map(row=>`<tr><td style="font-family:var(--font-data);font-weight:700">${row.fleet}</td><td style="font-family:var(--font-data);font-weight:700">${row.days}d</td><td style="font-family:var(--font-data)">${row.occurrences}</td><td style="font-family:var(--font-data);color:var(--red)">${fMoney(row.potential85)}</td><td>${execEsc(row.failures)}</td></tr>`).join(''));
+  const alerts=[
+    ['Receita abaixo do orçamento',`A Receita Bruta atingiu ${attainment(dre.revenue.actual,dre.revenue.budget).toLocaleString('pt-BR',{maximumFractionDigits:1})}% do previsto, com diferença de ${fMoney(dre.revenue.budget-dre.revenue.actual)}.`,'critico'],
+    ['Combustível acima do previsto',`A rubrica ficou ${fMoney(variance(dre.fuel.actual,dre.fuel.budget))} acima do orçamento. A análise operacional identificou também diferença de competência entre o abastecimento detalhado e a DRE.`,'atencao'],
+    ['Custos de pessoal e viagem',`Adicionais de salários superaram o orçamento em ${fMoney(variance(dre.salary.actual,dre.salary.budget))}; Viagens e Estadias, em ${fMoney(variance(dre.travel.actual,dre.travel.budget))}.`,'atencao'],
+    ['Ineficiência com bases distintas',`Diárias faturadas somaram ${fMoney(dre.dailyRevenue)}. Os cenários de mecânica, movimentação interna e DOC F são potenciais gerenciais e não devem ser somados automaticamente.`,'informativo']
+  ];
+  html('execDreRead',alerts.map((item,index)=>`<div class="exec-alert"><div class="exec-alert-head"><div class="exec-alert-title">${index+1}. ${execEsc(item[0])}</div><span class="tag ${execTagClass(item[2])}">${execEsc(execLevelLabel(item[2]))}</span></div><div class="exec-alert-body">${execEsc(item[1])}</div></div>`).join(''));
+}
+
 function renderEXEC(){
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
   const html=(id,val)=>{const el=document.getElementById(id);if(el)el.innerHTML=val;};
@@ -4216,6 +4357,7 @@ function renderEXEC(){
   const waitCards=[['Documento fiscal','DOC F',weekWait.doc,monthWait.doc],['Aguardando carregamento','AC',weekWait.ac,monthWait.ac],['Aguardando descarregamento','AD',weekWait.ad,monthWait.ad]];
   html('execInefCompare',waitCards.map(([label,code,weekValue,monthValue])=>`<div class="exec-inef-item"><div class="exec-inef-title">${execEsc(label)} <span class="tag tag-dim" style="margin-left:6px">${code}</span></div><div class="exec-inef-values"><div><div class="exec-inef-period">Semana</div><div class="exec-inef-value">${weekCovered?weekValue.toLocaleString('pt-BR'):'N/D'}</div></div><div><div class="exec-inef-period">Mês</div><div class="exec-inef-value">${monthCovered?monthValue.toLocaleString('pt-BR'):'N/D'}</div></div></div></div>`).join(''));
   set('execInefNote',`A medida usa frota-dias: uma frota aguardando em dois dias soma duas ocorrências. Última leitura válida do Relatório de Eficiência: ${fmtDate(latestDataDate)}. Períodos sem registro efetivo são exibidos como N/D.`);
+  renderDREAnalysis(meaningfulDays,waitType,set,html);
 
   const stoppedRaw=rpdData.filter(row=>{const status=rpdKey(row.status);return status&&status!=='OP'&&status!=='NI';});
   const stoppedMap=new Map();
