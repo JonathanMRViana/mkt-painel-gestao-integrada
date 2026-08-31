@@ -2176,8 +2176,6 @@ tbody tr:hover td{background:var(--surface2)}
           <div class="card"><div class="card-head"><span class="card-title">Orçado x Executado por Frota</span><div class="chart-nav"><span class="count-tag" id="budgetFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollBUDGETFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollBUDGETFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div><div style="height:300px"><canvas id="budgetFleetChart"></canvas></div></div>
         </div>
 
-        <div class="card"><div class="card-head"><span class="card-title">Composição do Executado MKT</span><span class="count-tag" id="budgetMktCompositionInfo">componentes informados</span></div><div class="bar-list" id="budgetMktComposition"></div></div>
-
         <div class="tbl-card">
           <div class="tbl-head"><span class="tbl-title">Detalhamento do Orçamento</span><div class="chart-nav"><span class="count-tag" id="budgetCount">0 registros</span><button class="chart-arrow" onclick="scrollBUDGETTable(-1)" title="Página anterior" aria-label="Página anterior do detalhamento">‹</button><button class="chart-arrow" onclick="scrollBUDGETTable(1)" title="Próxima página" aria-label="Próxima página do detalhamento">›</button></div></div>
           <div class="filter-bar-row">
@@ -3090,14 +3088,7 @@ function renderBUDGETMkt(){
   }else{
     set('budgetMktAttainment','N/D');set('budgetMktAttainmentSub','sem medição comparável no recorte');
   }
-  renderBUDGETMktComposition(rows);
   renderBUDGETMktTable(rows);
-}
-function renderBUDGETMktComposition(rows){
-  const values=[['Mov. Interna',rows.reduce((s,r)=>s+r.movInterna,0)],['Frete',rows.reduce((s,r)=>s+r.frete,0)],['Diária',rows.reduce((s,r)=>s+r.diaria,0)],['Locação',rows.reduce((s,r)=>s+r.locacao,0)],['KM Vazio Cobrado',rows.reduce((s,r)=>s+r.kmVazio,0)]].filter(row=>row[1]>0).sort((a,b)=>b[1]-a[1]);
-  const total=values.reduce((s,row)=>s+row[1],0),max=Math.max(1,...values.map(row=>row[1])),el=document.getElementById('budgetMktComposition'),info=document.getElementById('budgetMktCompositionInfo');
-  if(info)info.textContent=values.length?`${budgetMoneyCompact(total)} informado`:'não detalhado no recorte';
-  if(el)el.innerHTML=values.length?values.map(([label,value])=>`<div class="bar-row"><div class="bar-lbl" title="${label}">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${value/max*100}%;background:var(--teal)"></div></div><div class="bar-num" style="width:100px">${budgetMoneyCompact(value)}</div></div>`).join(''):'<div style="color:var(--text3);font-size:12px;padding:12px 0">A fonte não possui a abertura dos componentes para este recorte.</div>';
 }
 function renderBUDGETMktTable(rows){
   const sorted=rows.slice().sort((a,b)=>a.mes-b.mes||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})),pageSize=responsiveChartPageSize(50,25),pages=Math.ceil(sorted.length/pageSize)||1;
