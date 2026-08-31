@@ -2121,14 +2121,14 @@ tbody tr:hover td{background:var(--surface2)}
 
         <div class="exec-tab-content" id="execContentDre">
           <div class="kpi-row exec-kpis">
-            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Receita Bruta DRE</div><div class="kpi-value" id="execDreRevenue">R$ 1,30 mi</div><div class="kpi-sub" id="execDreRevenueSub">realizado x orçado</div></div>
-            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Combustíveis</div><div class="kpi-value" id="execDreFuel">R$ 371 mil</div><div class="kpi-sub" id="execDreFuelSub">realizado x orçado</div></div>
-            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Adicionais de Salários</div><div class="kpi-value" id="execDreSalary">R$ 57 mil</div><div class="kpi-sub" id="execDreSalarySub">realizado x orçado</div></div>
-            <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Viagens e Estadias</div><div class="kpi-value" id="execDreTravel">R$ 154 mil</div><div class="kpi-sub" id="execDreTravelSub">realizado x orçado</div></div>
+            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Receita Bruta DRE</div><div class="kpi-value" id="execDreRevenue">N/D</div><div class="kpi-sub" id="execDreRevenueSub">carregando período</div></div>
+            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Combustíveis</div><div class="kpi-value" id="execDreFuel">N/D</div><div class="kpi-sub" id="execDreFuelSub">carregando período</div></div>
+            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Adicionais de Salários</div><div class="kpi-value" id="execDreSalary">N/D</div><div class="kpi-sub" id="execDreSalarySub">carregando período</div></div>
+            <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Viagens e Estadias</div><div class="kpi-value" id="execDreTravel">N/D</div><div class="kpi-sub" id="execDreTravelSub">carregando período</div></div>
           </div>
           <div class="exec-dre-grid">
             <div class="card exec-card">
-              <div class="card-head"><span class="card-title" id="execDreReconciliationTitle">Conciliação da Receita de Julho</span><span class="count-tag" id="execDreReconciliationPeriod">competência jul/2026</span></div>
+              <div class="card-head"><span class="card-title" id="execDreReconciliationTitle">Conciliação da Receita do Período</span><span class="count-tag" id="execDreReconciliationPeriod">carregando</span></div>
               <div class="exec-dre-stack" id="execDreReconciliation"></div>
               <div class="exec-dre-note" id="execDreReconciliationNote"></div>
             </div>
@@ -2138,12 +2138,12 @@ tbody tr:hover td{background:var(--surface2)}
             </div>
           </div>
           <div class="tbl-card" style="margin-bottom:20px">
-            <div class="tbl-head"><span class="tbl-title">Dias de Ineficiência Estratificados</span><span class="count-tag" id="execDreInefPeriod">julho/2026</span></div>
+            <div class="tbl-head"><span class="tbl-title">Dias de Ineficiência Estratificados</span><span class="count-tag" id="execDreInefPeriod">carregando período</span></div>
             <div class="tbl-wrap"><table class="exec-data-table exec-dre-table"><thead><tr><th>Natureza</th><th>Frota-dias</th><th>Dias no calendário</th><th>Frotas afetadas</th><th>Participação</th><th>Frotas com maior incidência</th></tr></thead><tbody id="execDreInefTbl"></tbody></table></div>
             <div class="exec-source-note" id="execDreInefNote"></div>
           </div>
           <div class="tbl-card">
-            <div class="tbl-head"><span class="tbl-title">Principais Indisponibilidades Mecânicas da Análise</span><span class="count-tag" id="execDreMechanicalPeriod">dias acumulados informados</span></div>
+            <div class="tbl-head"><span class="tbl-title">Principais Indisponibilidades Mecânicas da Análise</span><span class="count-tag" id="execDreMechanicalPeriod">carregando período</span></div>
             <div class="tbl-wrap"><table class="exec-data-table"><thead><tr><th>Frota</th><th>Dias parados</th><th>Ocorrências</th><th>Cenário potencial a 85%</th><th>Falhas registradas</th></tr></thead><tbody id="execDreMechanicalTbl"></tbody></table></div>
           </div>
         </div>
@@ -3716,7 +3716,9 @@ function setExecTab(tab){
   requestAnimationFrame(refreshTableScrollbars);
 }
 function clearEXECFilters(){
+  if(_ms.execMonthFilter)msReset('execMonthFilter');
   setSelectValues('execMonthFilter',['TODOS']);
+  _msClose('execMonthFilter');
   renderEXEC();
 }
 function execParseSheetDate(label){
@@ -4110,14 +4112,13 @@ const DRE_JULY_MECHANICAL=Object.freeze([
   {fleet:'425',days:11,occurrences:1,potential85:62177.50,failures:'Elétrica, climatização, câmbio, freios e tanque'},
   {fleet:'624',days:10,occurrences:1,potential85:61200,failures:'Perda de potência'}
 ]);
-function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[7]){
+function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const months=[...new Set((selectedMonths||[]).map(Number).filter(month=>month>=1&&month<=12))].sort((a,b)=>a-b);
-  if(!months.length)months.push(7);
   const monthSet=new Set(months),singleMonth=months.length===1,month=singleMonth?months[0]:0;
   const monthNames=months.map(value=>BUDGET_MONTHS[value-1]||String(value));
-  const periodName=singleMonth?monthNames[0]:monthNames.join(' + ');
+  const periodName=singleMonth?monthNames[0]:monthNames.length?monthNames.join(' + '):'período selecionado';
   const periodNameLower=periodName.toLocaleLowerCase('pt-BR');
-  const periodShort=singleMonth?periodNameLower.slice(0,3):`${months.length} meses`;
+  const periodShort=singleMonth?periodNameLower.slice(0,3):months.length?`${months.length} meses`:'sem competência';
   const dre=singleMonth&&month===7?DRE_JULY_ANALYSIS:null;
   const officialRows=resultData.filter(row=>monthSet.has(row.mes));
   const officialResult=officialRows.length?{realizado:officialRows.reduce((sum,row)=>sum+row.realizado,0),orcado:officialRows.reduce((sum,row)=>sum+row.orcado,0)}:null;
