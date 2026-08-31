@@ -2124,10 +2124,10 @@ tbody tr:hover td{background:var(--surface2)}
 
         <div class="exec-tab-content" id="execContentDre">
           <div class="kpi-row exec-kpis">
-            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Receita Bruta DRE</div><div class="kpi-value" id="execDreRevenue">N/D</div><div class="kpi-sub" id="execDreRevenueSub">carregando período</div></div>
-            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Combustíveis</div><div class="kpi-value" id="execDreFuel">N/D</div><div class="kpi-sub" id="execDreFuelSub">carregando período</div></div>
-            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Adicionais de Salários</div><div class="kpi-value" id="execDreSalary">N/D</div><div class="kpi-sub" id="execDreSalarySub">carregando período</div></div>
-            <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Viagens e Estadias</div><div class="kpi-value" id="execDreTravel">N/D</div><div class="kpi-sub" id="execDreTravelSub">carregando período</div></div>
+            <div class="kpi c-green"><div class="kpi-stripe"></div><div class="kpi-label">ROB Real por Frota</div><div class="kpi-value" id="execDreRevenue">N/D</div><div class="kpi-sub" id="execDreRevenueSub">carregando período</div></div>
+            <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada</div><div class="kpi-value" id="execDreFuel">N/D</div><div class="kpi-sub" id="execDreFuelSub">carregando período</div></div>
+            <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="execDreSalary">N/D</div><div class="kpi-sub" id="execDreSalarySub">ROB real ÷ ROB orçada</div></div>
+            <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Diárias Controladas</div><div class="kpi-value" id="execDreTravel">N/D</div><div class="kpi-sub" id="execDreTravelSub">Controle de Ineficiências</div></div>
           </div>
           <div class="exec-dre-grid">
             <div class="card exec-card">
@@ -2147,7 +2147,7 @@ tbody tr:hover td{background:var(--surface2)}
           </div>
           <div class="tbl-card">
             <div class="tbl-head"><span class="tbl-title">Principais Indisponibilidades Mecânicas da Análise</span><span class="count-tag" id="execDreMechanicalPeriod">carregando período</span></div>
-            <div class="tbl-wrap"><table class="exec-data-table"><thead><tr><th>Frota</th><th>Dias parados</th><th>Ocorrências</th><th>Cenário potencial a 85%</th><th>Falhas registradas</th></tr></thead><tbody id="execDreMechanicalTbl"></tbody></table></div>
+            <div class="tbl-wrap"><table class="exec-data-table"><thead><tr><th>Frota</th><th>Dias parados</th><th>Ocorrências</th><th>ROB Orçada no Período</th><th>Fonte</th></tr></thead><tbody id="execDreMechanicalTbl"></tbody></table></div>
           </div>
         </div>
 
@@ -4110,77 +4110,57 @@ const faixa=r.km>0&&r.km<350?'Baixa rodagem':'Status crítico';
 }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Nenhum desvio crítico identificado no D-1</td></tr>');
 }
 
-const DRE_JULY_ANALYSIS=Object.freeze({
-  revenue:{actual:1297993.02,budget:2041000},fuel:{actual:371000,budget:247000},
-  salary:{actual:57000,budget:27000},travel:{actual:154000,budget:113000},
-  horses:{actual:1201460.04,budget:1340160,count:46},operationalSourceExpected:1260961.02,
-  missingRental:37032,dailyRevenue:34400
-});
-const DRE_JULY_MECHANICAL=Object.freeze([
-  {fleet:'327',days:40,occurrences:2,potential85:244800,failures:'Escape, freio motor e embreagem; inspeção, backlog e revitalização'},
-  {fleet:'618',days:31,occurrences:2,potential85:395250,failures:'Ar-condicionado e problema no motor'},
-  {fleet:'971',days:29,occurrences:1,potential85:133110,failures:'Reprovado no teste de carga'},
-  {fleet:'964',days:21,occurrences:1,potential85:96390,failures:'Pane eletrônica'},
-  {fleet:'332',days:19,occurrences:1,potential85:87210,failures:'Backlog, preventiva e itens de cabine'},
-  {fleet:'617',days:16,occurrences:1,potential85:77520,failures:'5ª roda, suspensão e farol'},
-  {fleet:'871',days:14,occurrences:1,potential85:79135,failures:'Compressor, correia, alternador, turbina e interclima'},
-  {fleet:'623',days:11,occurrences:1,potential85:89760,failures:'Sensor de óleo, arrefecimento, cabine e ar-condicionado'},
-  {fleet:'425',days:11,occurrences:1,potential85:62177.50,failures:'Elétrica, climatização, câmbio, freios e tanque'},
-  {fleet:'624',days:10,occurrences:1,potential85:61200,failures:'Perda de potência'}
-]);
 function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const months=[...new Set((selectedMonths||[]).map(Number).filter(month=>month>=1&&month<=12))].sort((a,b)=>a-b);
-  const monthSet=new Set(months),singleMonth=months.length===1,month=singleMonth?months[0]:0;
+  const monthSet=new Set(months),singleMonth=months.length===1;
   const monthNames=months.map(value=>BUDGET_MONTHS[value-1]||String(value));
   const periodName=singleMonth?monthNames[0]:monthNames.length?monthNames.join(' + '):'período selecionado';
   const periodNameLower=periodName.toLocaleLowerCase('pt-BR');
   const periodShort=singleMonth?periodNameLower.slice(0,3):months.length?`${months.length} meses`:'sem competência';
-  const dre=singleMonth&&month===7?DRE_JULY_ANALYSIS:null;
   const officialRows=resultData.filter(row=>monthSet.has(row.mes));
   const officialResult=officialRows.length?{realizado:officialRows.reduce((sum,row)=>sum+row.realizado,0),orcado:officialRows.reduce((sum,row)=>sum+row.orcado,0)}:null;
-  const revenue=dre?dre.revenue:officialResult?{actual:officialResult.realizado,budget:officialResult.orcado}:null;
+  const monthFleetRows=fleetBillingData.filter(row=>monthSet.has(row.mes));
+  const fleetDataMonths=[...new Set(monthFleetRows.map(row=>row.mes))].sort((a,b)=>a-b);
+  const fleetDataPeriod=singleMonth?periodNameLower:`${fleetDataMonths.length} ${fleetDataMonths.length===1?'competência':'competências'} com execução`;
+  const operationalActual=monthFleetRows.reduce((sum,row)=>sum+(row.realizado||0),0);
+  const operationalBudget=monthFleetRows.reduce((sum,row)=>sum+(row.orcado||0),0);
+  const operationalFleets=new Set(monthFleetRows.map(row=>row.frota)).size;
+  const fleetDailyRevenue=monthFleetRows.reduce((sum,row)=>sum+(row.diaria||0),0);
+  const inefRows=inefData.filter(row=>monthSet.has(budgetMonthNumber(row.mes)));
+  const inefControlledValue=inefRows.reduce((sum,row)=>sum+(row.vlTotal||0),0);
+  const inefControlledDays=inefRows.reduce((sum,row)=>sum+(budgetNumber(row.diasDia)||0),0);
+  const revenue=monthFleetRows.length?{actual:operationalActual,budget:operationalBudget}:null;
   const attainment=(actual,budget)=>budget>0?actual/budget*100:null;
-  const variance=(actual,budget)=>actual-budget;
   const signedCompact=value=>`${value<0?'−':'+'}${budgetMoneyCompact(Math.abs(value))}`;
-  const setMetric=(valueId,subId,metric,missingText='sem detalhamento na fonte mensal')=>{
-    if(!metric){set(valueId,'N/D');set(subId,missingText);return;}
-    const rate=attainment(metric.actual,metric.budget);
-    set(valueId,budgetMoneyCompact(metric.actual));
-    set(subId,rate==null?'orçamento indisponível':`${rate.toLocaleString('pt-BR',{maximumFractionDigits:1})}% do orçado · desvio ${signedCompact(variance(metric.actual,metric.budget))}`);
-  };
-  setMetric('execDreRevenue','execDreRevenueSub',revenue,'resultado contábil indisponível');
-  setMetric('execDreFuel','execDreFuelSub',dre&&dre.fuel);
-  setMetric('execDreSalary','execDreSalarySub',dre&&dre.salary);
-  setMetric('execDreTravel','execDreTravelSub',dre&&dre.travel);
+  set('execDreRevenue',monthFleetRows.length?budgetMoneyCompact(operationalActual):'N/D');
+  set('execDreRevenueSub',monthFleetRows.length?`${operationalFleets.toLocaleString('pt-BR')} frotas na base ROB por Frota`:'ROB por Frota indisponível no período');
+  set('execDreFuel',monthFleetRows.length?budgetMoneyCompact(operationalBudget):'N/D');
+  set('execDreFuelSub',monthFleetRows.length?`${monthFleetRows.length.toLocaleString('pt-BR')} registros mensais`:'orçamento por frota indisponível');
+  const operationalAttainment=attainment(operationalActual,operationalBudget);
+  set('execDreSalary',operationalAttainment==null?'N/D':operationalAttainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%');
+  set('execDreSalarySub',operationalAttainment==null?'ROB orçada indisponível':`${signedCompact(operationalActual-operationalBudget)} de desvio`);
+  set('execDreTravel',inefRows.length?budgetMoneyCompact(inefControlledValue):'N/D');
+  set('execDreTravelSub',inefRows.length?`${inefRows.length.toLocaleString('pt-BR')} ocorrências · ${inefControlledDays.toLocaleString('pt-BR')} diárias`:'Controle de Ineficiências sem registros');
   set('execDreReconciliationTitle',singleMonth?`Conciliação da Receita de ${periodName}`:'Conciliação da Receita do Período');
   set('execDreReconciliationPeriod',singleMonth?`competência ${periodShort}/2026`:`${months.length} competências`);
 
-  const monthFleetRows=fleetBillingData.filter(row=>monthSet.has(row.mes));
-  const operationalActual=monthFleetRows.reduce((sum,row)=>sum+(row.realizado||0),0);
-  const operationalBudget=monthFleetRows.reduce((sum,row)=>sum+(row.orcado||0),0);
-  const reconciliation=dre?[
-    ['DRE contábil consolidada','Referência do relatório gerencial',dre.revenue.actual,dre.revenue.budget],
-    ['Fonte operacional por frota',`${monthFleetRows.length||'—'} registros medidos em ${periodNameLower}`,operationalActual||dre.operationalSourceExpected,operationalBudget],
-    [`Recorte de ${dre.horses.count} cavalos mecânicos`,'Escopo comparável da análise',dre.horses.actual,dre.horses.budget],
-    ['BI oficial da unidade','Extração contábil conectada ao painel',officialResult?officialResult.realizado:null,officialResult?officialResult.orcado:null]
-  ]:[
-    ['BI oficial da unidade','Extração contábil conectada ao painel',officialResult?officialResult.realizado:null,officialResult?officialResult.orcado:null],
-    ['Fonte operacional por frota',monthFleetRows.length?`${monthFleetRows.length} registros medidos em ${periodNameLower}`:'Sem medição operacional por frota',monthFleetRows.length?operationalActual:null,monthFleetRows.length?operationalBudget:null]
+  const reconciliation=[
+    ['ROB por Frota',monthFleetRows.length?`${monthFleetRows.length} registros em ${fleetDataPeriod}`:'Sem medição operacional por frota',monthFleetRows.length?operationalActual:null,monthFleetRows.length?operationalBudget:null,'realizado','orçado'],
+    ['Resultado contábil oficial','Extração conectada do BI da unidade',officialResult?officialResult.realizado:null,officialResult?officialResult.orcado:null],
+    ['Diárias reconhecidas na ROB','Componente informado na base ROB por Frota',monthFleetRows.length?fleetDailyRevenue:null,null,'na ROB','sem orçamento'],
+    ['Controle de Ineficiências',inefRows.length?`${inefRows.length} ocorrências registradas em ${periodNameLower}`:'Sem ocorrência no período',inefRows.length?inefControlledValue:null,null,'controlado','sem orçamento']
   ];
-  html('execDreReconciliation',reconciliation.map(([label,sub,actual,budget])=>{
+  html('execDreReconciliation',reconciliation.map(([label,sub,actual,budget,actualLabel='realizado',budgetLabel='orçado'])=>{
     const hasActual=actual!=null&&Number.isFinite(Number(actual));
     const hasBudget=budget!=null&&Number.isFinite(Number(budget));
     const diff=hasActual&&hasBudget?actual-budget:null;
-    return `<div class="exec-dre-line"><div><div class="exec-dre-line-label">${execEsc(label)}</div><div class="exec-dre-line-sub">${execEsc(sub)}</div></div><div class="exec-dre-line-value ${diff==null?'':diff>=0?'positive':'negative'}">${hasActual?fMoney(actual):'N/D'}<div class="exec-dre-line-sub">realizado</div></div><div class="exec-dre-line-value">${hasBudget?fMoney(budget):'N/D'}<div class="exec-dre-line-sub">orçado</div></div></div>`;
+    return `<div class="exec-dre-line"><div><div class="exec-dre-line-label">${execEsc(label)}</div><div class="exec-dre-line-sub">${execEsc(sub)}</div></div><div class="exec-dre-line-value ${diff==null?'':diff>=0?'positive':'negative'}">${hasActual?fMoney(actual):'N/D'}<div class="exec-dre-line-sub">${execEsc(actualLabel)}</div></div><div class="exec-dre-line-value">${hasBudget?fMoney(budget):'N/D'}<div class="exec-dre-line-sub">${execEsc(budgetLabel)}</div></div></div>`;
   }).join(''));
-  if(dre){
-    const sourceActual=operationalActual||dre.operationalSourceExpected;
-    set('execDreReconciliationNote',`A fonte operacional por frota fica ${fMoney(dre.revenue.actual-sourceActual)} abaixo da DRE. Na análise fornecida, a diferença é explicada pela locação de ${fMoney(dre.missingRental)} da frota 489, presente na consolidação e ausente da fonte por frota. As linhas têm escopos diferentes e não devem ser tratadas como versões concorrentes do mesmo número.`);
-  }else if(officialResult&&monthFleetRows.length){
+  if(officialResult&&monthFleetRows.length){
     const gap=officialResult.realizado-operationalActual;
-    set('execDreReconciliationNote',`No período ${periodNameLower}, o BI oficial e a fonte operacional por frota apresentam diferença de ${fMoney(Math.abs(gap))}. O BI permanece como resultado contábil oficial; a fonte por frota é uma leitura operacional sujeita a competência e ajustes.`);
+    set('execDreReconciliationNote',`No período ${periodNameLower}, o resultado contábil oficial e a ROB por Frota apresentam diferença de ${fMoney(Math.abs(gap))}. A ROB por Frota é a leitura operacional; o BI permanece como fechamento contábil. O Controle de Ineficiências é exibido separadamente e não é somado automaticamente à receita.`);
   }else{
-    set('execDreReconciliationNote',`O período ${periodNameLower} não possui todas as fontes necessárias para uma conciliação completa. Os valores indisponíveis permanecem como N/D.`);
+    set('execDreReconciliationNote',`O período ${periodNameLower} não possui todas as fontes necessárias para uma conciliação completa. Os valores indisponíveis permanecem como N/D e nenhum dado é substituído por valores do HTML de referência.`);
   }
 
   const monthDays=meaningfulDays.filter(row=>row.date&&row.date.getFullYear()===2026&&monthSet.has(row.date.getMonth()+1));
@@ -4216,45 +4196,37 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   tableRows.push(`<tr style="background:var(--surface2)"><td><strong>Total operacional sem manutenção</strong><div class="exec-dre-line-sub">DOC F + AC + AD + movimentação interna</div></td><td style="font-family:var(--font-data);font-weight:700">${operationalRows.length.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700">${new Set(operationalRows.map(row=>row.dateKey)).size.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700">${operationalFleetMap.size.toLocaleString('pt-BR')}</td><td>—</td><td class="exec-dre-fleets">${execEsc(operationalTop)}</td></tr>`);
   html('execDreInefTbl',monthDays.length?tableRows.join(''):`<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Sem leitura diária para ${execEsc(periodNameLower)} no Relatório de Eficiência</td></tr>`);
   set('execDreInefPeriod',monthDays.length?`${monthDays.length.toLocaleString('pt-BR')} leituras frota-dia · ${periodShort}`:`${periodShort} · sem base diária`);
-  const docSummary=summaries.find(item=>item.key==='doc');
-  const docRevision=dre&&docSummary&&docSummary.frotaDays!==4?` A base diária atual identifica ${docSummary.frotaDays} frota-dias de DOC F, enquanto a análise enviada registrava 4; a diferença atual inclui a frota 818 e deve ser validada antes de uma nova emissão contábil.`:'';
-  set('execDreInefNote',`Frota-dias mede a duração acumulada: duas frotas no mesmo dia somam dois. Dias no calendário conta quantas datas diferentes tiveram o motivo, e frotas afetadas elimina repetição. A manutenção aparece separada do total operacional. As categorias não são somadas aos cenários financeiros de perda, pois podem se sobrepor por frota e período.${docRevision}`);
-  let mechanicalRows;
-  if(dre){
-    mechanicalRows=DRE_JULY_MECHANICAL.map(row=>`<tr><td style="font-family:var(--font-data);font-weight:700">${row.fleet}</td><td style="font-family:var(--font-data);font-weight:700">${row.days}d</td><td style="font-family:var(--font-data)">${row.occurrences}</td><td style="font-family:var(--font-data);color:var(--red)">${fMoney(row.potential85)}</td><td>${execEsc(row.failures)}</td></tr>`).join('');
-    set('execDreMechanicalPeriod','dias acumulados informados');
-  }else{
-    const mechanicalMap=new Map();
-    classified.filter(row=>row.dreType==='mechanical').forEach(row=>{
-      const current=mechanicalMap.get(row.frota)||{fleet:row.frota,dates:[]};current.dates.push(row.date);mechanicalMap.set(row.frota,current);
-    });
-    const mechanical=[...mechanicalMap.values()].map(item=>{
-      const dates=item.dates.sort((a,b)=>a-b);let occurrences=dates.length?1:0;
-      for(let i=1;i<dates.length;i++)if((dates[i]-dates[i-1])/86400000>1)occurrences++;
-      return{fleet:item.fleet,days:dates.length,occurrences};
-    }).sort((a,b)=>b.days-a.days||String(a.fleet).localeCompare(String(b.fleet),'pt-BR',{numeric:true})).slice(0,10);
-    mechanicalRows=mechanical.map(row=>`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data);font-weight:700">${row.days}d</td><td style="font-family:var(--font-data)">${row.occurrences}</td><td style="font-family:var(--font-data);color:var(--text3)">N/D</td><td>Detalhamento da falha não disponível na base diária</td></tr>`).join('');
-    set('execDreMechanicalPeriod',`${periodShort} · base diária`);
-  }
+  set('execDreInefNote',`Frota-dias, dias no calendário e frotas afetadas são calculados diretamente pelo Relatório de Eficiência Logística. O Controle de Ineficiências registra ${inefRows.length.toLocaleString('pt-BR')} ocorrências, ${inefControlledDays.toLocaleString('pt-BR')} diárias e ${fMoney(inefControlledValue)} no período. As duas bases permanecem separadas porque representam controles operacionais diferentes.`);
+  const fleetBudgetMap=new Map();
+  monthFleetRows.forEach(row=>fleetBudgetMap.set(row.frota,(fleetBudgetMap.get(row.frota)||0)+(row.orcado||0)));
+  const mechanicalMap=new Map();
+  classified.filter(row=>row.dreType==='mechanical').forEach(row=>{
+    const current=mechanicalMap.get(row.frota)||{fleet:row.frota,dates:new Map()};
+    current.dates.set(row.dateKey,row.date);
+    mechanicalMap.set(row.frota,current);
+  });
+  const mechanical=[...mechanicalMap.values()].map(item=>{
+    const dates=[...item.dates.values()].sort((a,b)=>a-b);let occurrences=dates.length?1:0;
+    for(let i=1;i<dates.length;i++)if((dates[i]-dates[i-1])/86400000>1)occurrences++;
+    return{fleet:item.fleet,days:dates.length,occurrences,budget:fleetBudgetMap.get(item.fleet)};
+  }).sort((a,b)=>b.days-a.days||String(a.fleet).localeCompare(String(b.fleet),'pt-BR',{numeric:true})).slice(0,10);
+  const mechanicalRows=mechanical.map(row=>`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data);font-weight:700">${row.days}d</td><td style="font-family:var(--font-data)">${row.occurrences}</td><td style="font-family:var(--font-data);font-weight:600">${row.budget!=null?fMoney(row.budget):'N/D'}</td><td>Relatório de Eficiência Logística</td></tr>`).join('');
+  set('execDreMechanicalPeriod',`${periodShort} · dados conectados`);
   html('execDreMechanicalTbl',mechanicalRows||'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">Sem indisponibilidade mecânica identificada na competência.</td></tr>');
   const revenueRate=revenue?attainment(revenue.actual,revenue.budget):null;
   const alerts=revenue?[[
-    revenue.actual>=revenue.budget?'Receita acima do orçamento':'Receita abaixo do orçamento',
-    `A Receita Bruta atingiu ${revenueRate==null?'N/D':revenueRate.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'} do previsto, com diferença de ${fMoney(Math.abs(revenue.actual-revenue.budget))} ${revenue.actual>=revenue.budget?'acima':'abaixo'} do orçamento.`,
+    revenue.actual>=revenue.budget?'ROB Real acima do orçamento':'ROB Real abaixo do orçamento',
+    `A ROB por Frota atingiu ${revenueRate==null?'N/D':revenueRate.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'} do previsto, com diferença de ${fMoney(Math.abs(revenue.actual-revenue.budget))} ${revenue.actual>=revenue.budget?'acima':'abaixo'} da ROB orçada.`,
     revenue.actual>=revenue.budget?'positivo':'critico'
-  ]]:[['Receita indisponível',`O BI não possui resultado contábil para ${periodNameLower}.`,'indisponivel']];
-  if(dre){
-    alerts.push(
-      ['Combustível acima do previsto',`A rubrica ficou ${fMoney(variance(dre.fuel.actual,dre.fuel.budget))} acima do orçamento. A análise operacional identificou também diferença de competência entre o abastecimento detalhado e a DRE.`,'atencao'],
-      ['Custos de pessoal e viagem',`Adicionais de salários superaram o orçamento em ${fMoney(variance(dre.salary.actual,dre.salary.budget))}; Viagens e Estadias, em ${fMoney(variance(dre.travel.actual,dre.travel.budget))}.`,'atencao'],
-      ['Ineficiência com bases distintas',`Diárias faturadas somaram ${fMoney(dre.dailyRevenue)}. Os cenários de mecânica, movimentação interna e DOC F são potenciais gerenciais e não devem ser somados automaticamente.`,'informativo']
-    );
-  }else{
-    alerts.push(
-      ['Rubricas contábeis sem detalhamento',`Combustíveis, adicionais de salários e viagens não estão estratificados para ${periodNameLower}; por isso permanecem como N/D.`,'informativo'],
-      ['Ineficiências operacionais',monthDays.length?`${classified.length.toLocaleString('pt-BR')} frota-dias foram classificados no período, sendo ${operationalRows.length.toLocaleString('pt-BR')} operacionais sem manutenção.`:`Não há leitura diária disponível para ${periodNameLower}.`,monthDays.length&&classified.length?'atencao':'indisponivel']
-    );
-  }
+  ]]:[['ROB por Frota indisponível',`A base ROB por Frota não possui execução preenchida para ${periodNameLower}.`,'indisponivel']];
+  if(officialResult&&monthFleetRows.length){
+    const accountingGap=officialResult.realizado-operationalActual;
+    alerts.push(['Conciliação com o resultado contábil',`O BI oficial registra ${fMoney(officialResult.realizado)} e a ROB por Frota registra ${fMoney(operationalActual)}, uma diferença de ${fMoney(Math.abs(accountingGap))}.`,'informativo']);
+  }else alerts.push(['Resultado contábil',`O resultado contábil oficial não está disponível para conciliação completa em ${periodNameLower}.`,'indisponivel']);
+  alerts.push(
+    ['Controle de Ineficiências',inefRows.length?`${inefRows.length.toLocaleString('pt-BR')} ocorrências totalizam ${fMoney(inefControlledValue)} no controle de diárias. A ROB por Frota reconhece ${fMoney(fleetDailyRevenue)} na coluna Diária.`:`Não há ocorrência no Controle de Ineficiências para ${periodNameLower}.`,inefRows.length?'atencao':'indisponivel'],
+    ['Ineficiências operacionais',monthDays.length?`${classified.length.toLocaleString('pt-BR')} frota-dias foram classificados pelo Relatório de Eficiência, sendo ${operationalRows.length.toLocaleString('pt-BR')} operacionais sem manutenção.`:`Não há leitura diária disponível para ${periodNameLower}.`,monthDays.length&&classified.length?'atencao':'indisponivel']
+  );
   html('execDreRead',alerts.map((item,index)=>`<div class="exec-alert"><div class="exec-alert-head"><div class="exec-alert-title">${index+1}. ${execEsc(item[0])}</div><span class="tag ${execTagClass(item[2])}">${execEsc(execLevelLabel(item[2]))}</span></div><div class="exec-alert-body">${execEsc(item[1])}</div></div>`).join(''));
 }
 
