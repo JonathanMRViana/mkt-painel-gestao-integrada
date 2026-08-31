@@ -2102,7 +2102,11 @@ tbody tr:hover td{background:var(--surface2)}
             <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">ROB Real MKT</div><div class="kpi-value" id="execBillMonth">N/D</div><div class="kpi-sub" id="execBillMonthSub">faturamento operacional do mês</div></div>
             <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="execBillAttainment">N/D</div><div class="kpi-sub">ROB real ÷ ROB orçada</div></div>
           </div>
-          <div class="exec-awaiting"><div class="exec-awaiting-title">Faturamento operacional por frota</div><div class="exec-awaiting-text" id="execBillingText">A ROB Real MKT é consolidada a partir da base mensal por frota.</div></div>
+          <div class="exec-awaiting" style="margin-bottom:20px"><div class="exec-awaiting-title">Faturamento operacional por frota</div><div class="exec-awaiting-text" id="execBillingText">A ROB Real MKT é consolidada a partir da base mensal por frota.</div></div>
+          <div class="tbl-card">
+            <div class="tbl-head"><span class="tbl-title">Principais Gaps de Receita por Equipamento</span><span class="count-tag" id="execBillingGapCount">N/D</span></div>
+            <div class="tbl-wrap"><table class="exec-data-table"><thead><tr><th>Equipamento</th><th>Categoria</th><th>ROB Orçada</th><th>ROB Real</th><th>Gap de Receita</th><th>Atingimento</th><th>Observação (X)</th></tr></thead><tbody id="execBillingGapTbl"></tbody></table></div>
+          </div>
         </div>
 
         <div class="exec-tab-content" id="execContentDre">
@@ -4339,6 +4343,16 @@ function renderEXEC(){
   set('execBudgetMonthSub',latestBillingMonth?`${BUDGET_MONTHS[latestBillingMonth-1]} · ROB orçada MKT`:'orçamento MKT indisponível');
   set('execBudgetAnnual',budgetData.length?budgetMoneyCompact(annualBudget):'N/D');
   set('execBillingText',latestBillingMonth?`Em ${BUDGET_MONTHS[latestBillingMonth-1]}, a ROB Real MKT é ${fMoney(billingRealized)} frente a ${fMoney(billingBudget)} de ROB orçada, atingindo ${billingAttainmentText}. A competência reúne ${billingRows.length.toLocaleString('pt-BR')} registros e ${billingFleets.toLocaleString('pt-BR')} frotas com faturamento. ${billingIsCurrent?'O mês está em andamento e o valor é parcial.':'Essa é a última competência com execução preenchida.'} O resultado contábil oficial permanece na Análise de Resultado.`:'A fonte operacional ainda não possui competência com ROB Real preenchida.');
+  const billingGaps=billingRows.map(row=>({...row,gap:row.realizado-row.orcado,attainment:row.orcado>0?row.realizado/row.orcado*100:null})).filter(row=>Math.abs(row.gap)>.005);
+  const billingDeficits=billingGaps.filter(row=>row.gap<0).sort((a,b)=>a.gap-b.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,10);
+  const billingSurpluses=billingGaps.filter(row=>row.gap>0).sort((a,b)=>b.gap-a.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,5);
+  const billingGapHighlights=[...billingDeficits,...billingSurpluses].sort((a,b)=>a.gap-b.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
+  set('execBillingGapCount',latestBillingMonth?`${billingDeficits.length} déficits + ${billingSurpluses.length} superávits · ${BUDGET_MONTHS[latestBillingMonth-1]}`:'N/D');
+  html('execBillingGapTbl',billingGapHighlights.length?billingGapHighlights.map(row=>{
+    const gapText=`${row.gap>0?'+':'−'} ${fMoney(Math.abs(row.gap))}`;
+    const attainmentText=row.attainment==null?(row.realizado>0?'Sem orçamento':'N/D'):row.attainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+    return`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.frota||'—')}</td><td>${execEsc(row.categoria||row.tipo||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data);font-weight:700;color:${row.gap<0?'var(--red)':'var(--green)'}">${gapText}</td><td style="font-family:var(--font-data)">${attainmentText}</td><td title="${execEsc(row.observacao||'')}">${execEsc(row.observacao||'—')}</td></tr>`;
+  }).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px">Sem gaps de receita disponíveis na competência.</td></tr>');
   set('execOverviewAdh',pct(latestWeek&&latestWeek.value));
   set('execOverviewAdhSub',latestWeek?`${latestWeek.label} · ${latestWeek.total.toLocaleString('pt-BR')} cargas`:'programação indisponível');
   set('execOverviewRpd',stopped.length.toLocaleString('pt-BR'));
