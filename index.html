@@ -150,7 +150,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 
 /* -- KPI CARDS -- */
 .kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px;margin-top:8px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;transition:background .25s,border-color .15s}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;transition:background .25s,border-color .15s;display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:120px}
 .kpi:hover{border-color:var(--border2)}
 [data-theme="light"] .kpi,[data-theme="light"] .card,[data-theme="light"] .tbl-card,[data-theme="light"] .top-filter-bar{box-shadow:0 1px 2px rgba(23,34,48,.035)}
 .kpi-stripe{position:absolute;top:0;left:0;right:0;height:2px}
@@ -159,7 +159,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .kpi.c-amber .kpi-stripe{background:var(--amber)}
 .kpi.c-green .kpi-stripe{background:var(--green)}
 .kpi-label{font-size:11px;color:var(--text2);font-weight:600;letter-spacing:0;margin-bottom:10px;text-transform:uppercase;font-family:var(--font-ui)}
-.kpi-value{font-size:28px;font-weight:500;line-height:1;letter-spacing:0;font-family:var(--font-ui)}
+.kpi-value{display:block;width:100%;max-width:100%;font-size:28px;font-weight:500;line-height:1.08;letter-spacing:0;font-family:var(--font-ui);white-space:nowrap;font-variant-numeric:tabular-nums}
 .kpi.c-blue .kpi-value{color:var(--accent)}
 .kpi.c-mkblue .kpi-stripe{background:var(--makro-blue)}
 .kpi.c-mkblue .kpi-value{color:var(--makro-blue)}
@@ -2504,6 +2504,7 @@ function goTo(id){
     if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}renderBUDGET();}
     if(id==='exec'){setExecTab(execActiveTab||'overview');renderEXEC();}
     if(id==='tools')renderFreightCalculator();
+    scheduleKpiValueFit(document.getElementById('panel-'+id));
   },50);
 }
 
@@ -3714,6 +3715,7 @@ function setExecTab(tab){
     if(body)body.classList.toggle('active',key===tab);
   });
   requestAnimationFrame(refreshTableScrollbars);
+  scheduleKpiValueFit(document.getElementById('execContent'+({overview:'Overview',adherence:'Adherence',rpd:'Rpd',inef:'Inef',billing:'Billing',dre:'Dre',km:'Km'}[tab]||'Overview')));
 }
 function clearEXECFilters(){
   if(_ms.execMonthFilter)msReset('execMonthFilter');
@@ -6401,6 +6403,7 @@ function msRebuild(id,opts){const st=_ms[id];if(!st)return;st.opts=[...opts];_ms
 function toggleSB(){
   document.querySelector('.sidebar').classList.toggle('col');
   document.querySelector('.main-wrap').classList.toggle('col');
+  setTimeout(()=>scheduleKpiValueFit(),220);
 }
 
 
@@ -7262,8 +7265,35 @@ initPWA();
 initMobileNavigation();
 initAmbientBackground();
 applyMultiSelectFilters();
+let kpiFitFrame=0;
+function fitKpiValues(scope=document){
+  const values=scope&&scope.matches&&scope.matches('.kpi-value')?[scope]:[...(scope&&scope.querySelectorAll?scope.querySelectorAll('.kpi-value'):[])];
+  values.forEach(value=>{
+    if(!Object.prototype.hasOwnProperty.call(value.dataset,'kpiBaseInline'))value.dataset.kpiBaseInline=value.style.fontSize||'';
+    value.style.fontSize=value.dataset.kpiBaseInline;
+    if(!value.offsetParent||value.clientWidth<=0)return;
+    const available=value.clientWidth;
+    const required=value.scrollWidth;
+    if(required<=available)return;
+    const base=parseFloat(getComputedStyle(value).fontSize)||28;
+    const minimum=window.innerWidth<=480?13:15;
+    value.style.fontSize=Math.max(minimum,Math.floor(base*(available/required)*.96))+'px';
+  });
+}
+function scheduleKpiValueFit(scope=document){
+  if(kpiFitFrame)cancelAnimationFrame(kpiFitFrame);
+  kpiFitFrame=requestAnimationFrame(()=>{kpiFitFrame=0;fitKpiValues(scope);});
+}
+const kpiValueObserver=new MutationObserver(mutations=>{
+  if(mutations.some(mutation=>{
+    const node=mutation.type==='characterData'?mutation.target.parentElement:mutation.target;
+    return node&&((node.matches&&node.matches('.kpi-value'))||(node.closest&&node.closest('.kpi-value'))||(node.querySelector&&node.querySelector('.kpi-value')));
+  }))scheduleKpiValueFit();
+});
+kpiValueObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>scheduleKpiValueFit());
 loadAll();
-window.addEventListener('resize',()=>requestAnimationFrame(refreshTableScrollbars));
+window.addEventListener('resize',()=>{requestAnimationFrame(refreshTableScrollbars);scheduleKpiValueFit();});
 setInterval(loadAll,5*60*1000);
 updatePremiseButton(currentPanelId);
 </script>
