@@ -3047,25 +3047,20 @@ function renderBUDGET(){
   if(table)table.innerHTML=tableRows.length?tableRows.map(row=>`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.tipo||'—')}</td><td>${budgetEsc(budgetSituationLabel(row.situacao))}</td><td>${budgetEsc(row.unidade||'—')}</td><td>${budgetEsc(row.conjunto||'—')}</td><td>${budgetEsc(row.contrato||'—')}</td><td>${row.ocupacao==null?'—':(row.ocupacao*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefLog==null?'—':(row.inefLog*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefCom==null?'—':(row.inefCom*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefOp==null?'—':(row.inefOp*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefMec==null?'—':(row.inefMec*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.horas==null?'—':row.horas.toLocaleString('pt-BR')}</td><td>${row.extras==null?'—':row.extras.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:600">${row.rob?fMoney(row.rob):'—'}</td></tr>`).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Nenhum registro encontrado</td></tr>';
   requestAnimationFrame(refreshTableScrollbars);
 }
-function budgetResultComparable(){
-  const state=budgetFilterState(),all=values=>!values.length||values.includes('TODOS');
-  const query=((document.getElementById('budgetSearch')||{}).value||'').trim();
-  return !query&&all(state.situacao)&&all(state.tipo)&&all(state.unidade)&&all(state.contrato);
-}
 function renderBUDGETMonthChart(rows){
   if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}
   const canvas=document.getElementById('budgetMonthChart');if(!canvas)return;
   const map=new Map();rows.forEach(row=>map.set(row.mes,(map.get(row.mes)||0)+row.rob));
-  const data=[...map.entries()].sort((a,b)=>a[0]-b[0]),ct=chartTheme(),canCompare=budgetResultComparable()&&resultData.length>0;
-  const resultMap=new Map(resultData.map(row=>[row.mes,row]));
-  const latestRealizedMonth=Math.max(0,...resultData.filter(row=>row.realizado!==0).map(row=>row.mes));
+  const data=[...map.entries()].sort((a,b)=>a[0]-b[0]),ct=chartTheme();
+  const actualMap=new Map();
+  aggregateFLEETBILLING(getFLEETBILLINGFiltered()).forEach(row=>actualMap.set(row.mes,(actualMap.get(row.mes)||0)+row.realizado));
   const datasets=[{label:'ROB Orçada · Base Detalhada',data:data.map(row=>row[1]),backgroundColor:ct.blueFill,borderColor:ct.blue,borderWidth:1,borderRadius:4,categoryPercentage:.72,barPercentage:.82}];
-  if(canCompare)datasets.push({label:'Realizado Contábil · BI',data:data.map(row=>{const item=resultMap.get(row[0]);return item&&row[0]<=latestRealizedMonth?item.realizado:null;}),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4,categoryPercentage:.72,barPercentage:.82});
+  if(actualMap.size)datasets.push({label:'ROB Real · MKT',data:data.map(row=>actualMap.has(row[0])?actualMap.get(row[0]):null),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4,categoryPercentage:.72,barPercentage:.82});
   const max=Math.max(0,...datasets.flatMap(dataset=>dataset.data.filter(value=>value!=null)));
   budgetMonthChart=new Chart(canvas,{type:'bar',plugins:[progBarValueLabelsPlugin],data:{labels:data.map(row=>BUDGET_MONTHS[row[0]-1]),datasets},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:9,formatter:value=>value==null?'':budgetMoneyCompact(value)},legend:{display:datasets.length>1,position:'bottom',labels:{color:ct.text3,boxWidth:10,boxHeight:10,padding:14,font:{family:'IBM Plex Mono',size:9}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fMoney(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,suggestedMax:max*1.15,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
   const info=document.getElementById('budgetMonthInfo'),title=document.getElementById('budgetMonthTitle');
-  if(title)title.textContent=canCompare?'Evolução Mensal: ROB Orçada x Realizado':'Evolução Mensal da ROB Orçada';
-  if(info)info.textContent=canCompare&&latestRealizedMonth?`${data.length} ${data.length===1?'mês':'meses'} · BI até ${BUDGET_MONTHS[latestRealizedMonth-1].slice(0,3).toLowerCase()}.`:`${data.length} ${data.length===1?'mês':'meses'} · ${resultData.length?'BI sem detalhe':'BI indisponível'}`;
+  if(title)title.textContent=actualMap.size?'Evolução Mensal: ROB Orçada x ROB Real MKT':'Evolução Mensal da ROB Orçada';
+  if(info)info.textContent=actualMap.size?`${actualMap.size} ${actualMap.size===1?'mês com execução':'meses com execução'}`:'sem execução no recorte';
 }
 function aggregateFLEETBILLING(rows){
   const map=new Map();
