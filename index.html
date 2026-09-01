@@ -2155,7 +2155,7 @@ tbody tr:hover td{background:var(--surface2)}
           </div>
           <div class="exec-billing-chart-grid">
             <div class="card exec-card">
-              <div class="card-head"><span class="card-title">ROB Orçada x Executada por Frota</span><div class="chart-nav"><span class="count-tag" id="execBillingFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollEXECBillingFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollEXECBillingFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div>
+              <div class="card-head"><span class="card-title">ROB Orçada x Executada x Perda Potencial por Frota</span><div class="chart-nav"><span class="count-tag" id="execBillingFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollEXECBillingFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollEXECBillingFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div>
               <div style="height:300px"><canvas id="execBillingFleetChart"></canvas></div>
             </div>
             <div class="exec-billing-summary-stack">
@@ -2388,7 +2388,7 @@ tbody tr:hover td{background:var(--surface2)}
 
 <!-- v1778869583 -->
 <script>
-let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],freightRates=[],freightPlan=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,execBillingFleetChart=null,execBillingDeviationChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
+let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],freightRates=[],freightPlan=[],assetTypeByFleet=new Map(),aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,execBillingFleetChart=null,execBillingDeviationChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
 window._aet=()=>aetData;
 window._mob=()=>mobData;
 
@@ -2922,6 +2922,7 @@ const CSV_BUDGET="https://docs.google.com/spreadsheets/d/e/2PACX-1vR2nrorePlX5Am
 const CSV_RESULT_BI="https://docs.google.com/spreadsheets/d/e/2PACX-1vRJCb4qUO4Rv6umak_zGHWGExLaOPQpZWNjPi2frLNbwOTJyzh6y06XOGMH_TugjU6iqF46ypDlSOCt/pub?output=csv";
 const CSV_FLEET_BILLING="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1256794079";
 const CSV_FREIGHT_RATES="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1374757392";
+const CSV_MAKRO_ASSETS="https://docs.google.com/spreadsheets/d/e/2PACX-1vRuXBqTTc4oX0_e_gGnueuum1tKmqLeGb_ftuE0aVrRGIebBwK0U1d-MeLmJkH3SflQxQqDcOaH4ZEP/pub?output=csv&gid=519353169";
 const CSV_MOB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_Ry7aRW5A3zpaLdCu2u_xb3vgfOjnfHRmSH_OyvVX3wzmxvh4fSZBFvZakDRF2eDNA3DWJk9OFbml/pub?output=csv&gid=1729222115";
 const PROG_SHEETS=[
   {week:'W28',gid:'97434237',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=97434237'},
@@ -2971,9 +2972,9 @@ async function loadAll(){
     catch(e){console.warn('fetch failed:',url,e.name==='AbortError'?'tempo limite excedido':e.message);return '';}
     finally{clearTimeout(timeout);}
   };
-  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFleetBilling,txtFreight,progTexts]=await Promise.all([
+  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFleetBilling,txtFreight,txtAssets,progTexts]=await Promise.all([
     safeFetch(CSV_AET),safeFetch(CSV_MOB),safeFetch(CSV_MAT),safeFetch(CSV_MAT_SAFETY),
-    safeFetch(CSV_PATIO),safeFetch(CSV_PATIO_INVENTORY),safeFetch(CSV_INEF),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url))),safeFetch(CSV_RPD),safeFetch(CSV_BUDGET),safeFetch(CSV_RESULT_BI),safeFetch(CSV_FLEET_BILLING),safeFetch(CSV_FREIGHT_RATES),
+    safeFetch(CSV_PATIO),safeFetch(CSV_PATIO_INVENTORY),safeFetch(CSV_INEF),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url))),safeFetch(CSV_RPD),safeFetch(CSV_BUDGET),safeFetch(CSV_RESULT_BI),safeFetch(CSV_FLEET_BILLING),safeFetch(CSV_FREIGHT_RATES),safeFetch(CSV_MAKRO_ASSETS),
     Promise.all(PROG_SHEETS.map(s=>safeFetch(s.url)))
   ]);
   try{processAET(parseCSV(txtAet));}catch(e){console.error('processAET error:',e.message);}
@@ -2986,6 +2987,7 @@ async function loadAll(){
   try{processRPD(parseCSV(txtRpd));}catch(e){console.error('processRPD error:',e.message);}
   try{processBUDGET(parseCSV(txtBudget));}catch(e){console.error('processBUDGET error:',e.message);}
   try{processRESULT(parseCSV(txtResultBI));}catch(e){console.error('processRESULT error:',e.message);}
+  try{processMAKROAssets(parseCSV(txtAssets));}catch(e){console.error('processMAKROAssets error:',e.message);}
   try{processFLEETBILLING(parseCSV(txtFleetBilling));}catch(e){console.error('processFLEETBILLING error:',e.message);}
   try{processFreightRates(parseCSV(txtFreight));}catch(e){console.error('processFreightRates error:',e.message);}
   try{processPROG(progTexts.map((txt,i)=>({meta:PROG_SHEETS[i],rows:parseCSV(txt)})));}catch(e){console.error('processPROG error:',e.message);}
@@ -3093,6 +3095,57 @@ function fleetBillingType(category){
   if(key.includes('ESCOLTA'))return'ESCOLTA';
   return budgetText(category);
 }
+function assetFleetKey(value){
+  const digits=String(value||'').match(/\d+/);
+  return digits?digits[0].replace(/^0+(?=\d)/,''):'';
+}
+function assetImplementCode(name){
+  const key=budgetKey(name);
+  if(key.includes('DOLLY'))return'DL';
+  if(key.includes('CARGASECA'))return'CS';
+  let match=key.match(/PRANCHA0*(\d+)EIXOS/);
+  if(match)return'P'+Number(match[1]);
+  match=key.match(/MODULODELINHA0*(\d+)EIXOS/);
+  if(match)return'L'+Number(match[1]);
+  return'';
+}
+function processMAKROAssets(rows){
+  assetTypeByFleet=new Map();
+  const headerIndex=rows.findIndex(row=>{const keys=row.map(budgetKey);return keys.includes('BEM')&&keys.includes('NOMEDOBEM');});
+  if(headerIndex<0)return;
+  const headers=rows[headerIndex].map(budgetKey),fleetIndex=headers.indexOf('BEM'),nameIndex=headers.indexOf('NOMEDOBEM');
+  rows.slice(headerIndex+1).forEach(row=>{
+    const frota=assetFleetKey(row[fleetIndex]),name=budgetText(row[nameIndex]),code=assetImplementCode(name);
+    if(frota&&code)assetTypeByFleet.set(frota,{name,code});
+  });
+}
+function resolveFreightComposition(conjunto){
+  const fleetIds=[...new Set((String(conjunto||'').match(/\d+/g)||[]).map(assetFleetKey).filter(Boolean))];
+  const assets=fleetIds.map(frota=>assetTypeByFleet.get(frota)).filter(Boolean),codes=assets.map(asset=>asset.code),textKey=budgetKey(conjunto);
+  const lineCodes=codes.filter(code=>/^L\d+$/.test(code));
+  if(lineCodes.length){
+    const axles=lineCodes.reduce((sum,code)=>sum+Number(code.slice(1)),0),type=`LE ${axles} EIXOS`;
+    return{type,rateType:type,assets};
+  }
+  const dollyCount=codes.filter(code=>code==='DL').length,csCount=codes.filter(code=>code==='CS').length;
+  const pranchaCodes=codes.filter(code=>/^P\d+$/.test(code)).sort((a,b)=>Number(b.slice(1))-Number(a.slice(1)));
+  if(pranchaCodes.length){
+    const prancha=pranchaCodes[0];
+    if(dollyCount)return{type:prancha+'+DOLLY',rateType:prancha==='P4'?'P4+DOLLY':prancha,assets};
+    return{type:prancha,rateType:prancha,assets};
+  }
+  if(csCount>=2&&dollyCount)return{type:'RODOTREM',rateType:'RODOTREM',assets};
+  if(csCount>=2)return{type:'BITREM',rateType:'BITREM',assets};
+  if(csCount===1)return{type:'CS',rateType:'CS',assets};
+  if(textKey.includes('RODOTREM'))return{type:'RODOTREM',rateType:'RODOTREM',assets};
+  if(textKey.includes('BITREM'))return{type:'BITREM',rateType:'BITREM',assets};
+  return{type:'',rateType:'',assets};
+}
+function fleetMaintenancePotential(row){
+  const days=Math.max(0,Number(row.diasManut)||0),composition=resolveFreightComposition(row.conjunto);
+  const rate=composition.rateType?freightRates.find(item=>budgetKey(item.type)===budgetKey(composition.rateType)):null;
+  return{days,type:composition.type,rate:rate?rate.loadedRate:0,value:rate?days*350*rate.loadedRate:0,mapped:days<=0||!!rate};
+}
 function processFLEETBILLING(rows){
   const headerIndex=rows.findIndex(row=>{const keys=row.map(budgetKey);return keys.includes('MES')&&keys.includes('FROTA')&&keys.includes('ROBREAL')&&keys.includes('ROBORCADA');});
   if(headerIndex<0){fleetBillingData=[];if(budgetData.length)renderBUDGET();return;}
@@ -3101,7 +3154,7 @@ function processFLEETBILLING(rows){
   const kmVazioIndex=col(['VALOR COBRADO KM VAZIO']);
   const observacaoIndex=headers.findIndex((header,index)=>index>kmVazioIndex&&header.startsWith('OBSERVACAO'));
   const motivoDesvioIndex=col(['MOTIVO DO DESVIO'],54);
-  const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:kmVazioIndex,observacao:observacaoIndex,motivoAgregado:motivoDesvioIndex};
+  const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:kmVazioIndex,diasManut:col(['DIAS MANUT']),observacao:observacaoIndex,motivoAgregado:motivoDesvioIndex};
   const sourceRows=rows.slice(headerIndex+1),executionFields=[ix.realizado,ix.movInterna,ix.frete,ix.diaria,ix.locacao,ix.kmVazio].filter(index=>index>=0);
   const activeMonths=new Set(sourceRows.filter(row=>executionFields.some(index=>Math.abs(budgetNumber(row[index])||0)>.001)).map(row=>budgetMonthNumber(row[ix.mes])).filter(Boolean));
   const officialBudgetMap=new Map();
@@ -3110,7 +3163,7 @@ function processFLEETBILLING(rows){
     const mes=budgetMonthNumber(row[ix.mes]),frota=budgetText(row[ix.frota]);
     if(!activeMonths.has(mes)||!frota)return null;
     const categoria=budgetText(row[ix.categoria]),tipo=fleetBillingType(categoria),locacao=budgetNumber(row[ix.locacao])||0,realizado=budgetNumber(row[ix.realizado])||0;
-    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:officialBudgetMap.get(mes+'|'+budgetKey(frota))||0,realizado,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):'',motivoAgregado:ix.motivoAgregado>=0?budgetText(row[ix.motivoAgregado]):''};
+    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:officialBudgetMap.get(mes+'|'+budgetKey(frota))||0,realizado,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,diasManut:budgetNumber(row[ix.diasManut])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):'',motivoAgregado:ix.motivoAgregado>=0?budgetText(row[ix.motivoAgregado]):''};
   }).filter(Boolean);
   if(budgetData.length)renderBUDGET();
   if(budgetData.length)renderBUDGET2026();
@@ -3242,8 +3295,8 @@ function renderBUDGETMonthChart(rows){
 function aggregateFLEETBILLING(rows){
   const map=new Map();
   (rows||[]).forEach(row=>{
-    const key=row.mes+'|'+budgetKey(row.frota),item=map.get(key)||{...row,orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,observacoes:[],motivosAgregados:[]};
-    ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio'].forEach(field=>item[field]+=row[field]||0);
+    const key=row.mes+'|'+budgetKey(row.frota),item=map.get(key)||{...row,orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,diasManut:0,observacoes:[],motivosAgregados:[]};
+    ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio','diasManut'].forEach(field=>item[field]+=row[field]||0);
     if(row.observacao&&!item.observacoes.includes(row.observacao))item.observacoes.push(row.observacao);
     if(row.motivoAgregado&&!item.motivosAgregados.includes(row.motivoAgregado))item.motivosAgregados.push(row.motivoAgregado);
     map.set(key,item);
@@ -3896,11 +3949,13 @@ function renderEXECBillingFleetChart(){
   const totals=execBillingFleetTotals,pageSize=responsiveChartPageSize(8,4),pages=Math.ceil(totals.length/pageSize)||1;
   execBillingFleetPage=Math.max(0,Math.min(pages-1,execBillingFleetPage));
   const slice=totals.slice(execBillingFleetPage*pageSize,(execBillingFleetPage+1)*pageSize),ct=chartTheme();
-  const info=document.getElementById('execBillingFleetInfo');if(info)info.textContent=totals.length?`${execBillingFleetPage+1}/${pages} · ${totals.length} frotas`:'sem dados no recorte';
+  const unmapped=totals.filter(row=>row.maintenanceUnmappedDays>0).length;
+  const info=document.getElementById('execBillingFleetInfo');if(info)info.textContent=totals.length?`${execBillingFleetPage+1}/${pages} · ${totals.length} frotas${unmapped?' · '+unmapped+' sem tarifa':''}`:'sem dados no recorte';
   execBillingFleetChart=new Chart(canvas,{type:'bar',plugins:[progBarValueLabelsPlugin],data:{labels:slice.map(row=>row.frota),datasets:[
     {label:'ROB Orçada MKT',data:slice.map(row=>row.orcado),backgroundColor:ct.blueFill,borderColor:ct.blue,borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84},
-    {label:'ROB Executada MKT',data:slice.map(row=>row.realizado),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84}
-  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:9,formatter:value=>value?budgetMoneyCompact(value):''},legend:{display:totals.length>0,position:'bottom',labels:{color:ct.text3,boxWidth:10,boxHeight:10,padding:14,font:{family:'IBM Plex Mono',size:9}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fMoney(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
+    {label:'ROB Executada MKT',data:slice.map(row=>row.realizado),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84},
+    {label:'Perda Potencial por Manutenção',data:slice.map(row=>row.maintenancePotential),backgroundColor:dark?'rgba(245,78,105,.82)':'rgba(205,25,54,.82)',borderColor:'#d11232',borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84}
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:9,formatter:value=>value?budgetMoneyCompact(value):''},legend:{display:totals.length>0,position:'bottom',labels:{color:ct.text3,boxWidth:10,boxHeight:10,padding:14,font:{family:'IBM Plex Mono',size:9}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fMoney(ctx.raw),afterLabel:ctx=>ctx.datasetIndex===2&&slice[ctx.dataIndex].maintenanceDays?` ${slice[ctx.dataIndex].maintenanceDays} dias · ${slice[ctx.dataIndex].maintenanceType||'tipo sem correspondência'} · 350 km/dia`:''}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
 }
 function scrollEXECBillingFleet(dir){
   const pageSize=responsiveChartPageSize(8,4),pages=Math.ceil(execBillingFleetTotals.length/pageSize)||1;
@@ -4441,17 +4496,22 @@ function renderEXEC(){
   const billingRowsAll=aggregateFLEETBILLING(fleetBillingData.filter(row=>selectedMonthSet.has(row.mes)));
   const billingFleetMap=new Map();
   billingRowsAll.forEach(row=>{
-    const key=budgetKey(row.frota),item=billingFleetMap.get(key)||{...row,meses:new Set(),orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,observacoes:[],motivosAgregados:[]};
-    ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio'].forEach(field=>item[field]+=row[field]||0);
+    const key=budgetKey(row.frota),item=billingFleetMap.get(key)||{...row,meses:new Set(),orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,diasManut:0,maintenancePotential:0,maintenanceDays:0,maintenanceUnmappedDays:0,maintenanceTypes:new Set(),observacoes:[],motivosAgregados:[]};
+    ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio','diasManut'].forEach(field=>item[field]+=row[field]||0);
+    const maintenance=fleetMaintenancePotential(row);
+    item.maintenancePotential+=maintenance.value;
+    item.maintenanceDays+=maintenance.days;
+    if(maintenance.days>0&&maintenance.type)item.maintenanceTypes.add(maintenance.type);
+    if(maintenance.days>0&&!maintenance.mapped)item.maintenanceUnmappedDays+=maintenance.days;
     item.meses.add(row.mes);
     if(row.observacao&&!item.observacoes.includes(row.observacao))item.observacoes.push(row.observacao);
     if(row.motivoAgregado&&!item.motivosAgregados.includes(row.motivoAgregado))item.motivosAgregados.push(row.motivoAgregado);
     billingFleetMap.set(key,item);
   });
-  const billingRows=[...billingFleetMap.values()].map(row=>({...row,observacao:row.observacoes.join(' · '),motivoAgregado:row.motivosAgregados.join(' · ')}));
+  const billingRows=[...billingFleetMap.values()].map(row=>({...row,maintenanceType:[...row.maintenanceTypes].join(' + '),observacao:row.observacoes.join(' · '),motivoAgregado:row.motivosAgregados.join(' · ')}));
   const billingFleetFilterKey=selectedMonths.join(',');
   if(execBillingFleetFilterKey!==billingFleetFilterKey){execBillingFleetPage=0;execBillingDeviationPage=0;execBillingFleetFilterKey=billingFleetFilterKey;}
-  execBillingFleetTotals=billingRows.filter(row=>row.orcado>0||row.realizado>0).map(row=>({frota:row.frota,orcado:row.orcado||0,realizado:row.realizado||0})).sort((a,b)=>b.realizado-a.realizado||b.orcado-a.orcado||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
+  execBillingFleetTotals=billingRows.filter(row=>row.orcado>0||row.realizado>0||row.maintenancePotential>0).map(row=>({frota:row.frota,orcado:row.orcado||0,realizado:row.realizado||0,maintenancePotential:row.maintenancePotential||0,maintenanceDays:row.maintenanceDays||0,maintenanceUnmappedDays:row.maintenanceUnmappedDays||0,maintenanceType:row.maintenanceType||''})).sort((a,b)=>b.realizado-a.realizado||b.orcado-a.orcado||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
   const billingBudget=billingRows.reduce((sum,row)=>sum+row.orcado,0);
   const billingRealized=billingRows.reduce((sum,row)=>sum+row.realizado,0);
   const billingAttainment=billingBudget>0?billingRealized/billingBudget*100:null;
@@ -7527,6 +7587,3 @@ updatePremiseButton(currentPanelId);
 <div class="exec-report-toast" id="execReportToast" role="status" aria-live="polite"></div>
 </body>
 </html>
-
-
-
