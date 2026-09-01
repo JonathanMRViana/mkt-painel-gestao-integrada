@@ -2252,18 +2252,16 @@ tbody tr:hover td{background:var(--surface2)}
           <button class="clear-filters-btn" onclick="clearBUDGET2026Filters()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Limpar</button>
         </div>
 
-        <div class="kpi-row exec-kpis exec-six">
+        <div class="kpi-row exec-kpis">
           <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada</div><div class="kpi-value" id="budget2026Total">N/D</div><div class="kpi-sub" id="budget2026TotalSub">base oficial selecionada</div></div>
           <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Potencial</div><div class="kpi-value" id="budget2026Potential">N/D</div><div class="kpi-sub">potencial informado na base</div></div>
           <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Ineficiência Orçada</div><div class="kpi-value" id="budget2026Ineff">N/D</div><div class="kpi-sub">valor previsto na base</div></div>
-          <div class="kpi c-green"><div class="kpi-stripe"></div><div class="kpi-label">ROB Real Medida</div><div class="kpi-value" id="budget2026Actual">N/D</div><div class="kpi-sub" id="budget2026ActualSub">somente competências disponíveis</div></div>
-          <div class="kpi c-teal"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento</div><div class="kpi-value" id="budget2026Attainment">N/D</div><div class="kpi-sub">real medido ÷ orçado comparável</div></div>
           <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Frotas Orçadas</div><div class="kpi-value" id="budget2026Fleets">0</div><div class="kpi-sub" id="budget2026FleetsSub">frotas únicas com ROB</div></div>
         </div>
 
         <div class="tbl-card">
-          <div class="tbl-head"><span class="tbl-title">Orçamento Oficial x Realizado por Frota</span><div class="chart-nav"><span class="count-tag" id="budget2026Count">0 registros</span><button class="chart-arrow" onclick="scrollBUDGET2026(-1)" title="Página anterior" aria-label="Página anterior do orçamento">‹</button><button class="chart-arrow" onclick="scrollBUDGET2026(1)" title="Próxima página" aria-label="Próxima página do orçamento">›</button></div></div>
-          <div class="tbl-wrap"><table class="exec-data-table" style="min-width:1500px"><thead><tr><th>Mês</th><th>Frota</th><th>Categoria</th><th>Unidade</th><th>Contrato</th><th>Cliente</th><th>Classe de Valor</th><th>Regime</th><th>ROB Potencial</th><th>ROB Orçada</th><th>ROB Real</th><th>Variação</th><th>Atingimento</th><th>Ocupação Orçada</th><th>Ineficiência Orçada</th></tr></thead><tbody id="budget2026Table"></tbody></table></div>
+          <div class="tbl-head"><span class="tbl-title">Orçamento Oficial por Frota</span><div class="chart-nav"><span class="count-tag" id="budget2026Count">0 registros</span><button class="chart-arrow" onclick="scrollBUDGET2026(-1)" title="Página anterior" aria-label="Página anterior do orçamento">‹</button><button class="chart-arrow" onclick="scrollBUDGET2026(1)" title="Próxima página" aria-label="Próxima página do orçamento">›</button></div></div>
+          <div class="tbl-wrap"><table class="exec-data-table" style="min-width:1200px"><thead><tr><th>Mês</th><th>Frota</th><th>Categoria</th><th>Unidade</th><th>Contrato</th><th>Cliente</th><th>Classe de Valor</th><th>Regime</th><th>ROB Potencial</th><th>ROB Orçada</th><th>Ocupação Orçada</th><th>Ineficiência Orçada</th></tr></thead><tbody id="budget2026Table"></tbody></table></div>
         </div>
       </div>
     </div>
@@ -2460,9 +2458,8 @@ const panelPremises={
     ['Ponto de atenção','A exposição da RPD é gerencial e potencial. Ela não substitui a apuração de faturamento, disponibilidade contratual ou reconhecimento contábil.']
   ],
   budget2026:[
-    ['Objetivo','Consultar a base oficial do orçamento MKT de 2026 e confrontar a ROB prevista com a ROB Real disponível por mês e frota.'],
-    ['Origem dos dados','O orçamento vem exclusivamente da planilha publicada com GID 903790692. A ROB Real vem do controle operacional por frota já conectado ao painel.'],
-    ['Comparação','O vínculo entre orçamento e realizado usa a combinação de mês e frota. Quando não existe ROB Real para essa combinação, o painel mostra N/D.'],
+    ['Objetivo','Consultar a fotografia oficial do orçamento MKT de 2026 por mês e frota.'],
+    ['Origem dos dados','O orçamento vem exclusivamente da planilha publicada com GID 903790692.'],
     ['Valores ausentes','Campos vazios ou sem valor permanecem zerados ou N/D conforme a informação original. O painel não estima nem completa dados ausentes.']
   ],
   tools:[
@@ -3136,21 +3133,13 @@ function getBUDGET2026Filtered(){
     return budgetKey([row.frota,row.client,row.contrato,row.categoria,row.unidade,row.classe,row.regime].join(' ')).includes(query);
   });
 }
-function budget2026ActualMap(){
-  const map=new Map();
-  aggregateFLEETBILLING(fleetBillingData).forEach(row=>{const key=row.mes+'|'+budgetKey(row.frota);map.set(key,(map.get(key)||0)+(row.realizado||0));});
-  return map;
-}
 function renderBUDGET2026(){
   if(!budgetData.length)return;
-  const rows=getBUDGET2026Filtered(),actualMap=budget2026ActualMap(),set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  const rows=getBUDGET2026Filtered(),set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   const budgetTotal=rows.reduce((sum,row)=>sum+(row.rob||0),0),potentialTotal=rows.reduce((sum,row)=>sum+(row.robPotential||0),0),ineffTotal=rows.reduce((sum,row)=>sum+(row.ineffValue||0),0);
-  const comparableRows=rows.filter(row=>actualMap.has(row.mes+'|'+budgetKey(row.frota))),comparableBudget=comparableRows.reduce((sum,row)=>sum+(row.rob||0),0),actualTotal=comparableRows.reduce((sum,row)=>sum+(actualMap.get(row.mes+'|'+budgetKey(row.frota))||0),0);
-  const measuredMonths=[...new Set(comparableRows.map(row=>row.mes))].sort((a,b)=>a-b),attainment=comparableBudget>0?actualTotal/comparableBudget*100:null,positiveRows=rows.filter(row=>row.rob>0),fleets=new Set(positiveRows.map(row=>budgetKey(row.frota)));
+  const positiveRows=rows.filter(row=>row.rob>0),fleets=new Set(positiveRows.map(row=>budgetKey(row.frota)));
   set('budget2026Total',fMoney(budgetTotal));set('budget2026TotalSub',`${positiveRows.length.toLocaleString('pt-BR')} linhas com ROB informada`);
   set('budget2026Potential',fMoney(potentialTotal));set('budget2026Ineff',fMoney(ineffTotal));
-  set('budget2026Actual',comparableRows.length?fMoney(actualTotal):'N/D');set('budget2026ActualSub',measuredMonths.length?measuredMonths.map(month=>BUDGET_MONTHS[month-1]).join(' + '):'sem ROB Real para o recorte');
-  set('budget2026Attainment',attainment==null?'N/D':attainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%');
   set('budget2026Fleets',fleets.size.toLocaleString('pt-BR'));set('budget2026FleetsSub',`${fleets.size.toLocaleString('pt-BR')} frotas únicas com ROB`);
   const sorted=rows.slice().sort((a,b)=>a.mes-b.mes||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})),pageSize=responsiveChartPageSize(100,40),pages=Math.ceil(sorted.length/pageSize)||1;
   budget2026Page=Math.max(0,Math.min(pages-1,budget2026Page));
@@ -3158,9 +3147,8 @@ function renderBUDGET2026(){
   set('budget2026Count',sorted.length?`${start}-${end} de ${sorted.length.toLocaleString('pt-BR')}`:'0 registros');
   const table=document.getElementById('budget2026Table');
   if(table)table.innerHTML=slice.length?slice.map(row=>{
-    const key=row.mes+'|'+budgetKey(row.frota),hasActual=actualMap.has(key),actual=hasActual?actualMap.get(key):null,variance=hasActual?actual-row.rob:null,attainmentRow=hasActual&&row.rob>0?actual/row.rob*100:null;
-    return`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:700">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.categoria||'—')}</td><td>${budgetEsc(row.unidade||'—')}</td><td>${budgetEsc(row.contrato||'—')}</td><td>${budgetEsc(row.client||'—')}</td><td>${budgetEsc(row.classe||'—')}</td><td>${budgetEsc(row.regime||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.robPotential||0)}</td><td style="font-family:var(--font-data);font-weight:700">${fMoney(row.rob||0)}</td><td style="font-family:var(--font-data);font-weight:700;color:${hasActual?'var(--green)':'var(--text3)'}">${hasActual?fMoney(actual):'N/D'}</td><td style="font-family:var(--font-data);font-weight:700;color:${variance==null?'var(--text3)':variance>=0?'var(--green)':'var(--red)'}">${variance==null?'N/D':`${variance<0?'−':'+'} ${fMoney(Math.abs(variance))}`}</td><td style="font-family:var(--font-data)">${attainmentRow==null?(hasActual&&actual>0&&row.rob<=0?'Sem orçamento':'N/D'):attainmentRow.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.ocupacao==null?'N/D':(row.ocupacao*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td style="font-family:var(--font-data)">${fMoney(row.ineffValue||0)}</td></tr>`;
-  }).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Nenhum registro encontrado para os filtros selecionados.</td></tr>';
+    return`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:700">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.categoria||'—')}</td><td>${budgetEsc(row.unidade||'—')}</td><td>${budgetEsc(row.contrato||'—')}</td><td>${budgetEsc(row.client||'—')}</td><td>${budgetEsc(row.classe||'—')}</td><td>${budgetEsc(row.regime||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.robPotential||0)}</td><td style="font-family:var(--font-data);font-weight:700">${fMoney(row.rob||0)}</td><td>${row.ocupacao==null?'N/D':(row.ocupacao*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td style="font-family:var(--font-data)">${fMoney(row.ineffValue||0)}</td></tr>`;
+  }).join(''):'<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:24px">Nenhum registro encontrado para os filtros selecionados.</td></tr>';
   requestAnimationFrame(refreshTableScrollbars);scheduleKpiValueFit(document.getElementById('panel-budget2026'));
 }
 function clearBUDGET2026Filters(){
@@ -7354,7 +7342,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=69',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=70',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
