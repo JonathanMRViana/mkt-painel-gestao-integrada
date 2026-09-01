@@ -3067,7 +3067,7 @@ function processFLEETBILLING(rows){
   const col=(aliases,fallback=-1)=>budgetHeaderIndex(headers,aliases,fallback);
   const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:col(['VALOR COBRADO KM VAZIO']),observacao:headers.findIndex((h,i)=>h==='OBSERVACAO'&&i>col(['VALOR COBRADO KM VAZIO']))};
   const sourceRows=rows.slice(headerIndex+1),executionFields=[ix.realizado,ix.movInterna,ix.frete,ix.diaria,ix.locacao,ix.kmVazio].filter(index=>index>=0);
-  const activeMonths=new Set(sourceRows.filter(row=>budgetMonthNumber(row[ix.mes])>=7&&executionFields.some(index=>Math.abs(budgetNumber(row[index])||0)>.001)).map(row=>budgetMonthNumber(row[ix.mes])));
+  const activeMonths=new Set(sourceRows.filter(row=>executionFields.some(index=>Math.abs(budgetNumber(row[index])||0)>.001)).map(row=>budgetMonthNumber(row[ix.mes])).filter(Boolean));
   const officialBudgetMap=new Map();
   budgetData.forEach(row=>{const key=row.mes+'|'+budgetKey(row.frota);officialBudgetMap.set(key,(officialBudgetMap.get(key)||0)+(row.rob||0));});
   fleetBillingData=sourceRows.map((row,rowIndex)=>{
@@ -4380,8 +4380,6 @@ function renderEXEC(){
   const billingAttainment=billingBudget>0?billingRealized/billingBudget*100:null;
   const billingAttainmentText=billingAttainment==null?'N/D':billingAttainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
   const billingDataMonths=[...new Set(billingRowsAll.filter(row=>row.realizado!==0).map(row=>row.mes))].sort((a,b)=>a-b);
-  const billingIsCurrent=billingDataMonths.includes(today.getMonth()+1);
-  const billingReferenceLabel=billingDataMonths.length?billingDataMonths.map(month=>BUDGET_MONTHS[month-1]).join(' + '):'sem faturamento disponível';
   const billingFleets=new Set(billingRows.filter(row=>row.realizado!==0).map(row=>budgetKey(row.frota))).size;
   const inRange=(d,start,end)=>!!d&&d>=start&&d<=end;
   const isoWeekMonday=(year,weekNum)=>{
@@ -4534,10 +4532,10 @@ function renderEXEC(){
   html('execKmTbl',!d1Covered?'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Sem leitura efetiva nos meses selecionados</td></tr>':d1Below.length?d1Below.map(row=>`<tr><td style="font-family:var(--font-data);font-weight:600">${execEsc(row.frota)}</td><td>${execEsc(row.modelo||'—')}</td><td>${execEsc(row.motor||'—')}</td><td><span class="tag tag-green">${execEsc(row.rawCond||'OP')}</span></td><td style="font-family:var(--font-data);font-weight:600;color:var(--red)">${row.km.toLocaleString('pt-BR')} km</td><td style="font-family:var(--font-data)">${(350-row.km).toLocaleString('pt-BR')} km</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--green);padding:24px">Nenhuma frota operacional abaixo da meta na referência selecionada</td></tr>');
 
   set('execBillMonth',billingDataMonths.length?budgetMoneyCompact(billingRealized):'N/D');
-  set('execBillMonthSub',billingDataMonths.length?`${billingReferenceLabel}${billingIsCurrent?' · parcial':''}`:'faturamento indisponível');
+  set('execBillMonthSub',billingDataMonths.length?'ROB Real MKT':'');
   set('execBillAttainment',billingAttainmentText);
   set('execBudgetMonth',billingDataMonths.length?budgetMoneyCompact(billingBudget):selectedBudgetRows.length?budgetMoneyCompact(selectedBudget):'N/D');
-  set('execBudgetMonthSub',billingDataMonths.length?`${billingReferenceLabel} · orçamento comparável`:selectedBudgetRows.length?`${periodCompact} · ROB orçada MKT`:'orçamento MKT indisponível');
+  set('execBudgetMonthSub',selectedBudgetRows.length?'ROB orçada MKT':'');
   const billingTypeRows=[
     {label:'Locação',value:billingRows.reduce((sum,row)=>sum+(row.locacao||0),0),color:'var(--teal)'},
     {label:'Frete',value:billingRows.reduce((sum,row)=>sum+(row.frete||0),0),color:'var(--accent)'},
@@ -4562,7 +4560,7 @@ function renderEXEC(){
   }).join(''):'<div class="exec-revenue-empty">Sem realizado disponível nos meses selecionados.</div>');
   const billingReconciliationDiff=billingRealized-billingClassified;
   set('execBillingCompositionNote',!billingDataMonths.length?'A base não possui ROB Real preenchida nos meses selecionados.':Math.abs(billingReconciliationDiff)<=.01?'Os tipos informados na base conciliam integralmente com a ROB Real do período.':billingReconciliationDiff>0?`${fMoney(billingClassified)} da ROB Real estão distribuídos entre os cinco tipos. A diferença de ${fMoney(billingReconciliationDiff)} permanece sem classificação na base de origem.`:`A soma dos tipos supera a ROB Real em ${fMoney(Math.abs(billingReconciliationDiff))}. O painel preserva os valores informados e sinaliza a divergência para validação na base.`);
-  set('execBillingText',billingDataMonths.length?`No recorte ${periodLabel}, a ROB Real MKT disponível soma ${fMoney(billingRealized)} frente a ${fMoney(billingBudget)} de ROB orçada, atingindo ${billingAttainmentText}. A base reúne ${billingRowsAll.length.toLocaleString('pt-BR')} combinações mensais e ${billingFleets.toLocaleString('pt-BR')} frotas com faturamento. Competências com dados operacionais: ${billingReferenceLabel}.${billingIsCurrent?' O mês atual está em andamento e o valor é parcial.':''} O resultado contábil oficial permanece na Análise de Resultado.`:'A fonte operacional por frota não possui ROB Real preenchida nos meses selecionados.');
+  set('execBillingText',billingDataMonths.length?`A ROB Real MKT soma ${fMoney(billingRealized)} frente a ${fMoney(billingBudget)} de ROB orçada, atingindo ${billingAttainmentText}. A base reúne ${billingRowsAll.length.toLocaleString('pt-BR')} combinações mensais e ${billingFleets.toLocaleString('pt-BR')} frotas com faturamento. O resultado contábil oficial permanece na Análise de Resultado.`:'');
   const billingGaps=billingRows.map(row=>({...row,gap:row.realizado-row.orcado,attainment:row.orcado>0?row.realizado/row.orcado*100:null})).filter(row=>Math.abs(row.gap)>.005);
   const billingDeficits=billingGaps.filter(row=>row.gap<0).sort((a,b)=>a.gap-b.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,10);
   const billingSurpluses=billingGaps.filter(row=>row.gap>0).sort((a,b)=>b.gap-a.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,5);
@@ -4580,7 +4578,7 @@ function renderEXEC(){
   set('execOverviewInef',weekCovered?weekWaitTotal.toLocaleString('pt-BR'):'N/D');
   set('execOverviewInefSub',weekCovered?`última semana do recorte · ${periodCompact}`:'sem leitura na seleção');
   set('execOverviewBilling',billingDataMonths.length?budgetMoneyCompact(billingRealized):'N/D');
-  set('execOverviewBillingSub',billingDataMonths.length?`${billingAttainmentText} do orçado · ${billingReferenceLabel}`:'faturamento indisponível');
+  set('execOverviewBillingSub',billingDataMonths.length?`${billingAttainmentText} do orçado`:'');
   set('execOverviewKm',d1Covered?d1Below.length.toLocaleString('pt-BR'):'N/D');
   set('execOverviewKmSub',d1Covered?`${d1Operational.length.toLocaleString('pt-BR')} frotas OP · ${fmtDate(latestDataDate)}`:'sem leitura na seleção');
 
@@ -4588,7 +4586,7 @@ function renderEXEC(){
     {title:'Aderência da programação',level:latestWeek&&latestWeek.value!=null?'informativo':'indisponivel',body:latestWeek?(latestWeek.value==null?`${latestWeek.label} ainda não tem fechamento completo de cargas não entregues.`:`${latestWeek.label}: ${pct(latestWeek.value)} de aderência, com ${latestWeek.notDelivered.toLocaleString('pt-BR')} cargas não entregues de ${latestWeek.total.toLocaleString('pt-BR')} planejadas.`):'A programação semanal não está disponível.'},
     {title:'Indisponibilidade RPD',level:!rpdInSelection?'indisponivel':stopped.length?'atencao':'positivo',body:!rpdInSelection?'A RPD é uma fotografia atual e não possui histórico nos meses selecionados.':stopped.length?`${stopped.length.toLocaleString('pt-BR')} equipamentos únicos estão parados; ${impacted.length.toLocaleString('pt-BR')} têm impacto no cliente. Exposição potencial no mês atual: ${budgetData.length?fMoney(rpdExposure):'N/D'}, com ROB para ${rpdBudgetCoverage} frotas.`:'Nenhum equipamento parado na leitura atual.'},
     {title:'Espera operacional',level:weekCovered?(weekWaitTotal?'atencao':'positivo'):'indisponivel',body:weekCovered?`${weekWaitTotal.toLocaleString('pt-BR')} frota-dias de espera na última semana do recorte: ${weekWait.doc} DOC F, ${weekWait.ac} AC e ${weekWait.ad} AD.`:'Sem leitura efetiva do Relatório de Eficiência nos meses selecionados.'},
-    {title:'Faturamento operacional',level:billingDataMonths.length?'informativo':'indisponivel',body:billingDataMonths.length?`${billingReferenceLabel} somam ${fMoney(billingRealized)} de ROB Real MKT frente a ${fMoney(billingBudget)} de ROB orçada (${billingAttainmentText}).${billingIsCurrent?' A leitura do mês atual é parcial.':''}`:'Faturamento operacional indisponível nos meses selecionados.'},
+    {title:'Faturamento operacional',level:billingDataMonths.length?'informativo':'indisponivel',body:billingDataMonths.length?`${fMoney(billingRealized)} de ROB Real MKT frente a ${fMoney(billingBudget)} de ROB orçada (${billingAttainmentText}).`:'Sem ROB Real preenchida no recorte selecionado.'},
     {title:'Rodagem na referência',level:d1Covered?(d1Below.length?'atencao':'positivo'):'indisponivel',body:d1Covered?`${d1Below.length.toLocaleString('pt-BR')} de ${d1Operational.length.toLocaleString('pt-BR')} frotas OP rodaram menos de 350 km em ${fmtDate(latestDataDate)}.`:'Sem leitura efetiva nos meses selecionados.'}
   ];
   html('execOverviewRead',overviewAlerts.map((item,index)=>`<div class="exec-alert"><div class="exec-alert-head"><div class="exec-alert-title">${index+1}. ${execEsc(item.title)}</div><span class="tag ${execTagClass(item.level)}">${execEsc(execLevelLabel(item.level))}</span></div><div class="exec-alert-body">${execEsc(item.body)}</div></div>`).join(''));
@@ -4597,7 +4595,7 @@ function renderEXEC(){
     ['RPD',rpdInSelection&&rpdData.length?'Disponível':'N/D',rpdInSelection?`${rpdData.length} equipamentos na fotografia atual`:'sem histórico no recorte',rpdInSelection&&!!rpdData.length],
     ['Eficiência',selectedMeaningfulDays.length?'Disponível':'N/D',selectedMeaningfulDays.length?`última leitura ${fmtDate(latestDataDate)}`:'sem base no recorte',!!selectedMeaningfulDays.length],
     ['Orçamento',selectedBudgetRows.length?'Disponível':'N/D',selectedBudgetRows.length?`${budgetMoneyCompact(selectedBudget)} no período`:'sem base no recorte',!!selectedBudgetRows.length],
-    ['Faturamento MKT',billingDataMonths.length?'Disponível':'N/D',billingDataMonths.length?`${billingReferenceLabel} · ${budgetMoneyCompact(billingRealized)}`:'sem base no recorte',!!billingDataMonths.length]
+    ['Faturamento MKT',billingDataMonths.length?'Disponível':'N/D',billingDataMonths.length?budgetMoneyCompact(billingRealized):'sem base no recorte',!!billingDataMonths.length]
   ];
   html('execOverviewSources',sourceCards.map(([label,value,sub,available])=>`<div class="exec-heat-card"><div class="exec-heat-k">${execEsc(label)}</div><div class="exec-heat-v ${available?'level-positivo':'level-atencao'}">${execEsc(value)}</div><div class="exec-heat-s">${execEsc(sub)}</div></div>`).join(''));
   setExecTab(execActiveTab);
@@ -7342,7 +7340,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=70',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=71',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
