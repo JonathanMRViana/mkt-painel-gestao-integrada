@@ -302,6 +302,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-revenue-value{font:600 12px var(--font-data);color:var(--text);text-align:right;white-space:nowrap}
 .exec-revenue-share{font:10px var(--font-data);color:var(--text2);text-align:right;white-space:nowrap}
 .exec-revenue-empty{padding:24px;text-align:center;color:var(--text3);border:1px dashed var(--border);border-radius:8px}
+#execContentBilling .exec-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:768px){
   #execContentBilling .exec-kpis{grid-template-columns:1fr!important}
   .exec-revenue-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}
@@ -7340,7 +7341,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=71',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=72',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
