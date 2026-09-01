@@ -308,8 +308,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-billing-summary-stack>.card{margin-bottom:0!important}
 .exec-billing-summary{border-left:3px solid var(--makro-blue)}
 .exec-billing-summary.exec-billing-summary-loss{border-left-color:var(--red)}
+.exec-billing-summary.exec-billing-summary-maintenance{border-left-color:var(--amber)}
 .exec-billing-summary-note{font:700 15px/1.55 var(--font-ui);color:var(--text);text-transform:uppercase}
 .exec-billing-summary-value{font:700 clamp(23px,2vw,31px)/1.15 var(--font-data);color:var(--red);margin:4px 0 8px;overflow-wrap:anywhere}
+.exec-billing-summary-maintenance .exec-billing-summary-value{color:var(--amber)}
 .exec-billing-summary-sub{font:10px/1.5 var(--font-data);color:var(--text3)}
 #execContentBilling .exec-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:768px){
@@ -2156,7 +2158,7 @@ tbody tr:hover td{background:var(--surface2)}
           <div class="exec-billing-chart-grid">
             <div class="card exec-card">
               <div class="card-head"><span class="card-title">ROB Orçada x Executada x Perda Potencial por Frota</span><div class="chart-nav"><span class="count-tag" id="execBillingFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollEXECBillingFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollEXECBillingFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div>
-              <div style="height:300px"><canvas id="execBillingFleetChart"></canvas></div>
+              <div style="height:430px"><canvas id="execBillingFleetChart"></canvas></div>
             </div>
             <div class="exec-billing-summary-stack">
               <div class="card exec-card exec-billing-summary">
@@ -2167,6 +2169,11 @@ tbody tr:hover td{background:var(--surface2)}
                 <div class="card-head"><span class="card-title">Linha de Eixo · Orçado LE</span></div>
                 <div class="exec-billing-summary-value" id="execBillLeLoss">N/D</div>
                 <div class="exec-billing-summary-sub" id="execBillLeLossSub">Perda de receita das frotas 615 e 619</div>
+              </div>
+              <div class="card exec-card exec-billing-summary exec-billing-summary-maintenance">
+                <div class="card-head"><span class="card-title">Perda Potencial por Manutenção</span></div>
+                <div class="exec-billing-summary-value" id="execBillMaintenanceLoss">N/D</div>
+                <div class="exec-billing-summary-sub" id="execBillMaintenanceLossSub">Cenário conservador · KM vazio a 85%</div>
               </div>
             </div>
           </div>
@@ -3144,7 +3151,7 @@ function resolveFreightComposition(conjunto){
 function fleetMaintenancePotential(row){
   const days=Math.max(0,Number(row.diasManut)||0),composition=resolveFreightComposition(row.conjunto);
   const rate=composition.rateType?freightRates.find(item=>budgetKey(item.type)===budgetKey(composition.rateType)):null;
-  return{days,type:composition.type,rate:rate?rate.loadedRate:0,value:rate?days*350*rate.loadedRate:0,mapped:days<=0||!!rate};
+  return{days,type:composition.type,rate:rate?rate.emptyRate:0,value:rate?days*350*rate.emptyRate:0,mapped:days<=0||!!rate};
 }
 function processFLEETBILLING(rows){
   const headerIndex=rows.findIndex(row=>{const keys=row.map(budgetKey);return keys.includes('MES')&&keys.includes('FROTA')&&keys.includes('ROBREAL')&&keys.includes('ROBORCADA');});
@@ -3954,8 +3961,8 @@ function renderEXECBillingFleetChart(){
   execBillingFleetChart=new Chart(canvas,{type:'bar',plugins:[progBarValueLabelsPlugin],data:{labels:slice.map(row=>row.frota),datasets:[
     {label:'ROB Orçada MKT',data:slice.map(row=>row.orcado),backgroundColor:ct.blueFill,borderColor:ct.blue,borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84},
     {label:'ROB Executada MKT',data:slice.map(row=>row.realizado),backgroundColor:dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)',borderColor:dark?'#46c18b':'#198f62',borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84},
-    {label:'Perda Potencial por Manutenção',data:slice.map(row=>row.maintenancePotential),backgroundColor:dark?'rgba(245,78,105,.82)':'rgba(205,25,54,.82)',borderColor:'#d11232',borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84}
-  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:9,formatter:value=>value?budgetMoneyCompact(value):''},legend:{display:totals.length>0,position:'bottom',labels:{color:ct.text3,boxWidth:10,boxHeight:10,padding:14,font:{family:'IBM Plex Mono',size:9}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fMoney(ctx.raw),afterLabel:ctx=>ctx.datasetIndex===2&&slice[ctx.dataIndex].maintenanceDays?` ${slice[ctx.dataIndex].maintenanceDays} dias · ${slice[ctx.dataIndex].maintenanceType||'tipo sem correspondência'} · 350 km/dia`:''}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
+    {label:'Perda Potencial por Manutenção · 85%',data:slice.map(row=>row.maintenancePotential),backgroundColor:dark?'rgba(245,78,105,.82)':'rgba(205,25,54,.82)',borderColor:'#d11232',borderWidth:1,borderRadius:4,categoryPercentage:.76,barPercentage:.84}
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{progBarValueLabels:{color:ct.text,fontSize:9,formatter:value=>value?budgetMoneyCompact(value):''},legend:{display:totals.length>0,position:'bottom',labels:{color:ct.text3,boxWidth:10,boxHeight:10,padding:14,font:{family:'IBM Plex Mono',size:9}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fMoney(ctx.raw),afterLabel:ctx=>ctx.datasetIndex===2&&slice[ctx.dataIndex].maintenanceDays?` ${slice[ctx.dataIndex].maintenanceDays} dias · ${slice[ctx.dataIndex].maintenanceType||'tipo sem correspondência'} · 350 km/dia · KM vazio 85%`:''}}},scales:{x:{grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10}}},y:{beginAtZero:true,grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}}}}});
 }
 function scrollEXECBillingFleet(dir){
   const pageSize=responsiveChartPageSize(8,4),pages=Math.ceil(execBillingFleetTotals.length/pageSize)||1;
@@ -4678,6 +4685,13 @@ function renderEXEC(){
   const leBudgetLoss=leBudgetRows.reduce((sum,row)=>sum+Math.max(0,(row.orcado||0)-(row.realizado||0)),0);
   set('execBillLeLoss',billingDataMonths.length&&leBudgetRows.length?budgetMoneyCompact(leBudgetLoss):'N/D');
   set('execBillLeLossSub',billingDataMonths.length&&leBudgetRows.length?`Perda acumulada · ${leBudgetRows.length} de 2 frotas no recorte`:'Perda de receita das frotas 615 e 619');
+  const maintenanceRows=billingRows.filter(row=>(row.maintenanceDays||0)>0);
+  const maintenanceMappedRows=maintenanceRows.filter(row=>(row.maintenancePotential||0)>0);
+  const maintenancePotentialTotal=maintenanceMappedRows.reduce((sum,row)=>sum+(row.maintenancePotential||0),0);
+  const maintenanceDaysTotal=maintenanceMappedRows.reduce((sum,row)=>sum+(row.maintenanceDays||0),0);
+  const maintenanceUnmapped=maintenanceRows.filter(row=>(row.maintenanceUnmappedDays||0)>0).length;
+  set('execBillMaintenanceLoss',maintenanceMappedRows.length?budgetMoneyCompact(maintenancePotentialTotal):'N/D');
+  set('execBillMaintenanceLossSub',maintenanceMappedRows.length?`${maintenanceMappedRows.length} frotas · ${maintenanceDaysTotal} dias · KM vazio a 85%${maintenanceUnmapped?' · '+maintenanceUnmapped+' sem tarifa':''}`:'Cenário conservador · KM vazio a 85%');
   const billingTypeRows=[
     {label:'Locação',value:billingRows.reduce((sum,row)=>sum+(row.locacao||0),0),color:'var(--teal)'},
     {label:'Frete',value:billingRows.reduce((sum,row)=>sum+(row.frete||0),0),color:'var(--accent)'},
