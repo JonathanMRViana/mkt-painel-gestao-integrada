@@ -4625,7 +4625,9 @@ function renderEXEC(){
     return`<div class="exec-revenue-row"><div class="exec-revenue-name">${execEsc(row.label)}</div><div class="exec-revenue-track"><div class="exec-revenue-fill" style="width:${Math.min(100,row.value/billingMaxType*100)}%;background:${row.color}"></div></div><div class="exec-revenue-value">${fMoney(row.value)}</div><div class="exec-revenue-share">${share.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}% · acum. ${billingCumulative.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%</div></div>`;
   }).join(''):'<div class="exec-revenue-empty">Sem realizado disponível nos meses selecionados.</div>');
   const billingReconciliationDiff=billingRealized-billingClassified;
-  set('execBillingCompositionNote',!billingDataMonths.length?'A base não possui ROB Real preenchida nos meses selecionados.':Math.abs(billingReconciliationDiff)<=.01?'Os tipos informados na base conciliam integralmente com a ROB Real do período.':billingReconciliationDiff>0?`${fMoney(billingClassified)} da ROB Real estão distribuídos entre os cinco tipos. A diferença de ${fMoney(billingReconciliationDiff)} permanece sem classificação na base de origem.`:`A soma dos tipos supera a ROB Real em ${fMoney(Math.abs(billingReconciliationDiff))}. O painel preserva os valores informados e sinaliza a divergência para validação na base.`);
+  const billingCompositionNote=!billingDataMonths.length?'A base não possui ROB Real preenchida nos meses selecionados.':Math.abs(billingReconciliationDiff)<=.01?'':billingReconciliationDiff>0?`${fMoney(billingClassified)} da ROB Real estão distribuídos entre os cinco tipos. A diferença de ${fMoney(billingReconciliationDiff)} permanece sem classificação na base de origem.`:`A soma dos tipos supera a ROB Real em ${fMoney(Math.abs(billingReconciliationDiff))}. O painel preserva os valores informados e sinaliza a divergência para validação na base.`;
+  set('execBillingCompositionNote',billingCompositionNote);
+  const billingCompositionNoteEl=document.getElementById('execBillingCompositionNote');if(billingCompositionNoteEl)billingCompositionNoteEl.style.display=billingCompositionNote?'block':'none';
   const billingDeviation=billingRealized-billingBudget;
   set('execBillingText',billingDataMonths.length&&billingAttainment!=null?`A ROB executada atingiu ${billingAttainmentText} do orçamento, com desvio ${billingDeviation>=0?'positivo':'negativo'} de ${fMoney(Math.abs(billingDeviation))}.`:billingDataMonths.length?`A ROB executada somou ${fMoney(billingRealized)}, sem orçamento comparável no período.`:'Sem ROB Real preenchida no recorte.');
   const billingGaps=billingRows.map(row=>({...row,gap:row.realizado-row.orcado,attainment:row.orcado>0?row.realizado/row.orcado*100:null})).filter(row=>Math.abs(row.gap)>.005);
@@ -7408,7 +7410,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=79',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=80',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
