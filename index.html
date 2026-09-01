@@ -304,9 +304,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-revenue-empty{padding:24px;text-align:center;color:var(--text3);border:1px dashed var(--border);border-radius:8px}
 .exec-billing-chart-grid{display:grid;grid-template-columns:minmax(0,2.35fr) minmax(230px,.65fr);gap:20px;margin-bottom:20px;align-items:start}
 .exec-billing-chart-grid>.card{margin-bottom:0!important}
+.exec-billing-summary-stack{display:grid;gap:14px}
+.exec-billing-summary-stack>.card{margin-bottom:0!important}
 .exec-billing-summary{border-left:3px solid var(--makro-blue)}
+.exec-billing-summary.exec-billing-summary-loss{border-left-color:var(--red)}
 .exec-billing-summary-note{font:700 15px/1.55 var(--font-ui);color:var(--text);text-transform:uppercase}
-#execContentBilling .exec-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+.exec-billing-summary-value{font:700 clamp(23px,2vw,31px)/1.15 var(--font-data);color:var(--red);margin:4px 0 8px;overflow-wrap:anywhere}
+.exec-billing-summary-sub{font:10px/1.5 var(--font-data);color:var(--text3)}
+#execContentBilling .exec-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:768px){
   #execContentBilling .exec-kpis{grid-template-columns:1fr!important}
   .exec-revenue-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}
@@ -2141,7 +2146,6 @@ tbody tr:hover td{background:var(--surface2)}
             <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada no Período</div><div class="kpi-value" id="execBudgetMonth">N/D</div><div class="kpi-sub" id="execBudgetMonthSub">orçamento MKT selecionado</div></div>
             <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">ROB Real MKT</div><div class="kpi-value" id="execBillMonth">N/D</div><div class="kpi-sub" id="execBillMonthSub">faturamento operacional do mês</div></div>
             <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="execBillAttainment">N/D</div><div class="kpi-sub">ROB real ÷ ROB orçada</div></div>
-            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Perda de Receita · Orçado LE</div><div class="kpi-value" id="execBillLeLoss">N/D</div><div class="kpi-sub" id="execBillLeLossSub">frotas 615 e 619</div></div>
           </div>
           <div class="card exec-card" style="margin-bottom:20px">
             <div class="card-head"><span class="card-title">Composição do Realizado por Tipo</span><span class="count-tag" id="execBillingCompositionTotal">N/D</span></div>
@@ -2154,9 +2158,16 @@ tbody tr:hover td{background:var(--surface2)}
               <div class="card-head"><span class="card-title">ROB Orçada x Executada por Frota</span><div class="chart-nav"><span class="count-tag" id="execBillingFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollEXECBillingFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollEXECBillingFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div>
               <div style="height:300px"><canvas id="execBillingFleetChart"></canvas></div>
             </div>
-            <div class="card exec-card exec-billing-summary">
-              <div class="card-head"><span class="card-title">Manchete do Período</span></div>
-              <div class="exec-billing-summary-note" id="execBillingText">Sem ROB Real preenchida no recorte.</div>
+            <div class="exec-billing-summary-stack">
+              <div class="card exec-card exec-billing-summary">
+                <div class="card-head"><span class="card-title">Manchete do Período</span></div>
+                <div class="exec-billing-summary-note" id="execBillingText">Sem ROB Real preenchida no recorte.</div>
+              </div>
+              <div class="card exec-card exec-billing-summary exec-billing-summary-loss">
+                <div class="card-head"><span class="card-title">Linha de Eixo · Orçado LE</span></div>
+                <div class="exec-billing-summary-value" id="execBillLeLoss">N/D</div>
+                <div class="exec-billing-summary-sub" id="execBillLeLossSub">Perda de receita das frotas 615 e 619</div>
+              </div>
             </div>
           </div>
           <div class="card exec-card" style="margin-bottom:20px">
@@ -4606,7 +4617,7 @@ function renderEXEC(){
   const leBudgetRows=billingRows.filter(row=>leBudgetFleetIds.has(String(row.frota||'').replace(/\D/g,'')));
   const leBudgetLoss=leBudgetRows.reduce((sum,row)=>sum+Math.max(0,(row.orcado||0)-(row.realizado||0)),0);
   set('execBillLeLoss',billingDataMonths.length&&leBudgetRows.length?budgetMoneyCompact(leBudgetLoss):'N/D');
-  set('execBillLeLossSub',billingDataMonths.length&&leBudgetRows.length?`${leBudgetRows.length} de 2 frotas no recorte`:'frotas 615 e 619');
+  set('execBillLeLossSub',billingDataMonths.length&&leBudgetRows.length?`Perda acumulada · ${leBudgetRows.length} de 2 frotas no recorte`:'Perda de receita das frotas 615 e 619');
   const billingTypeRows=[
     {label:'Locação',value:billingRows.reduce((sum,row)=>sum+(row.locacao||0),0),color:'var(--teal)'},
     {label:'Frete',value:billingRows.reduce((sum,row)=>sum+(row.frete||0),0),color:'var(--accent)'},
