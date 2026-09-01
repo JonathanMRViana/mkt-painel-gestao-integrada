@@ -919,6 +919,11 @@ tbody tr:hover td{background:var(--surface2)}
     <span class="nav-lbl">Resultado da Unidade</span>
   </div>
 
+  <div class="nav-item" id="nav-budget2026" data-tip="Orçamento 2026 - MKT" data-sub="Base oficial do orçamento por frota" onclick="goTo('budget2026')">
+    <svg class="nav-icon nav-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/><path d="M8 13h3M8 16h5M16 13h1M16 16h1"/></svg>
+    <span class="nav-lbl">Orçamento 2026 - MKT</span>
+  </div>
+
   <div class="sb-section">Ferramentas</div>
 
   <div class="nav-item" id="nav-tools" data-tip="Calculadora de Frete" data-sub="Plano de cargas e tabela de fretes" onclick="goTo('tools')">
@@ -2192,10 +2197,10 @@ tbody tr:hover td{background:var(--surface2)}
       <div id="budgetBody" style="display:none">
         <div class="top-filter-bar">
           <div class="top-filter-bar-title">Filtros</div>
-          <div class="search-wrap"><svg class="search-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input class="search-input" id="budgetSearch" placeholder="Buscar frota, conjunto, contrato ou situação..." oninput="syncBUDGETSearch(this,'budgetSearchBot')"></div>
+          <div class="search-wrap"><svg class="search-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input class="search-input" id="budgetSearch" placeholder="Buscar frota, cliente, contrato, categoria ou unidade..." oninput="syncBUDGETSearch(this,'budgetSearchBot')"></div>
           <div class="select-group"><label class="select-label">Mês</label><select class="f-select" id="budgetMes" onchange="syncBUDGETSelect(this,'budgetMesBot')"><option value="TODOS">Todos</option></select></div>
-          <div class="select-group"><label class="select-label">Situação</label><select class="f-select" id="budgetSituacao" onchange="syncBUDGETSelect(this,'budgetSituacaoBot')"><option value="TODOS">Todos</option></select></div>
-          <div class="select-group"><label class="select-label">Tipo</label><select class="f-select" id="budgetTipo" onchange="syncBUDGETSelect(this,'budgetTipoBot')"><option value="TODOS">Todos</option></select></div>
+          <div class="select-group"><label class="select-label">Tipo Contrato</label><select class="f-select" id="budgetSituacao" onchange="syncBUDGETSelect(this,'budgetSituacaoBot')"><option value="TODOS">Todos</option></select></div>
+          <div class="select-group"><label class="select-label">Categoria</label><select class="f-select" id="budgetTipo" onchange="syncBUDGETSelect(this,'budgetTipoBot')"><option value="TODOS">Todos</option></select></div>
           <div class="select-group"><label class="select-label">Unidade</label><select class="f-select" id="budgetUnidade" onchange="syncBUDGETSelect(this,'budgetUnidadeBot')"><option value="TODOS">Todos</option></select></div>
           <div class="select-group"><label class="select-label">Contrato</label><select class="f-select" id="budgetContrato" onchange="syncBUDGETSelect(this,'budgetContratoBot')"><option value="TODOS">Todos</option></select></div>
           <button class="clear-filters-btn" onclick="clearBUDGETFilters()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Limpar</button>
@@ -2218,20 +2223,47 @@ tbody tr:hover td{background:var(--surface2)}
         <div class="tbl-card">
           <div class="tbl-head"><span class="tbl-title">Detalhamento do Orçamento</span><div class="chart-nav"><span class="count-tag" id="budgetCount">0 registros</span><button class="chart-arrow" onclick="scrollBUDGETTable(-1)" title="Página anterior" aria-label="Página anterior do detalhamento">‹</button><button class="chart-arrow" onclick="scrollBUDGETTable(1)" title="Próxima página" aria-label="Próxima página do detalhamento">›</button></div></div>
           <div class="filter-bar-row">
-            <div class="search-wrap"><svg class="search-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input class="search-input" id="budgetSearchBot" placeholder="Buscar frota, conjunto, contrato ou situação..." oninput="syncBUDGETSearch(this,'budgetSearch')"></div>
+            <div class="search-wrap"><svg class="search-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input class="search-input" id="budgetSearchBot" placeholder="Buscar frota, cliente, contrato, categoria ou unidade..." oninput="syncBUDGETSearch(this,'budgetSearch')"></div>
             <div class="select-group"><label class="select-label">Mês</label><select class="f-select" id="budgetMesBot" onchange="syncBUDGETSelect(this,'budgetMes')"><option value="TODOS">Todos</option></select></div>
-            <div class="select-group"><label class="select-label">Situação</label><select class="f-select" id="budgetSituacaoBot" onchange="syncBUDGETSelect(this,'budgetSituacao')"><option value="TODOS">Todos</option></select></div>
-            <div class="select-group"><label class="select-label">Tipo</label><select class="f-select" id="budgetTipoBot" onchange="syncBUDGETSelect(this,'budgetTipo')"><option value="TODOS">Todos</option></select></div>
+            <div class="select-group"><label class="select-label">Tipo Contrato</label><select class="f-select" id="budgetSituacaoBot" onchange="syncBUDGETSelect(this,'budgetSituacao')"><option value="TODOS">Todos</option></select></div>
+            <div class="select-group"><label class="select-label">Categoria</label><select class="f-select" id="budgetTipoBot" onchange="syncBUDGETSelect(this,'budgetTipo')"><option value="TODOS">Todos</option></select></div>
             <div class="select-group"><label class="select-label">Unidade</label><select class="f-select" id="budgetUnidadeBot" onchange="syncBUDGETSelect(this,'budgetUnidade')"><option value="TODOS">Todos</option></select></div>
             <div class="select-group"><label class="select-label">Contrato</label><select class="f-select" id="budgetContratoBot" onchange="syncBUDGETSelect(this,'budgetContrato')"><option value="TODOS">Todos</option></select></div>
             <button class="clear-filters-btn" onclick="clearBUDGETFilters()">Limpar</button>
           </div>
-          <div class="tbl-wrap"><table><thead><tr><th>Mês</th><th>Frota</th><th>Tipo</th><th>Situação</th><th>Unidade</th><th>Conjunto</th><th>Contrato</th><th>Ocupação</th><th>Inef. Logística</th><th>Inef. Comercial</th><th>Inef. Operacional</th><th>Inef. Mecânica</th><th>Horas Orç.</th><th>Horas Extras</th><th>ROB Orçada</th></tr></thead><tbody id="budgetTable"></tbody></table></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Mês</th><th>Frota</th><th>Categoria</th><th>Unidade</th><th>Contrato</th><th>Cliente</th><th>Classe de Valor</th><th>Regime</th><th>ROB Potencial</th><th>Ocupação</th><th>Inef. Logística</th><th>Inef. Comercial</th><th>Inef. Operacional</th><th>Inef. Mecânica</th><th>ROB Orçada</th></tr></thead><tbody id="budgetTable"></tbody></table></div>
         </div>
 
         <div class="tbl-card">
           <div class="tbl-head"><span class="tbl-title">Faturamento Operacional por Frota</span><div class="chart-nav"><span class="count-tag" id="budgetMktCount">0 registros</span><button class="chart-arrow" onclick="scrollBUDGETMktTable(-1)" title="Página anterior" aria-label="Página anterior do faturamento operacional">‹</button><button class="chart-arrow" onclick="scrollBUDGETMktTable(1)" title="Próxima página" aria-label="Próxima página do faturamento operacional">›</button></div></div>
           <div class="tbl-wrap"><table><thead><tr><th>Mês</th><th>Frota</th><th>Conjunto</th><th>Situação</th><th>Categoria</th><th>ROB Orçada MKT</th><th>ROB Executada MKT</th><th>Variação</th><th>Atingimento</th><th>Mov. Interna</th><th>Frete</th><th>Diária</th><th>Locação</th><th>KM Vazio Cobrado</th><th>Observação</th></tr></thead><tbody id="budgetMktTable"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OFFICIAL 2026 BUDGET PANEL -->
+    <div id="panel-budget2026" class="panel">
+      <div class="loading" id="budget2026Load"><div class="spinner"></div><span>Carregando orçamento 2026...</span></div>
+      <div id="budget2026Body" style="display:none">
+        <div class="top-filter-bar">
+          <div class="top-filter-bar-title">Filtros</div>
+          <div class="search-wrap"><svg class="search-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input class="search-input" id="budget2026Search" placeholder="Buscar frota, cliente, contrato, categoria ou unidade..." oninput="renderBUDGET2026()"></div>
+          <div class="select-group"><label class="select-label">Mês</label><select class="f-select" id="budget2026Mes" onchange="budget2026Page=0;renderBUDGET2026()"><option value="TODOS">Todos</option></select></div>
+          <button class="clear-filters-btn" onclick="clearBUDGET2026Filters()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Limpar</button>
+        </div>
+
+        <div class="kpi-row exec-kpis exec-six">
+          <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada</div><div class="kpi-value" id="budget2026Total">N/D</div><div class="kpi-sub" id="budget2026TotalSub">base oficial selecionada</div></div>
+          <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Potencial</div><div class="kpi-value" id="budget2026Potential">N/D</div><div class="kpi-sub">potencial informado na base</div></div>
+          <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Ineficiência Orçada</div><div class="kpi-value" id="budget2026Ineff">N/D</div><div class="kpi-sub">valor previsto na base</div></div>
+          <div class="kpi c-green"><div class="kpi-stripe"></div><div class="kpi-label">ROB Real Medida</div><div class="kpi-value" id="budget2026Actual">N/D</div><div class="kpi-sub" id="budget2026ActualSub">somente competências disponíveis</div></div>
+          <div class="kpi c-teal"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento</div><div class="kpi-value" id="budget2026Attainment">N/D</div><div class="kpi-sub">real medido ÷ orçado comparável</div></div>
+          <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Frotas Orçadas</div><div class="kpi-value" id="budget2026Fleets">0</div><div class="kpi-sub" id="budget2026FleetsSub">frotas únicas com ROB</div></div>
+        </div>
+
+        <div class="tbl-card">
+          <div class="tbl-head"><span class="tbl-title">Orçamento Oficial x Realizado por Frota</span><div class="chart-nav"><span class="count-tag" id="budget2026Count">0 registros</span><button class="chart-arrow" onclick="scrollBUDGET2026(-1)" title="Página anterior" aria-label="Página anterior do orçamento">‹</button><button class="chart-arrow" onclick="scrollBUDGET2026(1)" title="Próxima página" aria-label="Próxima página do orçamento">›</button></div></div>
+          <div class="tbl-wrap"><table class="exec-data-table" style="min-width:1500px"><thead><tr><th>Mês</th><th>Frota</th><th>Categoria</th><th>Unidade</th><th>Contrato</th><th>Cliente</th><th>Classe de Valor</th><th>Regime</th><th>ROB Potencial</th><th>ROB Orçada</th><th>ROB Real</th><th>Variação</th><th>Atingimento</th><th>Ocupação Orçada</th><th>Ineficiência Orçada</th></tr></thead><tbody id="budget2026Table"></tbody></table></div>
         </div>
       </div>
     </div>
@@ -2339,6 +2371,7 @@ const pages={aet:{t:'Gestão de AET\'s',s:'licenças especiais de trânsito'},mo
   efl:{t:'Relatório de Eficiência Logística',s:'eficiência de KM por frota · operação diária'},
   exec:{t:'Resumo Executivo',s:'visão gerencial consolidada das operações'},
   budget:{t:'Resultado da Unidade',s:'orçado x realizado por unidade e cavalo'},
+  budget2026:{t:'Orçamento 2026 - MKT',s:'base oficial do orçamento por mês e frota'},
   tools:{t:'Calculadora de Frete',s:'plano de cargas e consulta de tarifas'},
   rpd:{t:'Relatório de Frotas em Manutenção (RPD)',s:'frotas em manutenção · operação diária'}};
 
@@ -2417,14 +2450,20 @@ const panelPremises={
   ],
   budget:[
     ['Objetivo','Consolidar orçamento, prévia de faturamento e resultado contábil da unidade, com leitura total e por cavalo.'],
-    ['Situação atual','A ROB orçada detalhada e o resultado mensal do BI estão conectados. O faturamento por cavalo permanece indisponível até a publicação da base com esse nível de detalhe.'],
-    ['Origem dos dados','A ROB detalhada vem do orçamento anual publicado no Google Sheets. O Executado MKT por frota incorpora automaticamente os meses que possuam execução preenchida. O Realizado Contábil vem da extração mensal do BI e permanece como fonte oficial.'],
+    ['Situação atual','A ROB orçada oficial de 2026 e a ROB Real operacional por frota estão conectadas por mês e frota.'],
+    ['Origem dos dados','A ROB orçada vem da base Orçamento 2026 - MKT, GID 903790692. O Executado MKT por frota incorpora somente os meses que possuam execução preenchida. O Realizado Contábil vem da extração mensal do BI e permanece como fonte oficial.'],
     ['ROB orçada','Representa receita operacional bruta planejada. Não é faturamento realizado, valor cobrado ou receita contábil reconhecida.'],
     ['Frotas com ROB','A contagem usa frotas únicas com valor orçado maior que zero, evitando multiplicar a mesma frota pelos doze meses.'],
     ['Ocupação e ineficiência','São médias simples das premissas preenchidas nas linhas filtradas. A ineficiência total soma logística, comercial, operacional e mecânica antes da média.'],
     ['RPD','Quando uma frota orçada está parada, o Resumo Executivo estima a exposição potencial pela ROB mensal dividida pelos dias do mês e multiplicada pelos dias indisponíveis.'],
     ['Comparabilidade','O realizado do BI é exibido somente na visão consolidada, pois a extração atual não possui frota, conjunto ou contrato. Em filtros detalhados, mostrar o total da unidade seria uma comparação incorreta.'],
     ['Ponto de atenção','A exposição da RPD é gerencial e potencial. Ela não substitui a apuração de faturamento, disponibilidade contratual ou reconhecimento contábil.']
+  ],
+  budget2026:[
+    ['Objetivo','Consultar a base oficial do orçamento MKT de 2026 e confrontar a ROB prevista com a ROB Real disponível por mês e frota.'],
+    ['Origem dos dados','O orçamento vem exclusivamente da planilha publicada com GID 903790692. A ROB Real vem do controle operacional por frota já conectado ao painel.'],
+    ['Comparação','O vínculo entre orçamento e realizado usa a combinação de mês e frota. Quando não existe ROB Real para essa combinação, o painel mostra N/D.'],
+    ['Valores ausentes','Campos vazios ou sem valor permanecem zerados ou N/D conforme a informação original. O painel não estima nem completa dados ausentes.']
   ],
   tools:[
     ['Objetivo','Montar um plano com diferentes tipos e quantidades de cargas e estimar o frete total a partir da tabela oficial publicada.'],
@@ -2527,6 +2566,7 @@ function goTo(id){
     if(id==='prog'&&progSheetsData.length>0){if(progStatusChart){progStatusChart.destroy();progStatusChart=null;}if(progClientChart){progClientChart.destroy();progClientChart=null;}if(progLoadChart){progLoadChart.destroy();progLoadChart=null;}if(progTrendChart){progTrendChart.destroy();progTrendChart=null;}renderPROG();}
     if(id==='mat'&&(matData.length>0||matSafetyData.length>0)){if(mAC){mAC.destroy();mAC=null;}renderMAT();}
     if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}renderBUDGET();}
+    if(id==='budget2026'&&budgetData.length>0)renderBUDGET2026();
     if(id==='exec'){setExecTab(execActiveTab||'overview');renderEXEC();}
     if(id==='tools')renderFreightCalculator();
     scheduleKpiValueFit(document.getElementById('panel-'+id));
@@ -2848,7 +2888,7 @@ const CSV_PATIO_INVENTORY = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSo
 const CSV_MAT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1E33A1HGe5Qs178YvjZnrV_eA-RDIjVkxczBTHBwhk2w0_9LzGuhxLxzrIWu9jHEhKr6oZ66hoJYr/pub?gid=1385059435&single=true&output=csv";
 const CSV_MAT_SAFETY = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1E33A1HGe5Qs178YvjZnrV_eA-RDIjVkxczBTHBwhk2w0_9LzGuhxLxzrIWu9jHEhKr6oZ66hoJYr/pub?gid=1640125903&single=true&output=csv";
 const CSV_RPD="https://docs.google.com/spreadsheets/d/e/2PACX-1vS_rfQGQXLNr0XsYzPab32cj30MbIJ2VLisoCZqio-qc_XP1p2J532LuNOEFNhu9fg52UW_zRTfQyN3/pub?gid=1614487064&single=true&output=csv";
-const CSV_BUDGET="https://docs.google.com/spreadsheets/d/e/2PACX-1vS3kOKgLiA9Gh4JzI38Xd1X3zspFMlmbgXnBuRxEcyVWJMJm1I7Pf1_n2efdxOSPVJBJfBymZmkygUZ/pub?output=csv";
+const CSV_BUDGET="https://docs.google.com/spreadsheets/d/e/2PACX-1vR2nrorePlX5AmlSY3iPHpXyFbv4sYG3KeGEFyJbZOO-e2H7E9iSTnqaJZcnLl7fi7QMB_-M4L64yk4/pub?output=csv&gid=903790692";
 const CSV_RESULT_BI="https://docs.google.com/spreadsheets/d/e/2PACX-1vRJCb4qUO4Rv6umak_zGHWGExLaOPQpZWNjPi2frLNbwOTJyzh6y06XOGMH_TugjU6iqF46ypDlSOCt/pub?output=csv";
 const CSV_FLEET_BILLING="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1256794079";
 const CSV_FREIGHT_RATES="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1374757392";
@@ -2936,7 +2976,7 @@ function reloadDashboardPage(button){
 }
 
 const BUDGET_MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-let budgetFleetPage=0,budgetTablePage=0,budgetMktTablePage=0;
+let budgetFleetPage=0,budgetTablePage=0,budgetMktTablePage=0,budget2026Page=0;
 function budgetText(v){return String(v==null?'':v).trim();}
 function budgetKey(v){return budgetText(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
 function budgetEsc(v){return String(v==null?'':v).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
@@ -2964,7 +3004,8 @@ function budgetMoneyCompact(v){
   return 'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0});
 }
 function budgetHeaderIndex(headers,aliases,fallback){
-  for(const alias of aliases){const key=budgetKey(alias);const index=headers.findIndex(h=>h&&(h===key||h.includes(key)||key.includes(h)));if(index>=0)return index;}
+  for(const alias of aliases){const key=budgetKey(alias),exact=headers.findIndex(h=>h===key);if(exact>=0)return exact;}
+  for(const alias of aliases){const key=budgetKey(alias),index=headers.findIndex(h=>h&&(h.includes(key)||key.includes(h)));if(index>=0)return index;}
   return fallback;
 }
 function budgetIsImplement(...values){
@@ -2976,19 +3017,23 @@ function processBUDGET(rows){
   if(headerIndex<0)headerIndex=0;
   const headers=(rows[headerIndex]||[]).map(budgetKey);
   const ix={
-    mes:budgetHeaderIndex(headers,['MÊS'],0),frota:budgetHeaderIndex(headers,['FROTA'],1),coligada:budgetHeaderIndex(headers,['COLIGADA'],2),tipo:budgetHeaderIndex(headers,['TIPO'],3),situacao:budgetHeaderIndex(headers,['SITUAÇÃO'],4),unidade:budgetHeaderIndex(headers,['UNIDADE'],5),conjunto:budgetHeaderIndex(headers,['CONJUNTO'],6),contrato:budgetHeaderIndex(headers,['CONTRATO'],7),categoria:budgetHeaderIndex(headers,['CATEGORIA'],8),capacidade:budgetHeaderIndex(headers,['CAPACIDADE'],9),classe:budgetHeaderIndex(headers,['DESC CLASSE DE VALOR'],10),regime:budgetHeaderIndex(headers,['REGIME'],11),ocupacao:budgetHeaderIndex(headers,['TAXA DE OCUPAÇÃO'],12),inefLog:budgetHeaderIndex(headers,['INEF LOGÍSTICA'],13),inefCom:budgetHeaderIndex(headers,['INF COMERCIAL','INEF COMERCIAL'],14),inefOp:budgetHeaderIndex(headers,['INEF OPERACIONAL'],15),inefMec:budgetHeaderIndex(headers,['INEF MECÂNICA'],16),horas:budgetHeaderIndex(headers,['QTD HR ORÇ'],17),extras:budgetHeaderIndex(headers,['QTD HR EX'],18),rob:budgetHeaderIndex(headers,['SOMA DE ROB ORÇADA','ROB ORÇADA'],19)
+    mes:budgetHeaderIndex(headers,['MÊS'],-1),frota:budgetHeaderIndex(headers,['FROTA'],-1),unidade:budgetHeaderIndex(headers,['UNIDADE'],-1),contrato:budgetHeaderIndex(headers,['CONTRATO'],-1),categoria:budgetHeaderIndex(headers,['CATEGORIA'],-1),classe:budgetHeaderIndex(headers,['DESC CLASSE DE VALOR'],-1),regime:budgetHeaderIndex(headers,['REGIME'],-1),robPotential:budgetHeaderIndex(headers,['ROB POTENCIAL'],-1),rob:budgetHeaderIndex(headers,['ROB ORÇADA'],-1),ocupacao:budgetHeaderIndex(headers,['TAXA DE OCUPAÇÃO ORÇADA'],-1),ineffValue:budgetHeaderIndex(headers,['VALOR DE INEFICIÊNCIA ORÇADA'],-1),ineffTotal:budgetHeaderIndex(headers,['INEFICIÊNCIAS ORÇADA'],-1),inefMec:budgetHeaderIndex(headers,['TAXA DE IND. MECÂNICA ORÇADA'],-1),inefOp:budgetHeaderIndex(headers,['TAXA DE IND. OPERACIONAL ORÇADA'],-1),inefCom:budgetHeaderIndex(headers,['TAXA DE IND. COMERCIAL ORÇADA'],-1),inefLog:budgetHeaderIndex(headers,['TAXA DE IND. LOGÍSTICA ORÇADA'],-1),qtdOperating:budgetHeaderIndex(headers,['QTD OPERANDO'],-1),qtdFleet:budgetHeaderIndex(headers,['QTD FROTA'],-1),contractType:budgetHeaderIndex(headers,['TIPO DE CONTRATO'],-1),client:budgetHeaderIndex(headers,['CLIENTE'],-1),version:budgetHeaderIndex(headers,['VERSÃO'],-1)
   };
   budgetData=rows.slice(headerIndex+1).map((row,rowIndex)=>{
     const mes=budgetMonthNumber(row[ix.mes]);
     const frota=budgetText(row[ix.frota]);
     if(!mes||!frota)return null;
-    const tipo=budgetText(row[ix.tipo]),categoria=budgetText(row[ix.categoria]),classe=budgetText(row[ix.classe]);
-    return {rowIndex:rowIndex+headerIndex+2,mes,frota,coligada:budgetText(row[ix.coligada]),tipo,situacao:budgetText(row[ix.situacao]),unidade:budgetText(row[ix.unidade]),conjunto:budgetText(row[ix.conjunto]),contrato:budgetText(row[ix.contrato]),categoria,capacidade:budgetText(row[ix.capacidade]),classe,regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),rob:budgetIsImplement(tipo,categoria,classe)?0:budgetNumber(row[ix.rob])||0};
+    const categoria=budgetText(row[ix.categoria]),classe=budgetText(row[ix.classe]),contractType=budgetText(row[ix.contractType]);
+    return {rowIndex:rowIndex+headerIndex+2,mes,frota,coligada:'',tipo:categoria,situacao:contractType,unidade:budgetText(row[ix.unidade]),conjunto:'',contrato:budgetText(row[ix.contrato]),categoria,capacidade:'',classe,regime:budgetText(row[ix.regime]),client:budgetText(row[ix.client]),contractType,version:budgetText(row[ix.version]),robPotential:budgetNumber(row[ix.robPotential])||0,rob:budgetNumber(row[ix.rob])||0,ineffValue:budgetNumber(row[ix.ineffValue])||0,ineffTotal:budgetNumber(row[ix.ineffTotal])||0,ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),qtdOperating:budgetNumber(row[ix.qtdOperating]),qtdFleet:budgetNumber(row[ix.qtdFleet]),horas:null,extras:null};
   }).filter(Boolean);
   refreshBUDGETFilters();
   const load=document.getElementById('budgetLoad'),body=document.getElementById('budgetBody');
   if(load)load.style.display='none';if(body)body.style.display='block';
+  const officialLoad=document.getElementById('budget2026Load'),officialBody=document.getElementById('budget2026Body');
+  if(officialLoad)officialLoad.style.display='none';if(officialBody)officialBody.style.display='block';
+  fillSelectOptions(['budget2026Mes'],[...new Set(budgetData.map(row=>row.mes))].sort((a,b)=>a-b),'Todos',value=>BUDGET_MONTHS[Number(value)-1]||value);
   renderBUDGET();
+  renderBUDGET2026();
 }
 function processRESULT(rows){
   const headerIndex=rows.findIndex(row=>{const keys=row.map(budgetKey);return keys.includes('NOMEDOMES')&&keys.includes('REALIZADO')&&keys.includes('ORCADO');});
@@ -3017,13 +3062,16 @@ function processFLEETBILLING(rows){
   const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:col(['VALOR COBRADO KM VAZIO']),observacao:headers.findIndex((h,i)=>h==='OBSERVACAO'&&i>col(['VALOR COBRADO KM VAZIO']))};
   const sourceRows=rows.slice(headerIndex+1),executionFields=[ix.realizado,ix.movInterna,ix.frete,ix.diaria,ix.locacao,ix.kmVazio].filter(index=>index>=0);
   const activeMonths=new Set(sourceRows.filter(row=>budgetMonthNumber(row[ix.mes])>=7&&executionFields.some(index=>Math.abs(budgetNumber(row[index])||0)>.001)).map(row=>budgetMonthNumber(row[ix.mes])));
+  const officialBudgetMap=new Map();
+  budgetData.forEach(row=>{const key=row.mes+'|'+budgetKey(row.frota);officialBudgetMap.set(key,(officialBudgetMap.get(key)||0)+(row.rob||0));});
   fleetBillingData=sourceRows.map((row,rowIndex)=>{
     const mes=budgetMonthNumber(row[ix.mes]),frota=budgetText(row[ix.frota]);
     if(!activeMonths.has(mes)||!frota)return null;
     const categoria=budgetText(row[ix.categoria]),tipo=fleetBillingType(categoria),locacao=budgetNumber(row[ix.locacao])||0,realizado=budgetNumber(row[ix.realizado])||0;
-    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:tipo==='IMPLEMENTO'?0:budgetNumber(row[ix.orcado])||0,realizado,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):''};
+    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:officialBudgetMap.get(mes+'|'+budgetKey(frota))||0,realizado,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):''};
   }).filter(Boolean);
   if(budgetData.length)renderBUDGET();
+  if(budgetData.length)renderBUDGET2026();
 }
 function budgetFilterState(){return {mes:getSelectValues('budgetMes'),situacao:getSelectValues('budgetSituacao'),tipo:getSelectValues('budgetTipo'),unidade:getSelectValues('budgetUnidade'),contrato:getSelectValues('budgetContrato')};}
 function budgetMatches(row,state,skip,query,exactFleet){
@@ -3034,7 +3082,7 @@ function budgetMatches(row,state,skip,query,exactFleet){
   if(skip!=='contrato'&&!matchesValue(row.contrato,state.contrato))return false;
   if(query){
     if(exactFleet){if(row.frota.toLowerCase()!==query)return false;}
-    else{const hay=[row.frota,row.conjunto,row.contrato,row.situacao,row.unidade,row.tipo,row.categoria].join(' ').toLowerCase();if(!hay.includes(query))return false;}
+    else{const hay=[row.frota,row.contrato,row.situacao,row.unidade,row.tipo,row.categoria,row.client,row.classe,row.regime].join(' ').toLowerCase();if(!hay.includes(query))return false;}
   }
   return true;
 }
@@ -3056,10 +3104,11 @@ function getBUDGETFiltered(){
 function getFLEETBILLINGFiltered(){
   const query=((document.getElementById('budgetSearch')||{}).value||'').toLowerCase().trim(),state=budgetFilterState();
   const exactFleet=!!query&&fleetBillingData.some(row=>row.frota.toLowerCase()===query);
+  const officialRows=getBUDGETFiltered(),officialKeys=new Set(officialRows.map(row=>row.mes+'|'+budgetKey(row.frota))),hasOfficialDimensionFilter=!isAllSelection(state.situacao)||!isAllSelection(state.tipo)||!isAllSelection(state.unidade)||!isAllSelection(state.contrato);
   return fleetBillingData.filter(row=>{
-    if(!matchesValue(String(row.mes),state.mes)||!matchesValue(row.situacao,state.situacao)||!matchesValue(row.tipo,state.tipo)||!matchesValue(row.unidade,state.unidade))return false;
-    if(!isAllSelection(state.contrato))return false;
-    if(query){if(exactFleet)return row.frota.toLowerCase()===query;const hay=[row.frota,row.conjunto,row.situacao,row.categoria,row.classe,row.observacao].join(' ').toLowerCase();if(!hay.includes(query))return false;}
+    if(!matchesValue(String(row.mes),state.mes))return false;
+    if(hasOfficialDimensionFilter&&!officialKeys.has(row.mes+'|'+budgetKey(row.frota)))return false;
+    if(query){if(exactFleet)return row.frota.toLowerCase()===query;const hay=[row.frota,row.conjunto,row.situacao,row.categoria,row.classe,row.observacao].join(' ').toLowerCase();if(!officialKeys.has(row.mes+'|'+budgetKey(row.frota))&&!hay.includes(query))return false;}
     return true;
   });
 }
@@ -3069,6 +3118,50 @@ function clearBUDGETFilters(){
   ['budgetMes','budgetMesBot','budgetSituacao','budgetSituacaoBot','budgetTipo','budgetTipoBot','budgetUnidade','budgetUnidadeBot','budgetContrato','budgetContratoBot'].forEach(id=>setSelectValues(id,['TODOS']));
   ['budgetSearch','budgetSearchBot'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   budgetFleetPage=0;budgetTablePage=0;budgetMktTablePage=0;renderBUDGET();
+}
+function getBUDGET2026Filtered(){
+  const monthSelection=getSelectValues('budget2026Mes'),query=budgetKey((document.getElementById('budget2026Search')||{}).value||'');
+  return budgetData.filter(row=>{
+    if(!matchesValue(String(row.mes),monthSelection))return false;
+    if(!query)return true;
+    return budgetKey([row.frota,row.client,row.contrato,row.categoria,row.unidade,row.classe,row.regime].join(' ')).includes(query);
+  });
+}
+function budget2026ActualMap(){
+  const map=new Map();
+  aggregateFLEETBILLING(fleetBillingData).forEach(row=>{const key=row.mes+'|'+budgetKey(row.frota);map.set(key,(map.get(key)||0)+(row.realizado||0));});
+  return map;
+}
+function renderBUDGET2026(){
+  if(!budgetData.length)return;
+  const rows=getBUDGET2026Filtered(),actualMap=budget2026ActualMap(),set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  const budgetTotal=rows.reduce((sum,row)=>sum+(row.rob||0),0),potentialTotal=rows.reduce((sum,row)=>sum+(row.robPotential||0),0),ineffTotal=rows.reduce((sum,row)=>sum+(row.ineffValue||0),0);
+  const comparableRows=rows.filter(row=>actualMap.has(row.mes+'|'+budgetKey(row.frota))),comparableBudget=comparableRows.reduce((sum,row)=>sum+(row.rob||0),0),actualTotal=comparableRows.reduce((sum,row)=>sum+(actualMap.get(row.mes+'|'+budgetKey(row.frota))||0),0);
+  const measuredMonths=[...new Set(comparableRows.map(row=>row.mes))].sort((a,b)=>a-b),attainment=comparableBudget>0?actualTotal/comparableBudget*100:null,positiveRows=rows.filter(row=>row.rob>0),fleets=new Set(positiveRows.map(row=>budgetKey(row.frota)));
+  set('budget2026Total',fMoney(budgetTotal));set('budget2026TotalSub',`${positiveRows.length.toLocaleString('pt-BR')} linhas com ROB informada`);
+  set('budget2026Potential',fMoney(potentialTotal));set('budget2026Ineff',fMoney(ineffTotal));
+  set('budget2026Actual',comparableRows.length?fMoney(actualTotal):'N/D');set('budget2026ActualSub',measuredMonths.length?measuredMonths.map(month=>BUDGET_MONTHS[month-1]).join(' + '):'sem ROB Real para o recorte');
+  set('budget2026Attainment',attainment==null?'N/D':attainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%');
+  set('budget2026Fleets',fleets.size.toLocaleString('pt-BR'));set('budget2026FleetsSub',`${fleets.size.toLocaleString('pt-BR')} frotas únicas com ROB`);
+  const sorted=rows.slice().sort((a,b)=>a.mes-b.mes||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})),pageSize=responsiveChartPageSize(100,40),pages=Math.ceil(sorted.length/pageSize)||1;
+  budget2026Page=Math.max(0,Math.min(pages-1,budget2026Page));
+  const slice=sorted.slice(budget2026Page*pageSize,(budget2026Page+1)*pageSize),start=sorted.length?budget2026Page*pageSize+1:0,end=Math.min((budget2026Page+1)*pageSize,sorted.length);
+  set('budget2026Count',sorted.length?`${start}-${end} de ${sorted.length.toLocaleString('pt-BR')}`:'0 registros');
+  const table=document.getElementById('budget2026Table');
+  if(table)table.innerHTML=slice.length?slice.map(row=>{
+    const key=row.mes+'|'+budgetKey(row.frota),hasActual=actualMap.has(key),actual=hasActual?actualMap.get(key):null,variance=hasActual?actual-row.rob:null,attainmentRow=hasActual&&row.rob>0?actual/row.rob*100:null;
+    return`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:700">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.categoria||'—')}</td><td>${budgetEsc(row.unidade||'—')}</td><td>${budgetEsc(row.contrato||'—')}</td><td>${budgetEsc(row.client||'—')}</td><td>${budgetEsc(row.classe||'—')}</td><td>${budgetEsc(row.regime||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.robPotential||0)}</td><td style="font-family:var(--font-data);font-weight:700">${fMoney(row.rob||0)}</td><td style="font-family:var(--font-data);font-weight:700;color:${hasActual?'var(--green)':'var(--text3)'}">${hasActual?fMoney(actual):'N/D'}</td><td style="font-family:var(--font-data);font-weight:700;color:${variance==null?'var(--text3)':variance>=0?'var(--green)':'var(--red)'}">${variance==null?'N/D':`${variance<0?'−':'+'} ${fMoney(Math.abs(variance))}`}</td><td style="font-family:var(--font-data)">${attainmentRow==null?(hasActual&&actual>0&&row.rob<=0?'Sem orçamento':'N/D'):attainmentRow.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.ocupacao==null?'N/D':(row.ocupacao*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td style="font-family:var(--font-data)">${fMoney(row.ineffValue||0)}</td></tr>`;
+  }).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Nenhum registro encontrado para os filtros selecionados.</td></tr>';
+  requestAnimationFrame(refreshTableScrollbars);scheduleKpiValueFit(document.getElementById('panel-budget2026'));
+}
+function clearBUDGET2026Filters(){
+  setSelectValues('budget2026Mes',['TODOS']);
+  const search=document.getElementById('budget2026Search');if(search)search.value='';
+  budget2026Page=0;renderBUDGET2026();
+}
+function scrollBUDGET2026(direction){
+  const rows=getBUDGET2026Filtered(),pageSize=responsiveChartPageSize(100,40),pages=Math.ceil(rows.length/pageSize)||1;
+  budget2026Page=Math.max(0,Math.min(pages-1,budget2026Page+direction));renderBUDGET2026();
 }
 function renderBUDGET(){
   if(!budgetData.length)return;
@@ -3095,7 +3188,7 @@ function renderBUDGET(){
   const rangeStart=sortedRows.length?budgetTablePage*tablePageSize+1:0,rangeEnd=Math.min((budgetTablePage+1)*tablePageSize,sortedRows.length);
   set('budgetCount',sortedRows.length?`${rangeStart}-${rangeEnd} de ${sortedRows.length.toLocaleString('pt-BR')}`:'0 registros');
   const table=document.getElementById('budgetTable');
-  if(table)table.innerHTML=tableRows.length?tableRows.map(row=>`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.tipo||'—')}</td><td>${budgetEsc(budgetSituationLabel(row.situacao))}</td><td>${budgetEsc(row.unidade||'—')}</td><td>${budgetEsc(row.conjunto||'—')}</td><td>${budgetEsc(row.contrato||'—')}</td><td>${row.ocupacao==null?'—':(row.ocupacao*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefLog==null?'—':(row.inefLog*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefCom==null?'—':(row.inefCom*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefOp==null?'—':(row.inefOp*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefMec==null?'—':(row.inefMec*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.horas==null?'—':row.horas.toLocaleString('pt-BR')}</td><td>${row.extras==null?'—':row.extras.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:600">${row.rob?fMoney(row.rob):'—'}</td></tr>`).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Nenhum registro encontrado</td></tr>';
+  if(table)table.innerHTML=tableRows.length?tableRows.map(row=>`<tr><td>${BUDGET_MONTHS[row.mes-1]}</td><td style="font-family:var(--font-data);font-weight:600">${budgetEsc(row.frota)}</td><td>${budgetEsc(row.categoria||'—')}</td><td>${budgetEsc(row.unidade||'—')}</td><td>${budgetEsc(row.contrato||'—')}</td><td>${budgetEsc(row.client||'—')}</td><td>${budgetEsc(row.classe||'—')}</td><td>${budgetEsc(row.regime||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.robPotential||0)}</td><td>${row.ocupacao==null?'N/D':(row.ocupacao*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefLog==null?'N/D':(row.inefLog*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefCom==null?'N/D':(row.inefCom*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefOp==null?'N/D':(row.inefOp*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td>${row.inefMec==null?'N/D':(row.inefMec*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}</td><td style="font-family:var(--font-data);font-weight:600">${fMoney(row.rob||0)}</td></tr>`).join(''):'<tr><td colspan="15" style="text-align:center;color:var(--text3);padding:24px">Nenhum registro encontrado</td></tr>';
   requestAnimationFrame(refreshTableScrollbars);
 }
 function renderBUDGETMonthChart(rows){
@@ -4446,8 +4539,8 @@ function renderEXEC(){
   set('execBillMonth',billingDataMonths.length?budgetMoneyCompact(billingRealized):'N/D');
   set('execBillMonthSub',billingDataMonths.length?`${billingReferenceLabel}${billingIsCurrent?' · parcial':''}`:'faturamento indisponível');
   set('execBillAttainment',billingAttainmentText);
-  set('execBudgetMonth',selectedBudgetRows.length?budgetMoneyCompact(selectedBudget):'N/D');
-  set('execBudgetMonthSub',selectedBudgetRows.length?`${periodCompact} · ROB orçada MKT`:'orçamento MKT indisponível');
+  set('execBudgetMonth',billingDataMonths.length?budgetMoneyCompact(billingBudget):selectedBudgetRows.length?budgetMoneyCompact(selectedBudget):'N/D');
+  set('execBudgetMonthSub',billingDataMonths.length?`${billingReferenceLabel} · orçamento comparável`:selectedBudgetRows.length?`${periodCompact} · ROB orçada MKT`:'orçamento MKT indisponível');
   const billingTypeRows=[
     {label:'Locação',value:billingRows.reduce((sum,row)=>sum+(row.locacao||0),0),color:'var(--teal)'},
     {label:'Frete',value:billingRows.reduce((sum,row)=>sum+(row.frete||0),0),color:'var(--accent)'},
