@@ -2964,15 +2964,24 @@ async function loadAll(){
   document.getElementById('updTxt').textContent=new Date().toLocaleTimeString('pt-BR');
 }
 
-function reloadDashboardPage(button){
+async function reloadDashboardPage(button){
   const refreshButton=button||document.getElementById('pageRefreshBtn');
   if(refreshButton){
     refreshButton.classList.add('is-reloading');
     refreshButton.setAttribute('aria-busy','true');
+    refreshButton.disabled=true;
   }
   const status=document.getElementById('updTxt');
   if(status)status.textContent='recarregando...';
-  setTimeout(()=>window.location.reload(),80);
+  try{
+    if('serviceWorker' in navigator){
+      const registrations=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(registration=>registration.update().catch(()=>null)));
+    }
+  }catch(error){console.warn('Não foi possível verificar a atualização do aplicativo:',error);}
+  const refreshedUrl=new URL(window.location.href);
+  refreshedUrl.searchParams.set('_refresh',Date.now().toString());
+  window.location.replace(refreshedUrl.toString());
 }
 
 const BUDGET_MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -7345,7 +7354,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=45',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=69',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
