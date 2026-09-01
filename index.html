@@ -291,7 +291,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-inef-value{font-family:var(--font-data);font-size:20px;color:var(--text)}
 .exec-date-value{font-size:20px!important;white-space:nowrap}
 .exec-data-table{table-layout:auto!important;min-width:760px}
-.exec-billing-gap-table{min-width:1380px!important}
+.exec-billing-gap-table{min-width:1480px!important}
+.exec-revenue-stack{display:flex;height:14px;margin-bottom:18px;overflow:hidden;border-radius:999px;background:var(--surface3)}
+.exec-revenue-segment{height:100%;min-width:0}
+.exec-revenue-pareto{display:grid;gap:12px}
+.exec-revenue-row{display:grid;grid-template-columns:minmax(145px,190px) minmax(120px,1fr) 138px 126px;gap:12px;align-items:center}
+.exec-revenue-name{font:700 11px var(--font-ui);color:var(--text);text-transform:uppercase}
+.exec-revenue-track{height:8px;overflow:hidden;border-radius:999px;background:var(--surface3)}
+.exec-revenue-fill{height:100%;border-radius:999px}
+.exec-revenue-value{font:600 12px var(--font-data);color:var(--text);text-align:right;white-space:nowrap}
+.exec-revenue-share{font:10px var(--font-data);color:var(--text2);text-align:right;white-space:nowrap}
+.exec-revenue-empty{padding:24px;text-align:center;color:var(--text3);border:1px dashed var(--border);border-radius:8px}
+@media(max-width:768px){
+  #execContentBilling .exec-kpis{grid-template-columns:1fr!important}
+  .exec-revenue-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}
+  .exec-revenue-track{grid-column:1/-1;grid-row:2}
+  .exec-revenue-value{grid-column:2;grid-row:1}
+  .exec-revenue-share{grid-column:1/-1;grid-row:3;text-align:left}
+}
 .exec-dre-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px;margin-bottom:20px}
 .exec-dre-stack{display:grid;gap:10px}
 .exec-dre-line{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
@@ -2111,14 +2128,19 @@ tbody tr:hover td{background:var(--surface2)}
         <div class="exec-tab-content" id="execContentBilling">
           <div class="kpi-row exec-kpis">
             <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada no Período</div><div class="kpi-value" id="execBudgetMonth">N/D</div><div class="kpi-sub" id="execBudgetMonthSub">orçamento MKT selecionado</div></div>
-            <div class="kpi c-green"><div class="kpi-stripe"></div><div class="kpi-label">Média Mensal Orçada</div><div class="kpi-value" id="execBudgetAnnual">N/D</div><div class="kpi-sub">meses selecionados</div></div>
             <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">ROB Real MKT</div><div class="kpi-value" id="execBillMonth">N/D</div><div class="kpi-sub" id="execBillMonthSub">faturamento operacional do mês</div></div>
             <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="execBillAttainment">N/D</div><div class="kpi-sub">ROB real ÷ ROB orçada</div></div>
+          </div>
+          <div class="card exec-card" style="margin-bottom:20px">
+            <div class="card-head"><span class="card-title">Composição do Realizado por Tipo</span><span class="count-tag" id="execBillingCompositionTotal">N/D</span></div>
+            <div class="exec-revenue-stack" id="execBillingCompositionStack"></div>
+            <div class="exec-revenue-pareto" id="execBillingCompositionPareto"></div>
+            <div class="exec-source-note" id="execBillingCompositionNote" style="margin-top:16px"></div>
           </div>
           <div class="exec-awaiting" style="margin-bottom:20px"><div class="exec-awaiting-title">Faturamento operacional por frota</div><div class="exec-awaiting-text" id="execBillingText">A ROB Real MKT é consolidada a partir da base mensal por frota.</div></div>
           <div class="tbl-card">
             <div class="tbl-head"><span class="tbl-title">Principais Gaps de Receita por Equipamento</span><span class="count-tag" id="execBillingGapCount">N/D</span></div>
-            <div class="tbl-wrap"><table class="exec-data-table exec-billing-gap-table"><thead><tr><th>Equipamento</th><th>Categoria</th><th>ROB Orçada</th><th>ROB Real</th><th>Mov. Interna</th><th>Frete</th><th>Diária</th><th>Locação</th><th>Gap de Receita</th><th>Atingimento</th><th>Observação (X)</th></tr></thead><tbody id="execBillingGapTbl"></tbody></table></div>
+            <div class="tbl-wrap"><table class="exec-data-table exec-billing-gap-table"><thead><tr><th>Equipamento</th><th>Categoria</th><th>ROB Orçada</th><th>ROB Real</th><th>Mov. Interna</th><th>Frete</th><th>KM Vazio</th><th>Diária</th><th>Locação</th><th>Gap de Receita</th><th>Atingimento</th><th>Observação (X)</th></tr></thead><tbody id="execBillingGapTbl"></tbody></table></div>
           </div>
         </div>
 
@@ -4253,7 +4275,6 @@ function renderEXEC(){
   const periodCompact=selectedMonths.length===1?selectedMonthNames[0]:`${selectedMonths.length} meses`;
   const selectedBudgetRows=budgetData.filter(row=>selectedMonthSet.has(row.mes));
   const selectedBudget=selectedBudgetRows.reduce((sum,row)=>sum+row.rob,0);
-  const averageSelectedBudget=selectedMonths.length?selectedBudget/selectedMonths.length:0;
   const billingRowsAll=aggregateFLEETBILLING(fleetBillingData.filter(row=>selectedMonthSet.has(row.mes)));
   const billingFleetMap=new Map();
   billingRowsAll.forEach(row=>{
@@ -4427,7 +4448,30 @@ function renderEXEC(){
   set('execBillAttainment',billingAttainmentText);
   set('execBudgetMonth',selectedBudgetRows.length?budgetMoneyCompact(selectedBudget):'N/D');
   set('execBudgetMonthSub',selectedBudgetRows.length?`${periodCompact} · ROB orçada MKT`:'orçamento MKT indisponível');
-  set('execBudgetAnnual',selectedBudgetRows.length?budgetMoneyCompact(averageSelectedBudget):'N/D');
+  const billingTypeRows=[
+    {label:'Locação',value:billingRows.reduce((sum,row)=>sum+(row.locacao||0),0),color:'var(--teal)'},
+    {label:'Frete',value:billingRows.reduce((sum,row)=>sum+(row.frete||0),0),color:'var(--accent)'},
+    {label:'Mov. Interna',value:billingRows.reduce((sum,row)=>sum+(row.movInterna||0),0),color:'var(--green)'},
+    {label:'KM Vazio',value:billingRows.reduce((sum,row)=>sum+(row.kmVazio||0),0),color:'var(--amber)'},
+    {label:'Diária de Ineficiência',value:billingRows.reduce((sum,row)=>sum+(row.diaria||0),0),color:'var(--red)'}
+  ];
+  const billingClassified=billingTypeRows.reduce((sum,row)=>sum+row.value,0);
+  const billingUnclassified=Math.max(0,billingRealized-billingClassified);
+  const billingComposition=[...billingTypeRows];
+  if(billingUnclassified>.005)billingComposition.push({label:'Sem classificação na base',value:billingUnclassified,color:'var(--text3)'});
+  const billingCompositionRows=billingComposition.filter(row=>row.value>.005).sort((a,b)=>b.value-a.value);
+  const billingStackTotal=Math.max(billingRealized,billingClassified,1);
+  const billingMaxType=Math.max(...billingCompositionRows.map(row=>row.value),1);
+  let billingCumulative=0;
+  set('execBillingCompositionTotal',billingDataMonths.length?`${budgetMoneyCompact(billingRealized)} realizado`:'N/D');
+  html('execBillingCompositionStack',billingCompositionRows.length?billingCompositionRows.map(row=>`<span class="exec-revenue-segment" style="width:${Math.max(0,row.value/billingStackTotal*100)}%;background:${row.color}" title="${execEsc(row.label)}: ${fMoney(row.value)}"></span>`).join(''):'<div class="exec-revenue-empty" style="width:100%">Sem realizado disponível no período</div>');
+  html('execBillingCompositionPareto',billingCompositionRows.length?billingCompositionRows.map(row=>{
+    const share=billingRealized>0?row.value/billingRealized*100:0;
+    billingCumulative+=share;
+    return`<div class="exec-revenue-row"><div class="exec-revenue-name">${execEsc(row.label)}</div><div class="exec-revenue-track"><div class="exec-revenue-fill" style="width:${Math.min(100,row.value/billingMaxType*100)}%;background:${row.color}"></div></div><div class="exec-revenue-value">${fMoney(row.value)}</div><div class="exec-revenue-share">${share.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}% · acum. ${billingCumulative.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%</div></div>`;
+  }).join(''):'<div class="exec-revenue-empty">Sem realizado disponível nos meses selecionados.</div>');
+  const billingReconciliationDiff=billingRealized-billingClassified;
+  set('execBillingCompositionNote',!billingDataMonths.length?'A base não possui ROB Real preenchida nos meses selecionados.':Math.abs(billingReconciliationDiff)<=.01?'Os tipos informados na base conciliam integralmente com a ROB Real do período.':billingReconciliationDiff>0?`${fMoney(billingClassified)} da ROB Real estão distribuídos entre os cinco tipos. A diferença de ${fMoney(billingReconciliationDiff)} permanece sem classificação na base de origem.`:`A soma dos tipos supera a ROB Real em ${fMoney(Math.abs(billingReconciliationDiff))}. O painel preserva os valores informados e sinaliza a divergência para validação na base.`);
   set('execBillingText',billingDataMonths.length?`No recorte ${periodLabel}, a ROB Real MKT disponível soma ${fMoney(billingRealized)} frente a ${fMoney(billingBudget)} de ROB orçada, atingindo ${billingAttainmentText}. A base reúne ${billingRowsAll.length.toLocaleString('pt-BR')} combinações mensais e ${billingFleets.toLocaleString('pt-BR')} frotas com faturamento. Competências com dados operacionais: ${billingReferenceLabel}.${billingIsCurrent?' O mês atual está em andamento e o valor é parcial.':''} O resultado contábil oficial permanece na Análise de Resultado.`:'A fonte operacional por frota não possui ROB Real preenchida nos meses selecionados.');
   const billingGaps=billingRows.map(row=>({...row,gap:row.realizado-row.orcado,attainment:row.orcado>0?row.realizado/row.orcado*100:null})).filter(row=>Math.abs(row.gap)>.005);
   const billingDeficits=billingGaps.filter(row=>row.gap<0).sort((a,b)=>a.gap-b.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,10);
@@ -4437,8 +4481,8 @@ function renderEXEC(){
   html('execBillingGapTbl',billingGapHighlights.length?billingGapHighlights.map(row=>{
     const gapText=`${row.gap>0?'+':'−'} ${fMoney(Math.abs(row.gap))}`;
     const attainmentText=row.attainment==null?(row.realizado>0?'Sem orçamento':'N/D'):row.attainment.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
-    return`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.frota||'—')}</td><td>${execEsc(row.categoria||row.tipo||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data)">${row.movInterna?fMoney(row.movInterna):'—'}</td><td style="font-family:var(--font-data)">${row.frete?fMoney(row.frete):'—'}</td><td style="font-family:var(--font-data)">${row.diaria?fMoney(row.diaria):'—'}</td><td style="font-family:var(--font-data)">${row.locacao?fMoney(row.locacao):'—'}</td><td style="font-family:var(--font-data);font-weight:700;color:${row.gap<0?'var(--red)':'var(--green)'}">${gapText}</td><td style="font-family:var(--font-data)">${attainmentText}</td><td title="${execEsc(row.observacao||'')}">${execEsc(row.observacao||'—')}</td></tr>`;
-  }).join(''):'<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px">Sem gaps de receita disponíveis na competência.</td></tr>');
+    return`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.frota||'—')}</td><td>${execEsc(row.categoria||row.tipo||'—')}</td><td style="font-family:var(--font-data)">${fMoney(row.orcado)}</td><td style="font-family:var(--font-data);font-weight:600">${fMoney(row.realizado)}</td><td style="font-family:var(--font-data)">${row.movInterna?fMoney(row.movInterna):'—'}</td><td style="font-family:var(--font-data)">${row.frete?fMoney(row.frete):'—'}</td><td style="font-family:var(--font-data)">${row.kmVazio?fMoney(row.kmVazio):'—'}</td><td style="font-family:var(--font-data)">${row.diaria?fMoney(row.diaria):'—'}</td><td style="font-family:var(--font-data)">${row.locacao?fMoney(row.locacao):'—'}</td><td style="font-family:var(--font-data);font-weight:700;color:${row.gap<0?'var(--red)':'var(--green)'}">${gapText}</td><td style="font-family:var(--font-data)">${attainmentText}</td><td title="${execEsc(row.observacao||'')}">${execEsc(row.observacao||'—')}</td></tr>`;
+  }).join(''):'<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:24px">Sem gaps de receita disponíveis na competência.</td></tr>');
   set('execOverviewAdh',pct(latestWeek&&latestWeek.value));
   set('execOverviewAdhSub',latestWeek?`${latestWeek.label} · ${latestWeek.total.toLocaleString('pt-BR')} cargas`:'programação indisponível');
   set('execOverviewRpd',rpdInSelection?stopped.length.toLocaleString('pt-BR'):'N/D');
