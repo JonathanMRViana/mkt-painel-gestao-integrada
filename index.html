@@ -2141,7 +2141,7 @@ tbody tr:hover td{background:var(--surface2)}
             <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">ROB Orçada no Período</div><div class="kpi-value" id="execBudgetMonth">N/D</div><div class="kpi-sub" id="execBudgetMonthSub">orçamento MKT selecionado</div></div>
             <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">ROB Real MKT</div><div class="kpi-value" id="execBillMonth">N/D</div><div class="kpi-sub" id="execBillMonthSub">faturamento operacional do mês</div></div>
             <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="execBillAttainment">N/D</div><div class="kpi-sub">ROB real ÷ ROB orçada</div></div>
-            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Perda de Receita · Orçado LE</div><div class="kpi-value" id="execBillLeLoss">N/D</div><div class="kpi-sub" id="execBillLeLossSub">frotas 618, 619 e 626</div></div>
+            <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Perda de Receita · Orçado LE</div><div class="kpi-value" id="execBillLeLoss">N/D</div><div class="kpi-sub" id="execBillLeLossSub">frotas 615 e 619</div></div>
           </div>
           <div class="card exec-card" style="margin-bottom:20px">
             <div class="card-head"><span class="card-title">Composição do Realizado por Tipo</span><span class="count-tag" id="execBillingCompositionTotal">N/D</span></div>
@@ -4602,11 +4602,11 @@ function renderEXEC(){
   set('execBillAttainment',billingAttainmentText);
   set('execBudgetMonth',billingDataMonths.length?budgetMoneyCompact(billingBudget):selectedBudgetRows.length?budgetMoneyCompact(selectedBudget):'N/D');
   set('execBudgetMonthSub',selectedBudgetRows.length?'ROB orçada MKT':'');
-  const leBudgetFleetIds=new Set(['618','619','626']);
+  const leBudgetFleetIds=new Set(['615','619']);
   const leBudgetRows=billingRows.filter(row=>leBudgetFleetIds.has(String(row.frota||'').replace(/\D/g,'')));
   const leBudgetLoss=leBudgetRows.reduce((sum,row)=>sum+Math.max(0,(row.orcado||0)-(row.realizado||0)),0);
   set('execBillLeLoss',billingDataMonths.length&&leBudgetRows.length?budgetMoneyCompact(leBudgetLoss):'N/D');
-  set('execBillLeLossSub',billingDataMonths.length&&leBudgetRows.length?`${leBudgetRows.length} de 3 frotas no recorte`:'frotas 618, 619 e 626');
+  set('execBillLeLossSub',billingDataMonths.length&&leBudgetRows.length?`${leBudgetRows.length} de 2 frotas no recorte`:'frotas 615 e 619');
   const billingTypeRows=[
     {label:'Locação',value:billingRows.reduce((sum,row)=>sum+(row.locacao||0),0),color:'var(--teal)'},
     {label:'Frete',value:billingRows.reduce((sum,row)=>sum+(row.frete||0),0),color:'var(--accent)'},
