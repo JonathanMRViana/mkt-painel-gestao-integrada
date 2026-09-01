@@ -2159,7 +2159,7 @@ tbody tr:hover td{background:var(--surface2)}
             </div>
           </div>
           <div class="tbl-card">
-            <div class="tbl-head"><span class="tbl-title">Principais Gaps de Receita por Equipamento</span><span class="count-tag" id="execBillingGapCount">N/D</span></div>
+            <div class="tbl-head"><span class="tbl-title">Detalhamento dos Principais Desvios de Receita</span><span class="count-tag" id="execBillingGapCount">N/D</span></div>
             <div class="tbl-wrap"><table class="exec-data-table exec-billing-gap-table"><thead><tr><th>Equipamento</th><th>Categoria</th><th>ROB Orçada</th><th>ROB Real</th><th>Mov. Interna</th><th>Frete</th><th>KM Vazio</th><th>Diária</th><th>Locação</th><th>Gap de Receita</th><th>Atingimento</th><th>Observação (X)</th></tr></thead><tbody id="execBillingGapTbl"></tbody></table></div>
           </div>
         </div>
@@ -7382,7 +7382,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=76',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=77',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
