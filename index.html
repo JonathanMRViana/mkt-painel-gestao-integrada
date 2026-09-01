@@ -2179,7 +2179,7 @@ tbody tr:hover td{background:var(--surface2)}
                 <div class="card-head"><span class="card-title">Perda Potencial por Manutenção</span></div>
                 <div class="exec-billing-summary-value" id="execBillMaintenanceLoss">N/D</div>
                 <div class="exec-billing-summary-sub exec-maintenance-meta" id="execBillMaintenanceLossSub">
-                  <div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Tarifa</span><span class="exec-maintenance-meta-value">KM vazio · 85%</span></div>
+                  <div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Premissa KM</span><span class="exec-maintenance-meta-value">KM vazio · 85%</span></div>
                   <div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Rodagem/dia</span><span class="exec-maintenance-meta-value">LE 150 km · demais 350 km</span></div>
                 </div>
               </div>
@@ -4702,12 +4702,12 @@ function renderEXEC(){
   const maintenanceUnmapped=maintenanceRows.filter(row=>(row.maintenanceUnmappedDays||0)>0).length;
   set('execBillMaintenanceLoss',maintenanceMappedRows.length?budgetMoneyCompact(maintenancePotentialTotal):'N/D');
   html('execBillMaintenanceLossSub',maintenanceMappedRows.length?
-    `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Cobertura</span><span class="exec-maintenance-meta-value">${maintenanceMappedRows.length} frotas</span></div>`+
-    `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Manutenção</span><span class="exec-maintenance-meta-value">${maintenanceDaysTotal} dias</span></div>`+
-    `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Tarifa</span><span class="exec-maintenance-meta-value">KM vazio · 85%</span></div>`+
+    `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">QTD Frotas</span><span class="exec-maintenance-meta-value">${maintenanceMappedRows.length} frotas</span></div>`+
+    `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Dias MC</span><span class="exec-maintenance-meta-value">${maintenanceDaysTotal} dias</span></div>`+
+    `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Premissa KM</span><span class="exec-maintenance-meta-value">KM vazio · 85%</span></div>`+
     `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Rodagem/dia</span><span class="exec-maintenance-meta-value">LE 150 km · demais 350 km</span></div>`+
     (maintenanceUnmapped?`<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Pendente</span><span class="exec-maintenance-meta-value">${maintenanceUnmapped} sem tarifa</span></div>`:''):
-    `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Tarifa</span><span class="exec-maintenance-meta-value">KM vazio · 85%</span></div><div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Rodagem/dia</span><span class="exec-maintenance-meta-value">LE 150 km · demais 350 km</span></div>`);
+    `<div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Premissa KM</span><span class="exec-maintenance-meta-value">KM vazio · 85%</span></div><div class="exec-maintenance-meta-row"><span class="exec-maintenance-meta-label">Rodagem/dia</span><span class="exec-maintenance-meta-value">LE 150 km · demais 350 km</span></div>`);
   const billingTypeRows=[
     {label:'Locação',value:billingRows.reduce((sum,row)=>sum+(row.locacao||0),0),color:'var(--teal)'},
     {label:'Frete',value:billingRows.reduce((sum,row)=>sum+(row.frete||0),0),color:'var(--accent)'},
