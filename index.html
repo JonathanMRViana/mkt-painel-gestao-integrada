@@ -2158,6 +2158,10 @@ tbody tr:hover td{background:var(--surface2)}
               <div class="exec-billing-summary-note" id="execBillingText">Sem ROB Real preenchida no recorte.</div>
             </div>
           </div>
+          <div class="card exec-card" style="margin-bottom:20px">
+            <div class="card-head"><span class="card-title">Desvios de Receita por Frota</span><div class="chart-nav"><span class="count-tag" id="execBillingDeviationInfo">0 desvios</span><button class="chart-arrow" onclick="scrollEXECBillingDeviation(-1)" title="Desvios anteriores" aria-label="Desvios anteriores">‹</button><button class="chart-arrow" onclick="scrollEXECBillingDeviation(1)" title="Próximos desvios" aria-label="Próximos desvios">›</button></div></div>
+            <div style="height:390px"><canvas id="execBillingDeviationChart"></canvas></div>
+          </div>
           <div class="tbl-card">
             <div class="tbl-head"><span class="tbl-title">Detalhamento dos Principais Desvios de Receita</span><span class="count-tag" id="execBillingGapCount">N/D</span></div>
             <div class="tbl-wrap"><table class="exec-data-table exec-billing-gap-table"><thead><tr><th>Equipamento</th><th>Categoria</th><th>ROB Orçada</th><th>ROB Real</th><th>Mov. Interna</th><th>Frete</th><th>KM Vazio</th><th>Diária</th><th>Locação</th><th>Gap de Receita</th><th>Atingimento</th><th>Observação (X)</th></tr></thead><tbody id="execBillingGapTbl"></tbody></table></div>
@@ -2372,7 +2376,7 @@ tbody tr:hover td{background:var(--surface2)}
 
 <!-- v1778869583 -->
 <script>
-let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],freightRates=[],freightPlan=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,execBillingFleetChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
+let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],freightRates=[],freightPlan=[],aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,execBillingFleetChart=null,execBillingDeviationChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
 window._aet=()=>aetData;
 window._mob=()=>mobData;
 
@@ -2622,6 +2626,7 @@ function toggleTheme(){
   if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}
   if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}
   if(execBillingFleetChart){execBillingFleetChart.destroy();execBillingFleetChart=null;}
+  if(execBillingDeviationChart){execBillingDeviationChart.destroy();execBillingDeviationChart=null;}
   if(activeId==='aet'&&aetData.length)renderAETAll();
   if(activeId==='mob'&&mobData.length)renderMOB();
   if(activeId==='mat'&&(matData.length||matSafetyData.length))renderMAT();
@@ -3083,7 +3088,9 @@ function processFLEETBILLING(rows){
   const col=(aliases,fallback=-1)=>budgetHeaderIndex(headers,aliases,fallback);
   const kmVazioIndex=col(['VALOR COBRADO KM VAZIO']);
   const observacaoIndex=headers.findIndex((header,index)=>index>kmVazioIndex&&header.startsWith('OBSERVACAO'));
-  const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:kmVazioIndex,observacao:observacaoIndex};
+  const motivoAgregadoHeaderIndex=headers.findIndex(header=>header==='MOTIVOAGREGADO');
+  const motivoAgregadoIndex=motivoAgregadoHeaderIndex>=0?motivoAgregadoHeaderIndex:54;
+  const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:kmVazioIndex,observacao:observacaoIndex,motivoAgregado:motivoAgregadoIndex};
   const sourceRows=rows.slice(headerIndex+1),executionFields=[ix.realizado,ix.movInterna,ix.frete,ix.diaria,ix.locacao,ix.kmVazio].filter(index=>index>=0);
   const activeMonths=new Set(sourceRows.filter(row=>executionFields.some(index=>Math.abs(budgetNumber(row[index])||0)>.001)).map(row=>budgetMonthNumber(row[ix.mes])).filter(Boolean));
   const officialBudgetMap=new Map();
@@ -3092,7 +3099,7 @@ function processFLEETBILLING(rows){
     const mes=budgetMonthNumber(row[ix.mes]),frota=budgetText(row[ix.frota]);
     if(!activeMonths.has(mes)||!frota)return null;
     const categoria=budgetText(row[ix.categoria]),tipo=fleetBillingType(categoria),locacao=budgetNumber(row[ix.locacao])||0,realizado=budgetNumber(row[ix.realizado])||0;
-    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:officialBudgetMap.get(mes+'|'+budgetKey(frota))||0,realizado,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):''};
+    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:officialBudgetMap.get(mes+'|'+budgetKey(frota))||0,realizado,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):'',motivoAgregado:ix.motivoAgregado>=0?budgetText(row[ix.motivoAgregado]):''};
   }).filter(Boolean);
   if(budgetData.length)renderBUDGET();
   if(budgetData.length)renderBUDGET2026();
@@ -3224,12 +3231,13 @@ function renderBUDGETMonthChart(rows){
 function aggregateFLEETBILLING(rows){
   const map=new Map();
   (rows||[]).forEach(row=>{
-    const key=row.mes+'|'+budgetKey(row.frota),item=map.get(key)||{...row,orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,observacoes:[]};
+    const key=row.mes+'|'+budgetKey(row.frota),item=map.get(key)||{...row,orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,observacoes:[],motivosAgregados:[]};
     ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio'].forEach(field=>item[field]+=row[field]||0);
     if(row.observacao&&!item.observacoes.includes(row.observacao))item.observacoes.push(row.observacao);
+    if(row.motivoAgregado&&!item.motivosAgregados.includes(row.motivoAgregado))item.motivosAgregados.push(row.motivoAgregado);
     map.set(key,item);
   });
-  return[...map.values()].map(row=>({...row,observacao:row.observacoes.join(' · ')}));
+  return[...map.values()].map(row=>({...row,observacao:row.observacoes.join(' · '),motivoAgregado:row.motivosAgregados.join(' · ')}));
 }
 function renderBUDGETMkt(){
   const rows=aggregateFLEETBILLING(getFLEETBILLINGFiltered()),set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
@@ -3840,7 +3848,7 @@ function execLevelLabel(level){
 function execStatusKey(v){
   return String(v==null?'':v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
 }
-let execActiveTab='overview',execBillingFleetPage=0,execBillingFleetTotals=[],execBillingFleetFilterKey='';
+let execActiveTab='overview',execBillingFleetPage=0,execBillingFleetTotals=[],execBillingFleetFilterKey='',execBillingDeviationPage=0,execBillingDeviationTotals=[];
 function setExecTab(tab){
   execActiveTab=tab;
   const map={
@@ -3858,7 +3866,7 @@ function setExecTab(tab){
     if(btn)btn.classList.toggle('on',key===tab);
     if(body)body.classList.toggle('active',key===tab);
   });
-  if(tab==='billing')requestAnimationFrame(renderEXECBillingFleetChart);
+  if(tab==='billing')requestAnimationFrame(()=>{renderEXECBillingFleetChart();renderEXECBillingDeviationChart();});
   requestAnimationFrame(refreshTableScrollbars);
   scheduleKpiValueFit(document.getElementById('execContent'+({overview:'Overview',adherence:'Adherence',rpd:'Rpd',inef:'Inef',billing:'Billing',dre:'Dre',km:'Km'}[tab]||'Overview')));
 }
@@ -3867,6 +3875,7 @@ function clearEXECFilters(){
   setSelectValues('execMonthFilter',['TODOS']);
   _msClose('execMonthFilter');
   execBillingFleetPage=0;
+  execBillingDeviationPage=0;
   renderEXEC();
 }
 
@@ -3886,6 +3895,21 @@ function scrollEXECBillingFleet(dir){
   const pageSize=responsiveChartPageSize(8,4),pages=Math.ceil(execBillingFleetTotals.length/pageSize)||1;
   execBillingFleetPage=Math.max(0,Math.min(pages-1,execBillingFleetPage+dir));
   renderEXECBillingFleetChart();
+}
+function renderEXECBillingDeviationChart(){
+  if(execBillingDeviationChart){execBillingDeviationChart.destroy();execBillingDeviationChart=null;}
+  const canvas=document.getElementById('execBillingDeviationChart');if(!canvas)return;
+  const totals=execBillingDeviationTotals,pageSize=responsiveChartPageSize(10,5),pages=Math.ceil(totals.length/pageSize)||1;
+  execBillingDeviationPage=Math.max(0,Math.min(pages-1,execBillingDeviationPage));
+  const slice=totals.slice(execBillingDeviationPage*pageSize,(execBillingDeviationPage+1)*pageSize),ct=chartTheme(),reasonLimit=window.innerWidth<=768?20:38;
+  const reasonLabel=reason=>{const text=reason||'Motivo não informado';return text.length>reasonLimit?text.slice(0,reasonLimit-1)+'…':text;};
+  const info=document.getElementById('execBillingDeviationInfo');if(info)info.textContent=totals.length?`${execBillingDeviationPage+1}/${pages} · ${totals.length} desvios`:'sem desvios no recorte';
+  execBillingDeviationChart=new Chart(canvas,{type:'bar',data:{labels:slice.map(row=>window.innerWidth<=768?String(row.frota):[String(row.frota),reasonLabel(row.motivoAgregado)]),datasets:[{data:slice.map(row=>row.gap),backgroundColor:slice.map(row=>row.gap<0?(dark?'rgba(245,78,105,.84)':'rgba(205,25,54,.84)'):(dark?'rgba(70,193,139,.86)':'rgba(24,153,101,.86)')),borderColor:slice.map(row=>row.gap<0?'#d11232':'#198f62'),borderWidth:1,borderRadius:4,barPercentage:.72}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>items.length?'Frota '+slice[items[0].dataIndex].frota:'',label:ctx=>' Desvio: '+fMoney(ctx.raw),afterLabel:ctx=>' Motivo agregado: '+(slice[ctx.dataIndex].motivoAgregado||'Não informado')}}},scales:{x:{grid:{color:ct.grid},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:10},callback:value=>budgetMoneyCompact(value)}},y:{afterFit:axis=>{if(window.innerWidth>768)axis.width=220;},grid:{display:false},ticks:{color:ct.text3,font:{family:'IBM Plex Mono',size:9},autoSkip:false}}}}});
+}
+function scrollEXECBillingDeviation(dir){
+  const pageSize=responsiveChartPageSize(10,5),pages=Math.ceil(execBillingDeviationTotals.length/pageSize)||1;
+  execBillingDeviationPage=Math.max(0,Math.min(pages-1,execBillingDeviationPage+dir));
+  renderEXECBillingDeviationChart();
 }
 function execParseSheetDate(label){
   const parts=String(label||'').trim().split(/[\/\-]/);
@@ -4406,15 +4430,16 @@ function renderEXEC(){
   const billingRowsAll=aggregateFLEETBILLING(fleetBillingData.filter(row=>selectedMonthSet.has(row.mes)));
   const billingFleetMap=new Map();
   billingRowsAll.forEach(row=>{
-    const key=budgetKey(row.frota),item=billingFleetMap.get(key)||{...row,meses:new Set(),orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,observacoes:[]};
+    const key=budgetKey(row.frota),item=billingFleetMap.get(key)||{...row,meses:new Set(),orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,observacoes:[],motivosAgregados:[]};
     ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio'].forEach(field=>item[field]+=row[field]||0);
     item.meses.add(row.mes);
     if(row.observacao&&!item.observacoes.includes(row.observacao))item.observacoes.push(row.observacao);
+    if(row.motivoAgregado&&!item.motivosAgregados.includes(row.motivoAgregado))item.motivosAgregados.push(row.motivoAgregado);
     billingFleetMap.set(key,item);
   });
-  const billingRows=[...billingFleetMap.values()].map(row=>({...row,observacao:row.observacoes.join(' · ')}));
+  const billingRows=[...billingFleetMap.values()].map(row=>({...row,observacao:row.observacoes.join(' · '),motivoAgregado:row.motivosAgregados.join(' · ')}));
   const billingFleetFilterKey=selectedMonths.join(',');
-  if(execBillingFleetFilterKey!==billingFleetFilterKey){execBillingFleetPage=0;execBillingFleetFilterKey=billingFleetFilterKey;}
+  if(execBillingFleetFilterKey!==billingFleetFilterKey){execBillingFleetPage=0;execBillingDeviationPage=0;execBillingFleetFilterKey=billingFleetFilterKey;}
   execBillingFleetTotals=billingRows.filter(row=>row.orcado>0||row.realizado>0).map(row=>({frota:row.frota,orcado:row.orcado||0,realizado:row.realizado||0})).sort((a,b)=>b.realizado-a.realizado||b.orcado-a.orcado||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
   const billingBudget=billingRows.reduce((sum,row)=>sum+row.orcado,0);
   const billingRealized=billingRows.reduce((sum,row)=>sum+row.realizado,0);
@@ -4607,6 +4632,7 @@ function renderEXEC(){
   const billingDeficits=billingGaps.filter(row=>row.gap<0).sort((a,b)=>a.gap-b.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,10);
   const billingSurpluses=billingGaps.filter(row=>row.gap>0).sort((a,b)=>b.gap-a.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,5);
   const billingGapHighlights=[...billingDeficits,...billingSurpluses].sort((a,b)=>a.gap-b.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
+  execBillingDeviationTotals=billingGapHighlights.map(row=>({frota:row.frota,gap:row.gap,motivoAgregado:row.motivoAgregado||''}));
   set('execBillingGapCount',billingDataMonths.length?`${billingDeficits.length} déficits + ${billingSurpluses.length} superávits · ${periodCompact}`:'N/D');
   html('execBillingGapTbl',billingGapHighlights.length?billingGapHighlights.map(row=>{
     const gapText=`${row.gap>0?'+':'−'} ${fMoney(Math.abs(row.gap))}`;
@@ -7382,7 +7408,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=77',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=79',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
