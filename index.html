@@ -302,6 +302,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-revenue-value{font:600 12px var(--font-data);color:var(--text);text-align:right;white-space:nowrap}
 .exec-revenue-share{font:10px var(--font-data);color:var(--text2);text-align:right;white-space:nowrap}
 .exec-revenue-empty{padding:24px;text-align:center;color:var(--text3);border:1px dashed var(--border);border-radius:8px}
+.exec-billing-chart-grid{display:grid;grid-template-columns:minmax(0,2.35fr) minmax(230px,.65fr);gap:20px;margin-bottom:20px;align-items:stretch}
+.exec-billing-chart-grid>.card{margin-bottom:0!important}
+.exec-billing-summary{display:flex;flex-direction:column;min-height:100%}
+.exec-billing-summary-stats{display:grid;gap:0;margin-top:2px}
+.exec-billing-summary-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.exec-billing-summary-row:last-child{border-bottom:0}
+.exec-billing-summary-label{font:600 10px var(--font-ui);color:var(--text3);text-transform:uppercase}
+.exec-billing-summary-value{font:700 15px var(--font-data);color:var(--text);text-align:right}
+.exec-billing-summary-note{margin-top:auto;padding-top:14px;font:11px/1.55 var(--font-ui);color:var(--text2)}
 #execContentBilling .exec-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:768px){
   #execContentBilling .exec-kpis{grid-template-columns:1fr!important}
@@ -334,6 +343,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 #panel-exec .tbl-wrap th:nth-child(1),#panel-exec .tbl-wrap td:nth-child(1){width:84px}
 @media(max-width:1350px){.exec-kpis.exec-five,.exec-kpis.exec-six{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:1100px){.exec-overview-grid,.exec-dre-grid{grid-template-columns:1fr}.exec-heat-grid{grid-template-columns:1fr}.exec-inef-grid{grid-template-columns:1fr}}
+@media(max-width:1100px){.exec-billing-chart-grid{grid-template-columns:1fr}.exec-billing-summary-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.exec-billing-summary-row{display:block;border:1px solid var(--border);border-radius:6px;padding:12px}.exec-billing-summary-value{text-align:left;margin-top:6px}.exec-billing-summary-note{margin-top:12px}}
+@media(max-width:768px){.exec-billing-summary-stats{grid-template-columns:1fr}.exec-billing-summary-row{display:flex}.exec-billing-summary-value{text-align:right;margin-top:0}}
 @media(max-width:768px){.exec-kpis.exec-five,.exec-kpis.exec-six{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:768px){.exec-report-toolbar{align-items:stretch;flex-direction:column}.exec-report-actions{display:grid;grid-template-columns:1fr 1fr}.exec-export-btn{width:100%}.exec-report-toast{right:16px;bottom:16px}}
 @media(max-width:768px){.exec-dre-line{grid-template-columns:1fr 1fr;gap:10px}.exec-dre-line>div:first-child{grid-column:1/-1}.exec-dre-line-value{text-align:left}.exec-dre-table{min-width:780px}}
@@ -2138,16 +2149,26 @@ tbody tr:hover td{background:var(--surface2)}
             <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Atingimento MKT</div><div class="kpi-value" id="execBillAttainment">N/D</div><div class="kpi-sub">ROB real ÷ ROB orçada</div></div>
           </div>
           <div class="card exec-card" style="margin-bottom:20px">
-            <div class="card-head"><span class="card-title">ROB Orçada x Executada por Frota</span><div class="chart-nav"><span class="count-tag" id="execBillingFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollEXECBillingFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollEXECBillingFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div>
-            <div style="height:300px"><canvas id="execBillingFleetChart"></canvas></div>
-          </div>
-          <div class="card exec-card" style="margin-bottom:20px">
             <div class="card-head"><span class="card-title">Composição do Realizado por Tipo</span><span class="count-tag" id="execBillingCompositionTotal">N/D</span></div>
             <div class="exec-revenue-stack" id="execBillingCompositionStack"></div>
             <div class="exec-revenue-pareto" id="execBillingCompositionPareto"></div>
             <div class="exec-source-note" id="execBillingCompositionNote" style="margin-top:16px"></div>
           </div>
-          <div class="exec-awaiting" style="margin-bottom:20px"><div class="exec-awaiting-title">Faturamento operacional por frota</div><div class="exec-awaiting-text" id="execBillingText">A ROB Real MKT é consolidada a partir da base mensal por frota.</div></div>
+          <div class="exec-billing-chart-grid">
+            <div class="card exec-card">
+              <div class="card-head"><span class="card-title">ROB Orçada x Executada por Frota</span><div class="chart-nav"><span class="count-tag" id="execBillingFleetInfo">0 frotas</span><button class="chart-arrow" onclick="scrollEXECBillingFleet(-1)" title="Frotas anteriores" aria-label="Frotas anteriores">‹</button><button class="chart-arrow" onclick="scrollEXECBillingFleet(1)" title="Próximas frotas" aria-label="Próximas frotas">›</button></div></div>
+              <div style="height:300px"><canvas id="execBillingFleetChart"></canvas></div>
+            </div>
+            <div class="card exec-card exec-billing-summary">
+              <div class="card-head"><span class="card-title">Resumo do Recorte</span></div>
+              <div class="exec-billing-summary-stats">
+                <div class="exec-billing-summary-row"><span class="exec-billing-summary-label">Frotas com ROB</span><span class="exec-billing-summary-value" id="execBillingFleetCount">N/D</span></div>
+                <div class="exec-billing-summary-row"><span class="exec-billing-summary-label">Competências</span><span class="exec-billing-summary-value" id="execBillingMonthCount">N/D</span></div>
+                <div class="exec-billing-summary-row"><span class="exec-billing-summary-label">Registros mensais</span><span class="exec-billing-summary-value" id="execBillingRecordCount">N/D</span></div>
+              </div>
+              <div class="exec-billing-summary-note" id="execBillingText">Consolidação mensal por frota.</div>
+            </div>
+          </div>
           <div class="tbl-card">
             <div class="tbl-head"><span class="tbl-title">Principais Gaps de Receita por Equipamento</span><span class="count-tag" id="execBillingGapCount">N/D</span></div>
             <div class="tbl-wrap"><table class="exec-data-table exec-billing-gap-table"><thead><tr><th>Equipamento</th><th>Categoria</th><th>ROB Orçada</th><th>ROB Real</th><th>Mov. Interna</th><th>Frete</th><th>KM Vazio</th><th>Diária</th><th>Locação</th><th>Gap de Receita</th><th>Atingimento</th><th>Observação (X)</th></tr></thead><tbody id="execBillingGapTbl"></tbody></table></div>
@@ -4589,7 +4610,10 @@ function renderEXEC(){
   }).join(''):'<div class="exec-revenue-empty">Sem realizado disponível nos meses selecionados.</div>');
   const billingReconciliationDiff=billingRealized-billingClassified;
   set('execBillingCompositionNote',!billingDataMonths.length?'A base não possui ROB Real preenchida nos meses selecionados.':Math.abs(billingReconciliationDiff)<=.01?'Os tipos informados na base conciliam integralmente com a ROB Real do período.':billingReconciliationDiff>0?`${fMoney(billingClassified)} da ROB Real estão distribuídos entre os cinco tipos. A diferença de ${fMoney(billingReconciliationDiff)} permanece sem classificação na base de origem.`:`A soma dos tipos supera a ROB Real em ${fMoney(Math.abs(billingReconciliationDiff))}. O painel preserva os valores informados e sinaliza a divergência para validação na base.`);
-  set('execBillingText',billingDataMonths.length?`A ROB Real MKT soma ${fMoney(billingRealized)} frente a ${fMoney(billingBudget)} de ROB orçada, atingindo ${billingAttainmentText}. A base reúne ${billingRowsAll.length.toLocaleString('pt-BR')} combinações mensais e ${billingFleets.toLocaleString('pt-BR')} frotas com faturamento. O resultado contábil oficial permanece na Análise de Resultado.`:'');
+  set('execBillingFleetCount',billingDataMonths.length?billingFleets.toLocaleString('pt-BR'):'N/D');
+  set('execBillingMonthCount',billingDataMonths.length?billingDataMonths.length.toLocaleString('pt-BR'):'N/D');
+  set('execBillingRecordCount',billingDataMonths.length?billingRowsAll.length.toLocaleString('pt-BR'):'N/D');
+  set('execBillingText',billingDataMonths.length?'ROB operacional consolidada por frota nos meses selecionados.':'Sem ROB Real preenchida no recorte.');
   const billingGaps=billingRows.map(row=>({...row,gap:row.realizado-row.orcado,attainment:row.orcado>0?row.realizado/row.orcado*100:null})).filter(row=>Math.abs(row.gap)>.005);
   const billingDeficits=billingGaps.filter(row=>row.gap<0).sort((a,b)=>a.gap-b.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,10);
   const billingSurpluses=billingGaps.filter(row=>row.gap>0).sort((a,b)=>b.gap-a.gap||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true})).slice(0,5);
@@ -7369,7 +7393,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=73',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=74',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
