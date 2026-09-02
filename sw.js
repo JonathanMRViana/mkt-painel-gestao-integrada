@@ -1,7 +1,8 @@
-const CACHE_NAME='makro-gestao-integrada-v93';
+const CACHE_NAME='makro-gestao-integrada-v94';
 const APP_SHELL=[
   './',
   './index.html',
+  './config.js',
   './manifest.webmanifest',
   './assets/vendor/html2canvas.min.js',
   './assets/vendor/jspdf.umd.min.js',

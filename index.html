@@ -15,6 +15,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icons/app-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+<script src="config.js"></script>
 <script>
 try{
   const savedTheme=localStorage.getItem('makro-theme');
@@ -2921,11 +2922,11 @@ function cC(){return dark?{bg:'rgba(255,255,255,0.05)',txt:'#6b7280'}:{bg:'rgba(
 // GIDs das abas - atualize se necessário
 const CSV_AET = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_Ry7aRW5A3zpaLdCu2u_xb3vgfOjnfHRmSH_OyvVX3wzmxvh4fSZBFvZakDRF2eDNA3DWJk9OFbml/pub?output=csv&gid=1076498373";
 const EFL_SHEETS=[
-  {month:'Março',gid:'597669245',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=597669245'},
-  {month:'Abril',gid:'1761032016',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=1761032016'},
-  {month:'Maio',gid:'272661921',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=272661921'},
-  {month:'Julho',gid:'655500116',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=655500116'},
-  {month:'Agosto',gid:'332845704',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=332845704'}
+  {key:'efl-mar',month:'Março',gid:'597669245',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=597669245'},
+  {key:'efl-apr',month:'Abril',gid:'1761032016',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=1761032016'},
+  {key:'efl-may',month:'Maio',gid:'272661921',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=272661921'},
+  {key:'efl-jul',month:'Julho',gid:'655500116',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=655500116'},
+  {key:'efl-aug',month:'Agosto',gid:'332845704',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgksY-EN253ap3PxlGvh5J3NACPfbeOkeoNipkIOpo1mV06Q3Wgqu8rTM2k-vFaXZrF166yu62JEWS/pub?output=csv&gid=332845704'}
 ];
 const CSV_INEF = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=262129708";
 const CSV_PATIO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRuyDBTaz3bDMc7uelyXQ8t5GkpUjdr0pfK2xm9TZHHJL6uEVEo0GxrTImAyKs-PbjHhhmNIziyBXMO/pub?output=csv";
@@ -2940,15 +2941,15 @@ const CSV_FREIGHT_RATES="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7
 const CSV_MAKRO_ASSETS="https://docs.google.com/spreadsheets/d/e/2PACX-1vRuXBqTTc4oX0_e_gGnueuum1tKmqLeGb_ftuE0aVrRGIebBwK0U1d-MeLmJkH3SflQxQqDcOaH4ZEP/pub?output=csv&gid=519353169";
 const CSV_MOB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_Ry7aRW5A3zpaLdCu2u_xb3vgfOjnfHRmSH_OyvVX3wzmxvh4fSZBFvZakDRF2eDNA3DWJk9OFbml/pub?output=csv&gid=1729222115";
 const PROG_SHEETS=[
-  {week:'W28',gid:'97434237',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=97434237'},
-  {week:'W29',gid:'5333880',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=5333880'},
-  {week:'W30',gid:'1440172390',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1440172390'},
-  {week:'W31',gid:'1036195827',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1036195827'},
-  {week:'W32',gid:'1272760441',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1272760441'},
-  {week:'W33',gid:'1746627562',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1746627562'},
-  {week:'W34',gid:'88423907',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=88423907'},
-  {week:'W35',gid:'1396448823',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1396448823'},
-  {week:'W36',gid:'509098163',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=509098163'}
+  {key:'prog-w28',week:'W28',gid:'97434237',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=97434237'},
+  {key:'prog-w29',week:'W29',gid:'5333880',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=5333880'},
+  {key:'prog-w30',week:'W30',gid:'1440172390',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1440172390'},
+  {key:'prog-w31',week:'W31',gid:'1036195827',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1036195827'},
+  {key:'prog-w32',week:'W32',gid:'1272760441',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1272760441'},
+  {key:'prog-w33',week:'W33',gid:'1746627562',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1746627562'},
+  {key:'prog-w34',week:'W34',gid:'88423907',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=88423907'},
+  {key:'prog-w35',week:'W35',gid:'1396448823',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=1396448823'},
+  {key:'prog-w36',week:'W36',gid:'509098163',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=509098163'}
 ];
 
 function parseCSV(text){
@@ -2981,16 +2982,30 @@ function parseCSV(text){
 
 async function loadAll(){
   document.getElementById('updTxt').textContent='atualizando...';
-  const safeFetch=async(url)=>{
-    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),30000);
-    try{const r=await fetch(url+'&t='+Date.now(),{signal:controller.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text();}
-    catch(e){console.warn('fetch failed:',url,e.name==='AbortError'?'tempo limite excedido':e.message);return '';}
-    finally{clearTimeout(timeout);}
+  const safeFetch=async(url,sourceKey)=>{
+    const cfg=window.MAKRO_DATA_CONFIG||{};
+    const apiBase=String(cfg.apiBaseUrl||'/api').replace(/\/$/,'');
+    const dataUrl=cfg.mode==='sql'?`${apiBase}/data/${encodeURIComponent(sourceKey)}.csv`:url;
+    const fetchText=async(target)=>{
+      const separator=target.includes('?')?'&':'?';
+      const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),Number(cfg.requestTimeoutMs)||30000);
+      try{const r=await fetch(target+separator+'t='+Date.now(),{signal:controller.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text();}
+      finally{clearTimeout(timeout);}
+    };
+    try{return await fetchText(dataUrl);}
+    catch(e){
+      console.warn('fetch failed:',dataUrl,e.name==='AbortError'?'tempo limite excedido':e.message);
+      if(cfg.mode==='sql'&&cfg.fallbackToSheets!==false){
+        try{return await fetchText(url);}
+        catch(fallbackError){console.warn('fallback Sheets failed:',url,fallbackError.message);}
+      }
+      return '';
+    }
   };
   const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFleetBilling,txtFreight,txtAssets,progTexts]=await Promise.all([
-    safeFetch(CSV_AET),safeFetch(CSV_MOB),safeFetch(CSV_MAT),safeFetch(CSV_MAT_SAFETY),
-    safeFetch(CSV_PATIO),safeFetch(CSV_PATIO_INVENTORY),safeFetch(CSV_INEF),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url))),safeFetch(CSV_RPD),safeFetch(CSV_BUDGET),safeFetch(CSV_RESULT_BI),safeFetch(CSV_FLEET_BILLING),safeFetch(CSV_FREIGHT_RATES),safeFetch(CSV_MAKRO_ASSETS),
-    Promise.all(PROG_SHEETS.map(s=>safeFetch(s.url)))
+    safeFetch(CSV_AET,'aet'),safeFetch(CSV_MOB,'mob'),safeFetch(CSV_MAT,'mat-tie'),safeFetch(CSV_MAT_SAFETY,'mat-safety'),
+    safeFetch(CSV_PATIO,'patio'),safeFetch(CSV_PATIO_INVENTORY,'patio-inventory'),safeFetch(CSV_INEF,'inef'),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url,s.key))),safeFetch(CSV_RPD,'rpd'),safeFetch(CSV_BUDGET,'budget'),safeFetch(CSV_RESULT_BI,'result-bi'),safeFetch(CSV_FLEET_BILLING,'fleet-billing'),safeFetch(CSV_FREIGHT_RATES,'freight-rates'),safeFetch(CSV_MAKRO_ASSETS,'makro-assets'),
+    Promise.all(PROG_SHEETS.map(s=>safeFetch(s.url,s.key)))
   ]);
   try{processAET(parseCSV(txtAet));}catch(e){console.error('processAET error:',e.message);}
   try{processMOB(parseCSV(txtMob));}catch(e){console.error('processMOB error:',e.message);}

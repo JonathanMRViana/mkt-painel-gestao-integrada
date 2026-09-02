@@ -1,0 +1,24 @@
+{
+  "name": "makro-painel-sql-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sincroniza os CSVs publicos do painel Makro com SQL Server e os disponibiliza pela API.",
+  "scripts": {
+    "start": "node src/server.js",
+    "db:apply": "node scripts/apply-schema.js",
+    "sync": "node scripts/sync-once.js",
+    "check": "node --check src/server.js && node --check src/sync.js && node --check src/db.js && node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "csv-parse": "^6.1.0",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "mssql": "^11.0.1"
+  }
+}
+
