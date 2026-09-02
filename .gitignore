@@ -1,5 +1,2 @@
-server/.env
-server/node_modules/
-server/logs/
 *.log
 /Versionamento TI/
