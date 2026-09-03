@@ -4627,15 +4627,15 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     if(!type&&(tokens.some(token=>['MC','MP','MNT','MANUT','MANUTENCAO'].includes(token))||key.includes('MANUT')))type='mechanical';
     return{...row,dreType:type};
   };
-  const toleranceTypes=new Set(['doc','ac','ad']),toleranceDaysByCause=2,toleranceState=new Map();
+  const toleranceTypes=new Set(['doc','ac','ad']),toleranceDaysByCause=2;
   const classifiedAll=meaningfulDays.filter(row=>row.date&&row.date.getFullYear()===2026).map(classifyLossRow).filter(row=>row.dreType).sort((a,b)=>a.date-b.date||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
-  classifiedAll.forEach(row=>{
+  const classified=[...new Map(classifiedAll.filter(row=>monthSet.has(row.date.getMonth()+1)).map(row=>[`${row.dreType}|${fleetKey(row.frota)}|${row.date.getTime()}`,row])).values()];
+  const toleranceState=new Map();
+  classified.forEach(row=>{
     if(!toleranceTypes.has(row.dreType)){row.waitStreak=0;return;}
-    const key=`${row.dreType}|${fleetKey(row.frota)}`,previous=toleranceState.get(key),dateKey=row.date.getTime();
-    const streak=previous&&dateKey-previous.dateKey===86400000?previous.streak+1:1;
-    row.waitStreak=streak;toleranceState.set(key,{dateKey,streak});
+    const key=`${row.dreType}|${fleetKey(row.frota)}`,dayIndex=(toleranceState.get(key)||0)+1;
+    row.waitStreak=dayIndex;toleranceState.set(key,dayIndex);
   });
-  const classified=classifiedAll.filter(row=>monthSet.has(row.date.getMonth()+1));
   const lossLabels={mechanical:'Mecânica',doc:'Documentação fiscal / AET',ac:'Aguardando carregamento',ad:'Aguardando descarregamento',movement:'Movimentação interna'};
   const lossMap=new Map();
   classified.forEach(row=>{
