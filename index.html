@@ -415,6 +415,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 #panel-exec .exec-dre-extra-hours-table th:nth-child(2),#panel-exec .exec-dre-extra-hours-table td:nth-child(2){width:16%!important;text-align:right}
 #panel-exec .exec-dre-extra-hours-table th:nth-child(3),#panel-exec .exec-dre-extra-hours-table td:nth-child(3){width:14%!important;text-align:right}
 #panel-exec .exec-dre-extra-hours-table th:nth-child(4),#panel-exec .exec-dre-extra-hours-table td:nth-child(4){width:18%!important;text-align:right}
+#panel-exec .exec-dre-sources-table{min-width:680px!important;width:100%;table-layout:fixed!important}
+#panel-exec .exec-dre-sources-table th:nth-child(1),#panel-exec .exec-dre-sources-table td:nth-child(1){width:28%!important;text-align:left}
+#panel-exec .exec-dre-sources-table th:nth-child(2),#panel-exec .exec-dre-sources-table td:nth-child(2){width:54%!important;text-align:left}
+#panel-exec .exec-dre-sources-table th:nth-child(3),#panel-exec .exec-dre-sources-table td:nth-child(3){width:18%!important;text-align:right}
 .empty-panel-card{background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--radius);min-height:360px;display:flex;align-items:center;justify-content:center;text-align:center;opacity:.72;padding:32px}
 .empty-panel-inner{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--text3)}
 .empty-panel-icon{width:44px;height:44px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text3);background:var(--surface3)}
@@ -2278,6 +2282,10 @@ tbody tr:hover td{background:var(--surface2)}
             <section class="exec-dre-block">
               <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Encaminhamento</div><div class="exec-dre-block-title">Ações Prioritárias</div></div><span class="exec-dre-status" id="execDrePeriod">período</span></div>
               <div class="exec-dre-actions" id="execDreActions"></div>
+            </section>
+            <section class="exec-dre-block">
+              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Rastreabilidade</div><div class="exec-dre-block-title">Fontes da Análise de Resultado</div></div><span class="exec-dre-status ready">bases conectadas</span></div>
+              <div class="exec-dre-panel"><div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table exec-dre-sources-table"><thead><tr><th>Fonte</th><th>Uso na análise</th><th>Disponibilidade</th></tr></thead><tbody id="execDreSourcesTbl"></tbody></table></div></div>
             </section>
           </div>
         </div>
@@ -4818,6 +4826,17 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   if(kmWithoutCharge>0)actions.push({kind:'critical',title:'Validar cobrança dos quilômetros',body:`Há ${Math.round(kmWithoutCharge).toLocaleString('pt-BR')} km sem valor associado nas colunas Frete ou KM Vazio, distribuídos em ${kmAuditFleets.size} frotas. Validar observações e regra contratual antes de classificar como perda.`});
   actions.push({kind:'pending',title:'Completar a DRE operacional',body:'Conectar o orçamento de horas extras, banco de horas e o realizado de viagens/estadias para concluir os confrontos pendentes.'});
   html('execDreActions',actions.slice(0,4).map(item=>`<div class="exec-dre-action ${item.kind}"><div class="exec-dre-action-title">${execEsc(item.title)}</div><div class="exec-dre-action-body">${execEsc(item.body)}</div></div>`).join(''));
+  const dreSources=[
+    ['MKT - ROB por Frota','Receita, combustível, rodagem e indicadores por frota.',billingRows.length],
+    ['Orçamento 2026 - MKT','ROB orçada, quilômetros e litros orçados.',budgetRows.length],
+    ['Relatório de Eficiência Logística','Dias em manutenção e indisponibilidades operacionais.',dayRows.length],
+    ['Controle de Ineficiências Operacionais','Diárias faturadas por ineficiência.',inefRows.length],
+    ['Base de Ativos Makro','Classificação de cavalos e implementos.',assetTypeByFleet.size],
+    ['Tabela de Frete','Premissas de tarifa para perda potencial.',freightRates.length],
+    ['Orçamento de Viagens, Estadias e Diárias','Orçamento do Bloco 04.',travelRows.length],
+    ['Horas Extras Executadas','Executado do Bloco 03: competência fevereiro, pagamento agosto.',extraHourRows.length]
+  ];
+  html('execDreSourcesTbl',dreSources.map(([source,usage,count])=>`<tr><td><strong>${execEsc(source)}</strong></td><td>${execEsc(usage)}</td><td style="text-align:right"><span class="tag ${count?'tag-green':'tag-dim'}">${count?'DISPONÍVEL':'SEM DADOS NO RECORTE'}</span></td></tr>`).join(''));
 }
 
 function renderEXEC(){
