@@ -4674,7 +4674,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const fuelFleets=[...fuelFleetMap.values()].map(row=>({...row,budgetRate:row.litersBudget>0?row.budgetWeighted/row.litersBudget:null,actualRate:row.litersActual>0?row.actualWeighted/row.litersActual:null})).filter(row=>row.budgetRate!=null&&row.actualRate!=null).sort((a,b)=>(a.actualRate-a.budgetRate)-(b.actualRate-b.budgetRate)).slice(0,10);
   html('execDreFuelFleet',fuelFleets.length?fuelFleets.map(row=>line(`Frota ${row.frota}`,`desvio ${(row.actualRate-row.budgetRate).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})} km/L`,`${row.budgetRate.toLocaleString('pt-BR',{maximumFractionDigits:2})} x ${row.actualRate.toLocaleString('pt-BR',{maximumFractionDigits:2})}`)).join(''):line('Sem medição no recorte','A base possui realização de combustível em julho e agosto','N/D'));
   const fuelStatus=document.getElementById('execDreFuelStatus');
-  if(fuelStatus){fuelStatus.textContent=fuelMonths.size?`${fuelMonths.size} ${fuelMonths.size===1?'competência':'competências'} com realizado`:'Sem realizado no período';fuelStatus.className='exec-dre-status '+(fuelMonths.size?'ready':'partial');}
+  if(fuelStatus){fuelStatus.textContent=fuelMonths.size?'Base disponível':'Sem base no período';fuelStatus.className='exec-dre-status '+(fuelMonths.size?'ready':'partial');}
   html('execDreFuelPending',litersActual>0?'':pending([['Realização de combustível','A planilha não possui valores realizados para os meses selecionados.']]))
   html('execDreSalaryPending',pending([
     ['Horas extras 50% e 100%','Não há base disponível para o período selecionado.'],
@@ -7727,7 +7727,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=107',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=108',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
