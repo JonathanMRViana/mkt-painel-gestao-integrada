@@ -4570,14 +4570,13 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const efficiencyActualLiters=sum(efficiencyActualRows,'litrosRealizados');
   const efficiencyBudget=efficiencyBudgetLiters>0?efficiencyBudgetRows.reduce((total,row)=>total+row.kmLOrcado*row.litrosOrcados,0)/efficiencyBudgetLiters:null;
   const efficiencyActual=efficiencyActualLiters>0?efficiencyActualRows.reduce((total,row)=>total+row.kmLRealizado*row.litrosRealizados,0)/efficiencyActualLiters:null;
-  const kmRevenue=billingRows.reduce((result,row)=>{
-    const composition=resolveFreightComposition(row.conjunto),rate=composition.rateType?freightRates.find(item=>budgetKey(item.type)===budgetKey(composition.rateType)):null;
-    result.actualLoaded+=row.frete||0;result.actualEmpty+=row.kmVazio||0;
-    if(rate){result.mappedKmLoaded+=row.kmRodadoCarregado||0;result.mappedKmEmpty+=row.kmRodadoVazio||0;result.expectedLoaded+=(row.kmRodadoCarregado||0)*rate.loadedRate;result.expectedEmpty+=(row.kmRodadoVazio||0)*rate.emptyRate;result.mappedActualLoaded+=row.frete||0;result.mappedActualEmpty+=row.kmVazio||0;result.mappedFleets.add(fleetKey(row.frota));}
-    else if((row.kmRodadoCarregado||0)>0||(row.kmRodadoVazio||0)>0)result.unmappedFleets.add(fleetKey(row.frota));
+  const kmBillingAudit=billingRows.reduce((result,row)=>{
+    const fleet=validFleet(row.frota),loaded=Math.max(0,row.kmRodadoCarregado||0),empty=Math.max(0,row.kmRodadoVazio||0),freight=Math.max(0,row.frete||0),emptyCharge=Math.max(0,row.kmVazio||0);
+    result.loaded.total+=loaded;result.empty.total+=empty;
+    if(loaded>0){if(freight>0){result.loaded.withCharge+=loaded;result.loaded.value+=freight;}else{result.loaded.withoutCharge+=loaded;if(fleet)result.loaded.fleets.add(fleet);}}
+    if(empty>0){if(emptyCharge>0){result.empty.withCharge+=empty;result.empty.value+=emptyCharge;}else{result.empty.withoutCharge+=empty;if(fleet)result.empty.fleets.add(fleet);}}
     return result;
-  },{actualLoaded:0,actualEmpty:0,mappedKmLoaded:0,mappedKmEmpty:0,mappedActualLoaded:0,mappedActualEmpty:0,expectedLoaded:0,expectedEmpty:0,mappedFleets:new Set(),unmappedFleets:new Set()});
-  const loadedGap=Math.max(0,kmRevenue.expectedLoaded-kmRevenue.mappedActualLoaded),emptyGap=Math.max(0,kmRevenue.expectedEmpty-kmRevenue.mappedActualEmpty),kmRevenueGap=loadedGap+emptyGap;
+  },{loaded:{total:0,withCharge:0,withoutCharge:0,value:0,fleets:new Set()},empty:{total:0,withCharge:0,withoutCharge:0,value:0,fleets:new Set()}});
   const classified=dayRows.map(row=>{
     const key=execStatusKey(row.cond),tokens=key.split(/[^A-Z0-9]+/).filter(Boolean);
     let type=waitType(row.cond);
@@ -4629,23 +4628,26 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     ...revenueComposition.map(([label,value])=>line(label,real>0?`${(value/real*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}% da ROB Real`:'sem participação',fMoney(value))),
     line('Total classificado',`diferença de ${fMoney(Math.abs(real-classifiedRevenue))} para a ROB Real`,fMoney(classifiedRevenue))
   ].join(''):line('Composição da ROB Real','Não há base disponível para o período selecionado.','N/D');
+  const kmAuditFleets=new Set([...kmBillingAudit.loaded.fleets,...kmBillingAudit.empty.fleets]);
+  const kmWithoutCharge=kmBillingAudit.loaded.withoutCharge+kmBillingAudit.empty.withoutCharge;
   const kmRevenueDetail=[
-    line('KM carregado',`${Math.round(kmRevenue.mappedKmLoaded).toLocaleString('pt-BR')} km × tarifa cheia · esperado ${fMoney(kmRevenue.expectedLoaded)}`,`${fMoney(kmRevenue.mappedActualLoaded)} em Frete`),
-    line('KM vazio',`${Math.round(kmRevenue.mappedKmEmpty).toLocaleString('pt-BR')} km × tarifa 85% · esperado ${fMoney(kmRevenue.expectedEmpty)}`,`${fMoney(kmRevenue.mappedActualEmpty)} em KM Vazio`),
-    line('Possível valor não cobrado',`${kmRevenue.mappedFleets.size} frotas tarifadas${kmRevenue.unmappedFleets.size?` · ${kmRevenue.unmappedFleets.size} sem tarifa`:''}`,kmRevenue.mappedFleets.size?fMoney(kmRevenueGap):'N/D')
+    line('KM carregado com cobrança',`${Math.round(kmBillingAudit.loaded.withCharge).toLocaleString('pt-BR')} de ${Math.round(kmBillingAudit.loaded.total).toLocaleString('pt-BR')} km`,fMoney(kmBillingAudit.loaded.value)),
+    line('KM carregado sem valor associado',fleetList(kmBillingAudit.loaded.fleets),`${Math.round(kmBillingAudit.loaded.withoutCharge).toLocaleString('pt-BR')} km`),
+    line('KM vazio com cobrança',`${Math.round(kmBillingAudit.empty.withCharge).toLocaleString('pt-BR')} de ${Math.round(kmBillingAudit.empty.total).toLocaleString('pt-BR')} km`,fMoney(kmBillingAudit.empty.value)),
+    line('KM vazio sem valor associado',fleetList(kmBillingAudit.empty.fleets),`${Math.round(kmBillingAudit.empty.withoutCharge).toLocaleString('pt-BR')} km`),
+    line('Frotas para validação',fleetList(kmAuditFleets),`${kmAuditFleets.size} frotas`)
   ].join('');
   const dailyReasonMap=new Map();
   inefRows.forEach(row=>{const key=row.motivo||'Não classificado',item=dailyReasonMap.get(key)||{count:0,value:0};item.count++;item.value+=row.vlTotal||0;dailyReasonMap.set(key,item);});
   const dailyDetail=[...dailyReasonMap.entries()].sort((a,b)=>b[1].value-a[1].value).map(([label,item])=>line(label,`${item.count} ${item.count===1?'registro':'registros'}`,fMoney(item.value))).join('')||line('Diárias de ineficiência','Não há base disponível para o período selecionado.','N/D');
   const lossDetail=potentialLoss.length?potentialLoss.map(row=>line(row.label,`${row.days} frota-dias${row.unmapped?` · ${row.unmapped} sem tarifa`:''}`,row.value>0?fMoney(row.value):'N/D')).join(''):line('Perda potencial','Não há base disponível para o período selecionado.','N/D');
   const kmDeviation=kmActual-kmBudget,lineDeviation=lineAxleReal-lineAxleBudget;
-  const kmExpected=kmRevenue.expectedLoaded+kmRevenue.expectedEmpty,kmCharged=kmRevenue.mappedActualLoaded+kmRevenue.mappedActualEmpty;
   const topLoss=potentialLoss[0];
   html('execDreRevenueSequence',[
     topic(1,metric('Cavalos mecânicos orçados x realizados/faturando',budgetRows.length?`${budgetedHorses.size} x ${billingHorses.size}`:'N/D','frotas únicas no período','blue'),panel('Detalhamento dos Cavalos',horseDetail),billingRows.length?`${billingHorses.size} cavalos registraram ROB Real no período; ${unbudgetedBillingHorses.size} deles não possuem orçamento associado no mesmo recorte.`:'Não há base disponível para o período selecionado.',true),
     topic(2,metric('Quantidade de KM orçado x realizado',kmBudget>0?`${Math.round(kmBudget).toLocaleString('pt-BR')} x ${Math.round(kmActual).toLocaleString('pt-BR')}`:'N/D',kmBudget>0?`desvio ${signedKm(kmDeviation)}`:'não há base disponível para o período selecionado','blue'),panel('Memória de Rodagem',[line('KM orçado','coluna KM Orçados',`${Math.round(kmBudget).toLocaleString('pt-BR')} km`),line('KM realizado','coluna KM Rodados Total',`${Math.round(kmActual).toLocaleString('pt-BR')} km`),line('Desvio','realizado menos orçado',signedKm(kmDeviation))].join('')),kmBudget>0?`A rodagem realizada ficou ${Math.abs(Math.round(kmDeviation)).toLocaleString('pt-BR')} km ${kmDeviation>=0?'acima':'abaixo'} do orçamento no período selecionado.`:'Não há base disponível para o período selecionado.',true),
     topic(3,metric('Receita de Linha de Eixo orçada x realizada',lineAxleRows.length?`${budgetMoneyCompact(lineAxleBudget)} x ${budgetMoneyCompact(lineAxleReal)}`:'N/D',lineAxleRows.length?`desvio ${signedMoney(lineDeviation)}`:'não há base disponível para o período selecionado','green'),panel('Detalhamento da Linha de Eixo',[line('ROB orçada','frotas 615, 617 e 619',fMoney(lineAxleBudget)),line('ROB realizada','total reconhecido nas três frotas',fMoney(lineAxleReal)),line('Realizado como prancha','Frete + KM Vazio das frotas LE',fMoney(lineAxlePranchaReal)),line('Desvio','realizado menos orçado',signedMoney(lineDeviation))].join('')),lineAxleRows.length?`Das frotas originalmente orçadas como Linha de Eixo, ${fMoney(lineAxlePranchaReal)} foram realizados como receita de prancha no período.`:'Não há base disponível para o período selecionado.',true),
-    topic(4,metric('Receita de KM carregado e KM vazio',billingRows.length?`${budgetMoneyCompact(loadedRevenue)} x ${budgetMoneyCompact(emptyRevenue)}`:'N/D',billingRows.length?`${Math.round(kmLoaded).toLocaleString('pt-BR')} km carregados · ${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios`:'não há base disponível para o período selecionado','green'),panel('Composição da ROB Real',compositionDetail)+panel('Conferência da Cobrança por KM',kmRevenueDetail),kmRevenue.mappedFleets.size?`A rodagem tarifada representa ${fMoney(kmExpected)} de receita esperada, frente a ${fMoney(kmCharged)} registrada em Frete e KM Vazio. A diferença de ${fMoney(kmRevenueGap)} deve ser auditada antes de ser tratada como recuperável.`:'Não há base disponível para o período selecionado.'),
+    topic(4,metric('Receita de KM carregado e KM vazio',billingRows.length?`${budgetMoneyCompact(loadedRevenue)} x ${budgetMoneyCompact(emptyRevenue)}`:'N/D',billingRows.length?`${Math.round(kmLoaded).toLocaleString('pt-BR')} km carregados · ${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios`:'não há base disponível para o período selecionado','green'),panel('Composição da ROB Real',compositionDetail)+panel('Conferência da Cobrança por KM',kmRevenueDetail),billingRows.length?(kmWithoutCharge>0?`${Math.round(kmWithoutCharge).toLocaleString('pt-BR')} km não possuem valor associado nas colunas Frete ou KM Vazio. As ${kmAuditFleets.size} frotas devem ser validadas pelas observações e regras contratuais; manutenção e apoio não representam automaticamente perda de receita.`:'Todos os quilômetros registrados no período possuem valor associado nas colunas Frete ou KM Vazio.'):'Não há base disponível para o período selecionado.'),
     topic(5,metric('Receita de diárias de ineficiência',billingRows.length?budgetMoneyCompact(dailyRevenue):'N/D',inefRows.length?`${budgetMoneyCompact(inefValue)} no controle de ineficiências`:'não há base disponível para o período selecionado','amber'),panel('Detalhamento das Diárias',dailyDetail),inefRows.length?`A ROB Real reconhece ${fMoney(dailyRevenue)} em Diária, enquanto o controle de ineficiências registra ${fMoney(inefValue)} no mesmo período.`:'Não há base disponível para o período selecionado.',true),
     topic(6,metric('Receita potencial perdida por ineficiências',potentialLoss.length?budgetMoneyCompact(potentialTotal):'N/D','mecânica e causas operacionais classificadas','red'),panel('Detalhamento da Perda Potencial',lossDetail),topLoss?`${topLoss.label} é a principal exposição do período, com ${topLoss.days} frota-dias e ${fMoney(topLoss.value)} de receita potencial comprometida.`:'Não há base disponível para o período selecionado.',true)
   ].join(''));
@@ -4685,7 +4687,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   if(billingRows.length&&budget>0)actions.push({kind:gap<0?'critical':'positive',title:gap<0?'Recuperar desvio de receita':'Preservar resultado de receita',body:`ROB Real em ${attainment.toLocaleString('pt-BR',{maximumFractionDigits:1})}% do orçamento; diferença de ${fMoney(Math.abs(gap))} ${gap<0?'abaixo':'acima'} do previsto.`});
   if(lineAxleRows.length&&lineGap<0)actions.push({kind:'critical',title:'Atuar na linha de eixo',body:`Frotas 615, 617 e 619 acumulam ${fMoney(Math.abs(lineGap))} abaixo do orçamento no recorte.`});
   if(potentialLoss.length)actions.push({kind:'critical',title:'Reduzir perda potencial',body:`As ineficiências classificadas representam ${fMoney(potentialTotal)} de exposição estimada; priorizar causas com maior valor.`});
-  if(kmRevenueGap>0)actions.push({kind:'critical',title:'Validar cobrança dos quilômetros',body:`O confronto entre rodagem, tarifa e valor cobrado indica até ${fMoney(kmRevenueGap)} de possível receita não cobrada nas frotas tarifadas.`});
+  if(kmWithoutCharge>0)actions.push({kind:'critical',title:'Validar cobrança dos quilômetros',body:`Há ${Math.round(kmWithoutCharge).toLocaleString('pt-BR')} km sem valor associado nas colunas Frete ou KM Vazio, distribuídos em ${kmAuditFleets.size} frotas. Validar observações e regra contratual antes de classificar como perda.`});
   actions.push({kind:'pending',title:'Completar a DRE operacional',body:'Conectar folha/BH e viagens/estadias para liberar os dois blocos ainda pendentes.'});
   html('execDreActions',actions.slice(0,4).map(item=>`<div class="exec-dre-action ${item.kind}"><div class="exec-dre-action-title">${execEsc(item.title)}</div><div class="exec-dre-action-body">${execEsc(item.body)}</div></div>`).join(''));
 }
@@ -7720,7 +7722,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=105',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=106',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
