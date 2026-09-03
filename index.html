@@ -4458,7 +4458,7 @@ function renderDREAnalysisLegacy(meaningfulDays,waitType,set,html,selectedMonths
     const gap=officialResult.realizado-operationalActual;
     set('execDreReconciliationNote',`No período ${periodNameLower}, o resultado contábil oficial e a ROB por Frota apresentam diferença de ${fMoney(Math.abs(gap))}. A ROB por Frota é a leitura operacional; o BI permanece como fechamento contábil. O Controle de Ineficiências é exibido separadamente e não é somado automaticamente à receita.`);
   }else{
-    set('execDreReconciliationNote',`O período ${periodNameLower} não possui todas as fontes necessárias para uma conciliação completa. Os valores indisponíveis permanecem como N/D e nenhum dado é substituído por valores do HTML de referência.`);
+    set('execDreReconciliationNote',`Não há base completa disponível para o período selecionado.`);
   }
 
   const monthDays=meaningfulDays.filter(row=>row.date&&row.date.getFullYear()===2026&&monthSet.has(row.date.getMonth()+1));
@@ -4631,14 +4631,14 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   if(fuelStatus){fuelStatus.textContent=fuelMonths.size?`${fuelMonths.size} ${fuelMonths.size===1?'competência':'competências'} com realizado`:'Sem realizado no período';fuelStatus.className='exec-dre-status '+(fuelMonths.size?'ready':'partial');}
   html('execDreFuelPending',litersActual>0?'':pending([['Realização de combustível','A planilha não possui valores realizados para os meses selecionados.']]))
   html('execDreSalaryPending',pending([
-    ['Horas extras 50% e 100% de junho','A planilha possui somente totais genéricos de horas e não separa HE 50% de HE 100%.'],
-    ['Banco de horas de janeiro','Não há saldo de BH conectado; o HTML de referência não é utilizado como fonte.'],
-    ['Horas extras x mobilizações','Conectar colaborador, data, horas, percentual e mobilização autorizadora para validar o cruzamento.']
+    ['Horas extras 50% e 100%','Não há base disponível para o período selecionado.'],
+    ['Banco de horas','Não há base disponível para o período selecionado.'],
+    ['Horas extras x mobilizações','Não há base disponível para o período selecionado.']
   ]));
   html('execDreTravelPending',pending([
-    ['Diárias orçadas x realizadas de julho','Conectar orçamento e prestação de contas por competência, colaborador, quantidade e valor.'],
-    ['Cobertura do orçamento','Premissa pronta: 30 diárias a R$ 120, ou R$ 3.600 por motorista. Falta a quantidade real de motoristas elegíveis.'],
-    ['Estadias dos cavalos Munck','Premissa informada: 5 Muncks e referência aproximada de R$ 20 mil/mês. Falta a base de despesas por frota e competência.']
+    ['Diárias orçadas x realizadas','Não há base disponível para o período selecionado.'],
+    ['Cobertura do orçamento','Não há base disponível para o período selecionado.'],
+    ['Estadias dos cavalos Munck','Não há base disponível para o período selecionado.']
   ]));
   set('execDrePeriod',monthLabel);
   const gap=real-budget,lineGap=lineAxleReal-lineAxleBudget;
@@ -7681,7 +7681,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=102',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=103',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
