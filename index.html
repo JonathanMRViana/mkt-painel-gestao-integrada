@@ -4553,7 +4553,8 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const priceBudgetRows=billingRows.filter(row=>row.precoLitroOrcado>0),priceActualRows=billingRows.filter(row=>row.precoLitroReal>0);
   const dieselBudgetLiters=sum(priceBudgetRows,'litrosOrcados');
   const dieselBudget=dieselBudgetLiters>0?priceBudgetRows.reduce((total,row)=>total+row.precoLitroOrcado*row.litrosOrcados,0)/dieselBudgetLiters:null;
-  const dieselActual=litersActual>0?fuelActual/litersActual:null;
+  const dieselActualLiters=sum(priceActualRows,'litrosRealizados');
+  const dieselActual=dieselActualLiters>0?priceActualRows.reduce((total,row)=>total+row.precoLitroReal*row.litrosRealizados,0)/dieselActualLiters:null;
   const efficiencyBudgetLiters=sum(billingRows.filter(row=>row.kmLOrcado>0),'litrosOrcados');
   const efficiencyActualLiters=sum(billingRows.filter(row=>row.kmLRealizado>=0&&row.litrosRealizados>0),'litrosRealizados');
   const efficiencyBudget=efficiencyBudgetLiters>0?billingRows.reduce((total,row)=>total+(row.kmLOrcado>0?row.kmLOrcado*row.litrosOrcados:0),0)/efficiencyBudgetLiters:null;
@@ -4599,7 +4600,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   html('execDreFuelMetrics',[
     metric('Diesel orçado x realizado',dieselBudget!=null&&dieselActual!=null?`${fMoney(dieselBudget)} x ${fMoney(dieselActual)}`:'N/D','valor por litro','blue'),
     metric('KM orçado x realizado',kmBudget>0?`${Math.round(kmBudget).toLocaleString('pt-BR')} x ${Math.round(kmActual).toLocaleString('pt-BR')}`:'N/D','quantidade de quilômetros','blue'),
-    metric('KM/L orçado x realizado',efficiencyBudget!=null&&efficiencyActual!=null?`${efficiencyBudget.toLocaleString('pt-BR',{maximumFractionDigits:2})} x ${efficiencyActual.toLocaleString('pt-BR',{maximumFractionDigits:2})}`:'N/D','consolidado do período','green'),
+    metric('KM/L orçado x realizado',efficiencyBudget!=null&&efficiencyActual!=null?`${efficiencyBudget.toLocaleString('pt-BR',{maximumFractionDigits:2})} x ${efficiencyActual.toLocaleString('pt-BR',{maximumFractionDigits:2})}`:'N/D','média ponderada pelos litros','green'),
     metric('Litros orçados x realizados',litersBudget>0?`${Math.round(litersBudget).toLocaleString('pt-BR')} x ${Math.round(litersActual).toLocaleString('pt-BR')}`:'N/D',fuelActual>0?`${budgetMoneyCompact(fuelActual)} abastecidos`:'sem valor realizado','amber'),
     metric('Perda com parado ligado',fuelMonths.size?budgetMoneyCompact(idleSaving):'N/D',`${budgetMoneyCompact(idleLoss)} registrado como ineficiência IDLE`,'red')
   ].join(''));
@@ -7665,7 +7666,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=98',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=99',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
