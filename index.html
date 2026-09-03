@@ -360,6 +360,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-dre-detail-table{min-width:780px!important;table-layout:auto!important}
 #panel-exec .exec-dre-detail-table th,#panel-exec .exec-dre-detail-table td{width:auto!important}
 .exec-dre-detail-table th{white-space:nowrap}.exec-dre-detail-table td{vertical-align:top}
+.exec-dre-loss-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.exec-dre-loss-group{min-width:0}
+.exec-dre-loss-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 7px;font:700 10px var(--font-ui);color:var(--text);text-transform:uppercase}
+.exec-dre-loss-title span{font:600 10px var(--font-data);color:var(--text2);white-space:nowrap}
+.exec-dre-loss-table{min-width:360px!important}
+@media(max-width:900px){.exec-dre-loss-groups{grid-template-columns:1fr}}
 .exec-dre-sequence{display:grid;gap:0}
 .exec-dre-topic{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:18px 0;border-bottom:1px solid var(--border)}
 .exec-dre-topic:first-child{padding-top:0}.exec-dre-topic:last-child{padding-bottom:0;border-bottom:0}
@@ -4655,8 +4661,10 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   }).join('')}</tbody></table></div>`:'<div class="exec-revenue-empty">Não há base disponível para o período selecionado.</div>';
   const dailyDaysTotal=inefRows.reduce((total,row)=>total+(budgetNumber(row.diasDia)||0),0);
   const topDaily=inefRows.length?[...inefRows].sort((a,b)=>(b.vlTotal||0)-(a.vlTotal||0))[0]:null;
-  const lossRows=potentialLoss.flatMap(cause=>[...cause.fleets.entries()].map(([fleet,data])=>({cause:cause.label,fleet,...data}))).sort((a,b)=>b.value-a.value||b.days-a.days||String(a.fleet).localeCompare(String(b.fleet),'pt-BR',{numeric:true}));
-  const lossDetail=lossRows.length?`<div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table"><thead><tr><th>Causa</th><th>Frota</th><th>Dias</th><th>Tarifa</th><th>Perda Potencial</th></tr></thead><tbody>${lossRows.map(row=>`<tr><td>${execEsc(row.cause)}</td><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data);text-align:right">${row.days.toLocaleString('pt-BR')}</td><td>${row.unmapped?'Não identificada':'Disponível'}</td><td style="font-family:var(--font-data);font-weight:700;text-align:right;white-space:nowrap">${row.value>0?fMoney(row.value):'N/D'}</td></tr>`).join('')}</tbody></table></div>`:'<div class="exec-revenue-empty">Não há base disponível para o período selecionado.</div>';
+  const lossDetail=potentialLoss.length?`<div class="exec-dre-loss-groups">${potentialLoss.map(cause=>{
+    const rows=[...cause.fleets.entries()].map(([fleet,data])=>({fleet,...data})).sort((a,b)=>b.value-a.value||b.days-a.days||String(a.fleet).localeCompare(String(b.fleet),'pt-BR',{numeric:true}));
+    return `<section class="exec-dre-loss-group"><div class="exec-dre-loss-title">${execEsc(cause.label)}<span>${cause.value>0?fMoney(cause.value):'N/D'}</span></div><div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table exec-dre-loss-table"><thead><tr><th>Frota</th><th>Dias</th><th>Perda Potencial</th></tr></thead><tbody>${rows.map(row=>`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data);text-align:right">${row.days.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700;text-align:right;white-space:nowrap">${row.value>0?fMoney(row.value):'N/D'}</td></tr>`).join('')}</tbody></table></div></section>`;
+  }).join('')}</div>`:'<div class="exec-revenue-empty">Não há base disponível para o período selecionado.</div>';
   const kmDeviation=kmActual-kmBudget,lineDeviation=lineAxleReal-lineAxleBudget;
   const topLoss=potentialLoss[0];
   html('execDreRevenueSequence',[
@@ -7744,7 +7752,7 @@ function initPWA(){
       reloadingForUpdate=true;
       location.reload();
     });
-    navigator.serviceWorker.register('./sw.js?v=114',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=115',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
