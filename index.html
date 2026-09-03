@@ -4592,9 +4592,10 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     const composition=billing?resolveFreightComposition(billing.conjunto):{type:'',rateType:''};
     const rate=composition.rateType?freightRates.find(item=>budgetKey(item.type)===budgetKey(composition.rateType)):null;
     const dailyKm=lineAxleIds.has(fleet)||composition.type.startsWith('LE ')?150:350;
-    const current=lossMap.get(row.dreType)||{days:0,value:0,unmapped:0};
+    const current=lossMap.get(row.dreType)||{days:0,value:0,unmapped:0,fleets:new Map()};
     current.days++;
     if(rate)current.value+=dailyKm*rate.emptyRate;else current.unmapped++;
+    if(fleet){const fleetData=current.fleets.get(fleet)||{days:0,value:0};fleetData.days++;if(rate)fleetData.value+=dailyKm*rate.emptyRate;current.fleets.set(fleet,fleetData);}
     lossMap.set(row.dreType,current);
   });
   const potentialLoss=[...lossMap.entries()].map(([type,data])=>({type,label:lossLabels[type]||type,...data})).sort((a,b)=>b.value-a.value||b.days-a.days);
@@ -4637,10 +4638,14 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     line('KM vazio sem valor associado',fleetList(kmBillingAudit.empty.fleets),`${Math.round(kmBillingAudit.empty.withoutCharge).toLocaleString('pt-BR')} km`),
     line('Frotas para validação',fleetList(kmAuditFleets),`${kmAuditFleets.size} frotas`)
   ].join('');
-  const dailyReasonMap=new Map();
-  inefRows.forEach(row=>{const key=row.motivo||'Não classificado',item=dailyReasonMap.get(key)||{count:0,value:0};item.count++;item.value+=row.vlTotal||0;dailyReasonMap.set(key,item);});
-  const dailyDetail=[...dailyReasonMap.entries()].sort((a,b)=>b[1].value-a[1].value).map(([label,item])=>line(label,`${item.count} ${item.count===1?'registro':'registros'}`,fMoney(item.value))).join('')||line('Diárias de ineficiência','Não há base disponível para o período selecionado.','N/D');
-  const lossDetail=potentialLoss.length?potentialLoss.map(row=>line(row.label,`${row.days} frota-dias${row.unmapped?` · ${row.unmapped} sem tarifa`:''}`,row.value>0?fMoney(row.value):'N/D')).join(''):line('Perda potencial','Não há base disponível para o período selecionado.','N/D');
+  const dailyDetail=inefRows.length?[...inefRows].sort((a,b)=>(b.vlTotal||0)-(a.vlTotal||0)).map(row=>{
+    const days=budgetNumber(row.diasDia)||0,identity=[row.frota?`Frota ${row.frota}`:'Frota N/I',row.conj?`Conjunto ${row.conj}`:'',row.cliente||'',days?`${days.toLocaleString('pt-BR')} ${days===1?'diária':'diárias'}`:'',row.dtCheg&&row.dtSaid?`${row.dtCheg} a ${row.dtSaid}`:row.dtCheg||''].filter(Boolean).join(' · ');
+    return line(row.motivo||'Não classificado',identity,fMoney(row.vlTotal||0));
+  }).join(''):line('Diárias de ineficiência','Não há base disponível para o período selecionado.','N/D');
+  const lossDetail=potentialLoss.length?potentialLoss.map(row=>{
+    const fleets=[...row.fleets.entries()].sort((a,b)=>b[1].days-a[1].days||String(a[0]).localeCompare(String(b[0]),'pt-BR',{numeric:true})).map(([fleet,data])=>`Frota ${fleet} (${data.days}d)`).join(' · ')||'Frotas não identificadas';
+    return line(row.label,`${row.days} frota-dias · ${row.fleets.size} ${row.fleets.size===1?'frota':'frotas'}${row.unmapped?` · ${row.unmapped} dias sem tarifa`:''} · ${fleets}`,row.value>0?fMoney(row.value):'N/D');
+  }).join(''):line('Perda potencial','Não há base disponível para o período selecionado.','N/D');
   const kmDeviation=kmActual-kmBudget,lineDeviation=lineAxleReal-lineAxleBudget;
   const topLoss=potentialLoss[0];
   html('execDreRevenueSequence',[
@@ -7722,7 +7727,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=106',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=107',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
