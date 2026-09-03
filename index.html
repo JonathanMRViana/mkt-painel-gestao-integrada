@@ -357,6 +357,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-dre-split{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:14px;margin-top:14px}
 .exec-dre-panel{border:1px solid var(--border);background:var(--surface2);padding:14px}
 .exec-dre-panel-title{font:700 10px var(--font-ui);color:var(--text);text-transform:uppercase;margin-bottom:10px}
+.exec-dre-detail-table{min-width:780px!important;table-layout:auto!important}
+#panel-exec .exec-dre-detail-table th,#panel-exec .exec-dre-detail-table td{width:auto!important}
+.exec-dre-detail-table th{white-space:nowrap}.exec-dre-detail-table td{vertical-align:top}
 .exec-dre-sequence{display:grid;gap:0}
 .exec-dre-topic{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:18px 0;border-bottom:1px solid var(--border)}
 .exec-dre-topic:first-child{padding-top:0}.exec-dre-topic:last-child{padding-bottom:0;border-bottom:0}
@@ -4595,7 +4598,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     const current=lossMap.get(row.dreType)||{days:0,value:0,unmapped:0,fleets:new Map()};
     current.days++;
     if(rate)current.value+=dailyKm*rate.emptyRate;else current.unmapped++;
-    if(fleet){const fleetData=current.fleets.get(fleet)||{days:0,value:0};fleetData.days++;if(rate)fleetData.value+=dailyKm*rate.emptyRate;current.fleets.set(fleet,fleetData);}
+    if(fleet){const fleetData=current.fleets.get(fleet)||{days:0,value:0,unmapped:0};fleetData.days++;if(rate)fleetData.value+=dailyKm*rate.emptyRate;else fleetData.unmapped++;current.fleets.set(fleet,fleetData);}
     lossMap.set(row.dreType,current);
   });
   const potentialLoss=[...lossMap.entries()].map(([type,data])=>({type,label:lossLabels[type]||type,...data})).sort((a,b)=>b.value-a.value||b.days-a.days);
@@ -4638,16 +4641,14 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     line('KM vazio sem valor associado',fleetList(kmBillingAudit.empty.fleets),`${Math.round(kmBillingAudit.empty.withoutCharge).toLocaleString('pt-BR')} km`),
     line('Frotas para validação',fleetList(kmAuditFleets),`${kmAuditFleets.size} frotas`)
   ].join('');
-  const dailyDetail=inefRows.length?[...inefRows].sort((a,b)=>(b.vlTotal||0)-(a.vlTotal||0)).map(row=>{
-    const days=budgetNumber(row.diasDia)||0,identity=[row.frota?`Frota ${row.frota}`:'Frota N/I',row.conj?`Conjunto ${row.conj}`:'',row.cliente||'',days?`${days.toLocaleString('pt-BR')} ${days===1?'diária':'diárias'}`:'',row.dtCheg&&row.dtSaid?`${row.dtCheg} a ${row.dtSaid}`:row.dtCheg||''].filter(Boolean).join(' · ');
-    return line(row.motivo||'Não classificado',identity,fMoney(row.vlTotal||0));
-  }).join(''):line('Diárias de ineficiência','Não há base disponível para o período selecionado.','N/D');
+  const dailyDetail=inefRows.length?`<div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table"><thead><tr><th>Motivo</th><th>Frota</th><th>Conjunto</th><th>Cliente</th><th>Diárias</th><th>Período</th><th>Valor</th></tr></thead><tbody>${[...inefRows].sort((a,b)=>(b.vlTotal||0)-(a.vlTotal||0)).map(row=>{
+    const days=budgetNumber(row.diasDia)||0,period=row.dtCheg&&row.dtSaid?`${row.dtCheg} a ${row.dtSaid}`:row.dtCheg||'—';
+    return `<tr><td>${execEsc(row.motivo||'Não classificado')}</td><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.frota||'N/I')}</td><td>${execEsc(row.conj||'—')}</td><td>${execEsc(row.cliente||'—')}</td><td style="font-family:var(--font-data);text-align:right">${days.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);white-space:nowrap">${execEsc(period)}</td><td style="font-family:var(--font-data);font-weight:700;text-align:right;white-space:nowrap">${fMoney(row.vlTotal||0)}</td></tr>`;
+  }).join('')}</tbody></table></div>`:'<div class="exec-revenue-empty">Não há base disponível para o período selecionado.</div>';
   const dailyDaysTotal=inefRows.reduce((total,row)=>total+(budgetNumber(row.diasDia)||0),0);
   const topDaily=inefRows.length?[...inefRows].sort((a,b)=>(b.vlTotal||0)-(a.vlTotal||0))[0]:null;
-  const lossDetail=potentialLoss.length?potentialLoss.map(row=>{
-    const fleets=[...row.fleets.entries()].sort((a,b)=>b[1].days-a[1].days||String(a[0]).localeCompare(String(b[0]),'pt-BR',{numeric:true})).map(([fleet,data])=>`Frota ${fleet} (${data.days}d)`).join(' · ')||'Frotas não identificadas';
-    return line(row.label,`${row.days} dias acumulados · ${row.fleets.size} ${row.fleets.size===1?'frota':'frotas'}${row.unmapped?` · ${row.unmapped} dias sem tarifa`:''} · ${fleets}`,row.value>0?fMoney(row.value):'N/D');
-  }).join(''):line('Perda potencial','Não há base disponível para o período selecionado.','N/D');
+  const lossRows=potentialLoss.flatMap(cause=>[...cause.fleets.entries()].map(([fleet,data])=>({cause:cause.label,fleet,...data}))).sort((a,b)=>b.value-a.value||b.days-a.days||String(a.fleet).localeCompare(String(b.fleet),'pt-BR',{numeric:true}));
+  const lossDetail=lossRows.length?`<div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table"><thead><tr><th>Causa</th><th>Frota</th><th>Dias</th><th>Tarifa</th><th>Perda Potencial</th></tr></thead><tbody>${lossRows.map(row=>`<tr><td>${execEsc(row.cause)}</td><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data);text-align:right">${row.days.toLocaleString('pt-BR')}</td><td>${row.unmapped?'Não identificada':'Disponível'}</td><td style="font-family:var(--font-data);font-weight:700;text-align:right;white-space:nowrap">${row.value>0?fMoney(row.value):'N/D'}</td></tr>`).join('')}</tbody></table></div>`:'<div class="exec-revenue-empty">Não há base disponível para o período selecionado.</div>';
   const kmDeviation=kmActual-kmBudget,lineDeviation=lineAxleReal-lineAxleBudget;
   const topLoss=potentialLoss[0];
   html('execDreRevenueSequence',[
@@ -7729,7 +7730,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=111',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=112',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
