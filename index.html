@@ -2229,7 +2229,7 @@ tbody tr:hover td{background:var(--surface2)}
             <section class="exec-dre-block">
               <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 01</div><div class="exec-dre-block-title">Receita</div></div><span class="exec-dre-status ready">Bases conectadas</span></div>
               <div class="exec-dre-metrics" id="execDreRevenueMetrics"></div>
-              <div class="exec-dre-panel" style="margin-top:14px"><div class="exec-dre-panel-title">Perda Potencial por Ineficiência</div><div class="exec-dre-stack" id="execDreLossPotential"></div></div>
+              <div class="exec-dre-split"><div class="exec-dre-panel"><div class="exec-dre-panel-title">Conciliação da Receita de KM</div><div class="exec-dre-stack" id="execDreKmRevenue"></div></div><div class="exec-dre-panel"><div class="exec-dre-panel-title">Perda Potencial por Ineficiência</div><div class="exec-dre-stack" id="execDreLossPotential"></div></div></div>
             </section>
             <section class="exec-dre-block">
               <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 02</div><div class="exec-dre-block-title">Combustível</div></div><span class="exec-dre-status" id="execDreFuelStatus">verificando base</span></div>
@@ -4559,6 +4559,14 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const efficiencyActualLiters=sum(billingRows.filter(row=>row.kmLRealizado>=0&&row.litrosRealizados>0),'litrosRealizados');
   const efficiencyBudget=efficiencyBudgetLiters>0?billingRows.reduce((total,row)=>total+(row.kmLOrcado>0?row.kmLOrcado*row.litrosOrcados:0),0)/efficiencyBudgetLiters:null;
   const efficiencyActual=efficiencyActualLiters>0?billingRows.reduce((total,row)=>total+(row.litrosRealizados>0?row.kmLRealizado*row.litrosRealizados:0),0)/efficiencyActualLiters:null;
+  const kmRevenue=billingRows.reduce((result,row)=>{
+    const composition=resolveFreightComposition(row.conjunto),rate=composition.rateType?freightRates.find(item=>budgetKey(item.type)===budgetKey(composition.rateType)):null;
+    result.actualLoaded+=row.frete||0;result.actualEmpty+=row.kmVazio||0;
+    if(rate){result.mappedKmLoaded+=row.kmRodadoCarregado||0;result.mappedKmEmpty+=row.kmRodadoVazio||0;result.expectedLoaded+=(row.kmRodadoCarregado||0)*rate.loadedRate;result.expectedEmpty+=(row.kmRodadoVazio||0)*rate.emptyRate;result.mappedActualLoaded+=row.frete||0;result.mappedActualEmpty+=row.kmVazio||0;result.mappedFleets.add(fleetKey(row.frota));}
+    else if((row.kmRodadoCarregado||0)>0||(row.kmRodadoVazio||0)>0)result.unmappedFleets.add(fleetKey(row.frota));
+    return result;
+  },{actualLoaded:0,actualEmpty:0,mappedKmLoaded:0,mappedKmEmpty:0,mappedActualLoaded:0,mappedActualEmpty:0,expectedLoaded:0,expectedEmpty:0,mappedFleets:new Set(),unmappedFleets:new Set()});
+  const loadedGap=Math.max(0,kmRevenue.expectedLoaded-kmRevenue.mappedActualLoaded),emptyGap=Math.max(0,kmRevenue.expectedEmpty-kmRevenue.mappedActualEmpty),kmRevenueGap=loadedGap+emptyGap;
   const classified=dayRows.map(row=>{
     const key=execStatusKey(row.cond),tokens=key.split(/[^A-Z0-9]+/).filter(Boolean);
     let type=waitType(row.cond);
@@ -4590,10 +4598,14 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     metric('Cavalos orçados x faturando',budgetRows.length?`${budgetedHorses.size} x ${billingHorses.size}`:'N/D','frotas únicas no período','blue'),
     metric('KM orçado x realizado',kmBudget>0?`${Math.round(kmBudget).toLocaleString('pt-BR')} x ${Math.round(kmActual).toLocaleString('pt-BR')}`:'N/D','quantidade de quilômetros','blue'),
     metric('Receita de Linha de Eixo',lineAxleRows.length?budgetMoneyCompact(lineAxleReal):'N/D',lineAxleRows.length?`${budgetMoneyCompact(lineAxleBudget)} orçado · frotas 615, 617 e 619`:'sem registro no período','green'),
-    metric('Receita KM carregado',billingRows.length?budgetMoneyCompact(loadedRevenue):'N/D',`${Math.round(kmLoaded).toLocaleString('pt-BR')} km carregados`,'green'),
-    metric('Receita KM vazio',billingRows.length?budgetMoneyCompact(emptyRevenue):'N/D',`${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios`,'amber'),
+    metric('Receita KM carregado x vazio',billingRows.length?`${budgetMoneyCompact(loadedRevenue)} x ${budgetMoneyCompact(emptyRevenue)}`:'N/D',`${Math.round(kmLoaded).toLocaleString('pt-BR')} km carregados · ${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios`,'green'),
     metric('Receita de diárias',billingRows.length?budgetMoneyCompact(dailyRevenue):'N/D',inefRows.length?`${budgetMoneyCompact(inefValue)} no controle de ineficiências`:'controle sem registros','amber'),
     metric('Perda potencial por ineficiências',potentialLoss.length?budgetMoneyCompact(potentialTotal):'N/D','mecânica e causas operacionais classificadas','red')
+  ].join(''));
+  html('execDreKmRevenue',[
+    line('KM carregado',`${Math.round(kmRevenue.mappedKmLoaded).toLocaleString('pt-BR')} km tarifados · potencial ${fMoney(kmRevenue.expectedLoaded)}`,`${fMoney(kmRevenue.mappedActualLoaded)} cobrado`),
+    line('KM vazio',`${Math.round(kmRevenue.mappedKmEmpty).toLocaleString('pt-BR')} km tarifados · potencial ${fMoney(kmRevenue.expectedEmpty)}`,`${fMoney(kmRevenue.mappedActualEmpty)} cobrado`),
+    line('Possível valor não cobrado',`${kmRevenue.mappedFleets.size} frotas tarifadas${kmRevenue.unmappedFleets.size?` · ${kmRevenue.unmappedFleets.size} sem tarifa`:''}`,kmRevenue.mappedFleets.size?fMoney(kmRevenueGap):'N/D')
   ].join(''));
   html('execDreLossPotential',potentialLoss.length?potentialLoss.map(row=>line(row.label,`${row.days} frota-dias${row.unmapped?` · ${row.unmapped} sem tarifa`:''}`,row.value>0?fMoney(row.value):'N/D')).join(''):line('Sem leitura classificada','Relatório de Eficiência sem ocorrência no recorte','N/D'));
 
@@ -4632,7 +4644,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   if(billingRows.length&&budget>0)actions.push({kind:gap<0?'critical':'positive',title:gap<0?'Recuperar desvio de receita':'Preservar resultado de receita',body:`ROB Real em ${attainment.toLocaleString('pt-BR',{maximumFractionDigits:1})}% do orçamento; diferença de ${fMoney(Math.abs(gap))} ${gap<0?'abaixo':'acima'} do previsto.`});
   if(lineAxleRows.length&&lineGap<0)actions.push({kind:'critical',title:'Atuar na linha de eixo',body:`Frotas 615, 617 e 619 acumulam ${fMoney(Math.abs(lineGap))} abaixo do orçamento no recorte.`});
   if(potentialLoss.length)actions.push({kind:'critical',title:'Reduzir perda potencial',body:`As ineficiências classificadas representam ${fMoney(potentialTotal)} de exposição estimada; priorizar causas com maior valor.`});
-  if(kmEmpty>0&&sum(billingRows,'kmVazio')<=0)actions.push({kind:'critical',title:'Validar cobrança de KM vazio',body:`Há ${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios registrados e nenhuma receita de KM vazio no período.`});
+  if(kmRevenueGap>0)actions.push({kind:'critical',title:'Validar cobrança dos quilômetros',body:`O confronto entre rodagem, tarifa e valor cobrado indica até ${fMoney(kmRevenueGap)} de possível receita não cobrada nas frotas tarifadas.`});
   actions.push({kind:'pending',title:'Completar a DRE operacional',body:'Conectar folha/BH e viagens/estadias para liberar os dois blocos ainda pendentes.'});
   html('execDreActions',actions.slice(0,4).map(item=>`<div class="exec-dre-action ${item.kind}"><div class="exec-dre-action-title">${execEsc(item.title)}</div><div class="exec-dre-action-body">${execEsc(item.body)}</div></div>`).join(''));
 }
@@ -7666,7 +7678,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=99',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=100',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
