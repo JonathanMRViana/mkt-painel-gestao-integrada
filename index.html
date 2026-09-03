@@ -368,9 +368,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 #panel-exec .exec-dre-loss-table th:nth-child(1),#panel-exec .exec-dre-loss-table td:nth-child(1){width:34%!important;text-align:left}
 #panel-exec .exec-dre-loss-table th:nth-child(2),#panel-exec .exec-dre-loss-table td:nth-child(2){width:16%!important;text-align:center!important}
 #panel-exec .exec-dre-loss-table th:nth-child(3),#panel-exec .exec-dre-loss-table td:nth-child(3){width:50%!important;text-align:right!important}
-#panel-exec .exec-dre-loss-table.mechanical th:nth-child(1),#panel-exec .exec-dre-loss-table.mechanical td:nth-child(1){width:28%!important}
-#panel-exec .exec-dre-loss-table.mechanical th:nth-child(3),#panel-exec .exec-dre-loss-table.mechanical td:nth-child(3){width:20%!important;text-align:center!important}
-#panel-exec .exec-dre-loss-table.mechanical th:nth-child(4),#panel-exec .exec-dre-loss-table.mechanical td:nth-child(4){width:36%!important;text-align:right!important}
+#panel-exec .exec-dre-loss-table.with-billable th:nth-child(1),#panel-exec .exec-dre-loss-table.with-billable td:nth-child(1){width:28%!important}
+#panel-exec .exec-dre-loss-table.with-billable th:nth-child(3),#panel-exec .exec-dre-loss-table.with-billable td:nth-child(3){width:20%!important;text-align:center!important}
+#panel-exec .exec-dre-loss-table.with-billable th:nth-child(4),#panel-exec .exec-dre-loss-table.with-billable td:nth-child(4){width:36%!important;text-align:right!important}
 .exec-dre-sequence{display:grid;gap:0}
 .exec-dre-topic{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:18px 0;border-bottom:1px solid var(--border)}
 .exec-dre-topic:first-child{padding-top:0}.exec-dre-topic:last-child{padding-bottom:0;border-bottom:0}
@@ -4601,13 +4601,22 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     if(empty>0){if(emptyCharge>0){result.empty.withCharge+=empty;result.empty.value+=emptyCharge;}else{result.empty.withoutCharge+=empty;if(fleet)result.empty.fleets.add(fleet);}}
     return result;
   },{loaded:{total:0,withCharge:0,withoutCharge:0,value:0,fleets:new Set()},empty:{total:0,withCharge:0,withoutCharge:0,value:0,fleets:new Set()}});
-  const classified=dayRows.map(row=>{
+  const classifyLossRow=row=>{
     const key=execStatusKey(row.cond),tokens=key.split(/[^A-Z0-9]+/).filter(Boolean);
     let type=waitType(row.cond);
     if(!type&&(tokens.includes('MI')||key.includes('MOV INTERNA')||key.includes('MOVIMENTACAO INTERNA')))type='movement';
     if(!type&&(tokens.some(token=>['MC','MP','MNT','MANUT','MANUTENCAO'].includes(token))||key.includes('MANUT')))type='mechanical';
     return{...row,dreType:type};
-  }).filter(row=>row.dreType);
+  };
+  const toleranceTypes=new Set(['doc','ac','ad']),toleranceState=new Map();
+  const classifiedAll=meaningfulDays.filter(row=>row.date&&row.date.getFullYear()===2026).map(classifyLossRow).filter(row=>row.dreType).sort((a,b)=>a.date-b.date||String(a.frota).localeCompare(String(b.frota),'pt-BR',{numeric:true}));
+  classifiedAll.forEach(row=>{
+    if(!toleranceTypes.has(row.dreType)){row.waitStreak=0;return;}
+    const key=`${row.dreType}|${fleetKey(row.frota)}`,previous=toleranceState.get(key),dateKey=row.date.getTime();
+    const streak=previous&&dateKey-previous.dateKey===86400000?previous.streak+1:1;
+    row.waitStreak=streak;toleranceState.set(key,{dateKey,streak});
+  });
+  const classified=classifiedAll.filter(row=>monthSet.has(row.date.getMonth()+1));
   const lossLabels={mechanical:'Mecânica',doc:'Documentação fiscal / AET',ac:'Aguardando carregamento',ad:'Aguardando descarregamento',movement:'Movimentação interna'};
   const lossMap=new Map();
   classified.forEach(row=>{
@@ -4616,7 +4625,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     const composition=billing?resolveFreightComposition(billing.conjunto):{type:'',rateType:''};
     const rate=composition.rateType?freightRates.find(item=>budgetKey(item.type)===budgetKey(composition.rateType)):null;
     const dailyKm=lineAxleIds.has(fleet)||composition.type.startsWith('LE ')?150:350;
-    const weekDay=row.date.getDay(),isBillableDay=row.dreType!=='mechanical'||(weekDay>=1&&weekDay<=5);
+    const weekDay=row.date.getDay(),isBillableDay=row.dreType==='mechanical'?(weekDay>=1&&weekDay<=5):(toleranceTypes.has(row.dreType)?row.waitStreak>6:true);
     const current=lossMap.get(row.dreType)||{days:0,billableDays:0,value:0,unmapped:0,fleets:new Map()};
     current.days++;
     if(isBillableDay){current.billableDays++;if(rate)current.value+=dailyKm*rate.emptyRate;else current.unmapped++;}
@@ -4674,10 +4683,11 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const topDaily=inefRows.length?[...inefRows].sort((a,b)=>(b.vlTotal||0)-(a.vlTotal||0))[0]:null;
   const lossDetail=potentialLoss.length?`<div class="exec-dre-loss-blocks">${potentialLoss.map(cause=>{
     const rows=[...cause.fleets.entries()].map(([fleet,data])=>({fleet,...data})).sort((a,b)=>b.value-a.value||b.days-a.days||String(a.fleet).localeCompare(String(b.fleet),'pt-BR',{numeric:true}));
-    const mechanical=cause.type==='mechanical',columns=mechanical?'<colgroup><col style="width:28%"><col style="width:16%"><col style="width:20%"><col style="width:36%"></colgroup>':'<colgroup><col style="width:34%"><col style="width:16%"><col style="width:50%"></colgroup>';
-    const headers=mechanical?'<tr><th>Frota</th><th>Dias MC</th><th>Dias úteis faturáveis</th><th>Perda Potencial</th></tr>':'<tr><th>Frota</th><th>Dias</th><th>Perda Potencial</th></tr>';
-    const body=rows.map(row=>mechanical?`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data)">${row.days.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data)">${row.billableDays.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700;white-space:nowrap">${row.value>0?fMoney(row.value):'N/D'}</td></tr>`:`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data)">${row.days.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700;white-space:nowrap">${row.value>0?fMoney(row.value):'N/D'}</td></tr>`).join('');
-    return `<section class="exec-dre-panel exec-dre-loss-block"><div class="exec-dre-loss-title">${execEsc(cause.label)}<span>${cause.value>0?fMoney(cause.value):'N/D'}</span></div><div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table exec-dre-loss-table${mechanical?' mechanical':''}">${columns}<thead>${headers}</thead><tbody>${body}</tbody></table></div></section>`;
+    const mechanical=cause.type==='mechanical',tolerance=toleranceTypes.has(cause.type),withBillable=mechanical||tolerance;
+    const columns=withBillable?'<colgroup><col style="width:28%"><col style="width:16%"><col style="width:20%"><col style="width:36%"></colgroup>':'<colgroup><col style="width:34%"><col style="width:16%"><col style="width:50%"></colgroup>';
+    const headers=mechanical?'<tr><th>Frota</th><th>Dias MC</th><th>Dias úteis faturáveis</th><th>Perda Potencial</th></tr>':tolerance?'<tr><th>Frota</th><th>Dias registrados</th><th>Dias após tolerância</th><th>Perda Potencial</th></tr>':'<tr><th>Frota</th><th>Dias</th><th>Perda Potencial</th></tr>';
+    const body=rows.map(row=>withBillable?`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data)">${row.days.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data)">${row.billableDays.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700;white-space:nowrap">${row.value>0?fMoney(row.value):'R$ 0,00'}</td></tr>`:`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data)">${row.days.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700;white-space:nowrap">${row.value>0?fMoney(row.value):'N/D'}</td></tr>`).join('');
+    return `<section class="exec-dre-panel exec-dre-loss-block"><div class="exec-dre-loss-title">${execEsc(cause.label)}<span>${cause.value>0?fMoney(cause.value):'R$ 0,00'}</span></div><div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table exec-dre-loss-table${withBillable?' with-billable':''}">${columns}<thead>${headers}</thead><tbody>${body}</tbody></table></div></section>`;
   }).join('')}</div>`:'<div class="exec-revenue-empty">Não há base disponível para o período selecionado.</div>';
   const kmDeviation=kmActual-kmBudget,lineDeviation=lineAxleReal-lineAxleBudget;
   const topLoss=potentialLoss[0];
@@ -4687,7 +4697,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     topic(3,metric('Receita de Linha de Eixo orçada x realizada',lineAxleRows.length?`${budgetMoneyCompact(lineAxleBudget)} x ${budgetMoneyCompact(lineAxleReal)}`:'N/D',lineAxleRows.length?`desvio ${signedMoney(lineDeviation)}`:'não há base disponível para o período selecionado','green'),panel('Detalhamento da Linha de Eixo',[line('ROB orçada','frotas 615, 617 e 619 · configuração Linha de Eixo',fMoney(lineAxleBudget)),line('ROB realizada como prancha','toda a receita realizada das frotas 615, 617 e 619',fMoney(lineAxlePranchaReal)),line('Desvio','prancha realizada menos Linha de Eixo orçada',signedMoney(lineDeviation))].join('')),lineAxleRows.length?`As frotas 615, 617 e 619 foram orçadas como Linha de Eixo, mas operaram como prancha. A receita realizada como prancha foi de ${fMoney(lineAxlePranchaReal)} no período.`:'Não há base disponível para o período selecionado.',true),
     topic(4,metric('Receita de KM carregado e KM vazio',billingRows.length?`${budgetMoneyCompact(loadedRevenue)} x ${budgetMoneyCompact(emptyRevenue)}`:'N/D',billingRows.length?`${Math.round(kmLoaded).toLocaleString('pt-BR')} km carregados · ${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios`:'não há base disponível para o período selecionado','green'),panel('Composição da ROB Real',compositionDetail)+panel('Conferência da Cobrança por KM',kmRevenueDetail),billingRows.length?(kmWithoutCharge>0?`${Math.round(kmWithoutCharge).toLocaleString('pt-BR')} km não possuem valor associado nas colunas Frete ou KM Vazio. As ${kmAuditFleets.size} frotas devem ser validadas pelas observações e regras contratuais; manutenção e apoio não representam automaticamente perda de receita.`:'Todos os quilômetros registrados no período possuem valor associado nas colunas Frete ou KM Vazio.'):'Não há base disponível para o período selecionado.'),
     topic(5,metric('Receita de diárias de ineficiência',billingRows.length?budgetMoneyCompact(dailyRevenue):'N/D',inefRows.length?`${inefRows.length} ${inefRows.length===1?'registro':'registros'} · ${dailyDaysTotal.toLocaleString('pt-BR')} ${dailyDaysTotal===1?'diária':'diárias'}`:'não há base disponível para o período selecionado','amber'),panel('Detalhamento das Diárias',dailyDetail),topDaily?`No período, ${dailyDaysTotal.toLocaleString('pt-BR')} ${dailyDaysTotal===1?'diária faturada totaliza':'diárias faturadas totalizam'} ${fMoney(inefValue)}. A maior ocorrência foi ${topDaily.motivo||'não classificada'}, da frota ${topDaily.frota||'N/I'}, no valor de ${fMoney(topDaily.vlTotal||0)}.`:'Não há base disponível para o período selecionado.',true),
-    topic(6,metric('Receita potencial perdida por ineficiências',potentialLoss.length?budgetMoneyCompact(potentialTotal):'N/D','cenário conservador de KM vazio (85%)','red'),lossDetail,topLoss?`${topLoss.label} concentra a maior perda potencial: ${fMoney(topLoss.value)}, calculada sobre ${topLoss.billableDays} dias faturáveis de ${topLoss.days} dias de indisponibilidade registrados.`:'Não há base disponível para o período selecionado.',true)
+    topic(6,metric('Receita potencial perdida por ineficiências',potentialLoss.length?budgetMoneyCompact(potentialTotal):'N/D','KM vazio 85% · tolerância operacional de 6 dias','red'),lossDetail,topLoss?`${topLoss.label} concentra a maior perda potencial: ${fMoney(topLoss.value)}, calculada sobre ${topLoss.billableDays} dias faturáveis de ${topLoss.days} dias de indisponibilidade registrados.`:'Não há base disponível para o período selecionado.',true)
   ].join(''));
 
   html('execDreFuelMetrics',[
@@ -7766,7 +7776,7 @@ function initPWA(){
       reloadingForUpdate=true;
       location.reload();
     });
-    navigator.serviceWorker.register('./sw.js?v=120',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=121',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
