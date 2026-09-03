@@ -1,4 +1,4 @@
-const CACHE_NAME='makro-gestao-integrada-v96';
+const CACHE_NAME='makro-gestao-integrada-v97';
 const APP_SHELL=[
   './',
   './index.html',
@@ -10,7 +10,6 @@ const APP_SHELL=[
   './assets/icons/app-icon-192.png',
   './assets/icons/app-icon-512.png',
   './assets/icons/apple-touch-icon.png',
-  './assets/icons/makro-symbol-source.png',
   './assets/backgrounds/makro-operacao-01.jpg',
   './assets/backgrounds/makro-operacao-02.jpg',
   './assets/backgrounds/makro-operacao-03.jpg',
