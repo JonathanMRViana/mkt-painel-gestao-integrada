@@ -4620,7 +4620,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const kmLoaded=sum(billingRows,'kmRodadoCarregado'),kmEmpty=sum(billingRows,'kmRodadoVazio');
   const loadedRevenue=sum(billingRows,'frete'),emptyRevenue=sum(billingRows,'kmVazio');
   const litersBudget=sum(billingRows,'litrosOrcados'),litersActual=sum(billingRows,'litrosRealizados');
-  const fuelActual=sum(billingRows,'valorAbastecido'),idleLoss=sum(billingRows,'perdaIdle'),idleSaving=sum(billingRows,'savingIdle');
+  const fuelActual=sum(billingRows,'valorAbastecido');
   const fuelMonths=new Set(billingRows.filter(row=>row.litrosRealizados>0).map(row=>row.mes));
   const priceBudgetRows=billingRows.filter(row=>row.precoLitroOrcado>0&&row.litrosOrcados>0),priceActualRows=billingRows.filter(row=>row.precoLitroReal>0&&row.litrosRealizados>0);
   const dieselBudgetLiters=sum(priceBudgetRows,'litrosOrcados');
@@ -4745,8 +4745,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     metric('Diesel orçado x realizado',dieselBudget!=null&&dieselActual!=null?`${fMoney(dieselBudget)} x ${fMoney(dieselActual)}`:'N/D','valor por litro','blue'),
     metric('KM orçado x realizado',kmBudget>0?`${Math.round(kmBudget).toLocaleString('pt-BR')} x ${Math.round(kmActual).toLocaleString('pt-BR')}`:'N/D','quantidade de quilômetros','blue'),
     metric('KM/L orçado x realizado',efficiencyBudget!=null&&efficiencyActual!=null?`${efficiencyBudget.toLocaleString('pt-BR',{maximumFractionDigits:2})} x ${efficiencyActual.toLocaleString('pt-BR',{maximumFractionDigits:2})}`:'N/D','média ponderada · somente abastecidos','green'),
-    metric('Litros orçados x realizados',litersBudget>0?`${Math.round(litersBudget).toLocaleString('pt-BR')} x ${Math.round(litersActual).toLocaleString('pt-BR')}`:'N/D',fuelActual>0?`${budgetMoneyCompact(fuelActual)} abastecidos`:'sem valor realizado','amber'),
-    metric('Perda com parado ligado',fuelMonths.size?budgetMoneyCompact(idleSaving):'N/D',`${budgetMoneyCompact(idleLoss)} registrado como ineficiência IDLE`,'red')
+    metric('Litros orçados x realizados',litersBudget>0?`${Math.round(litersBudget).toLocaleString('pt-BR')} x ${Math.round(litersActual).toLocaleString('pt-BR')}`:'N/D',fuelActual>0?`${budgetMoneyCompact(fuelActual)} abastecidos`:'sem valor realizado','amber')
   ].join(''));
   const fuelFleetMap=new Map();
   billingRows.filter(row=>row.tipo==='CAVALO'&&(row.kmLOrcado>0||row.kmLRealizado>0)).forEach(row=>{
