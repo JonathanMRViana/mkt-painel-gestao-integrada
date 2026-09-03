@@ -2229,11 +2229,12 @@ tbody tr:hover td{background:var(--surface2)}
             <section class="exec-dre-block">
               <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 01</div><div class="exec-dre-block-title">Receita</div></div><span class="exec-dre-status ready">Bases conectadas</span></div>
               <div class="exec-dre-metrics" id="execDreRevenueMetrics"></div>
-              <div class="exec-dre-split"><div class="exec-dre-panel"><div class="exec-dre-panel-title">Composição da Receita Realizada</div><div class="exec-dre-stack" id="execDreRevenueComposition"></div></div><div class="exec-dre-panel"><div class="exec-dre-panel-title">Perda Potencial por Ineficiência</div><div class="exec-dre-stack" id="execDreLossPotential"></div></div></div>
+              <div class="exec-dre-panel" style="margin-top:14px"><div class="exec-dre-panel-title">Perda Potencial por Ineficiência</div><div class="exec-dre-stack" id="execDreLossPotential"></div></div>
             </section>
             <section class="exec-dre-block">
-              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 02</div><div class="exec-dre-block-title">Combustível</div></div><span class="exec-dre-status partial">Base parcial</span></div>
+              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 02</div><div class="exec-dre-block-title">Combustível</div></div><span class="exec-dre-status" id="execDreFuelStatus">verificando base</span></div>
               <div class="exec-dre-metrics" id="execDreFuelMetrics"></div>
+              <div class="exec-dre-panel" style="margin-top:14px"><div class="exec-dre-panel-title">KM/L Orçado x Realizado por Frota</div><div class="exec-dre-stack" id="execDreFuelFleet"></div></div>
               <div class="exec-dre-pending" id="execDreFuelPending"></div>
             </section>
             <section class="exec-dre-block">
@@ -3211,7 +3212,7 @@ function processFLEETBILLING(rows){
   const kmVazioIndex=col(['VALOR COBRADO KM VAZIO']);
   const observacaoIndex=headers.findIndex((header,index)=>index>kmVazioIndex&&header.startsWith('OBSERVACAO'));
   const motivoDesvioIndex=col(['MOTIVO DESVIO','MOTIVO DO DESVIO'],54);
-  const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:kmVazioIndex,diasManut:col(['DIAS MANUT']),observacao:observacaoIndex,motivoAgregado:motivoDesvioIndex};
+  const ix={mes:col(['MÊS']),classe:col(['DESC CLASSE DE VALOR']),frota:col(['FROTA']),conjunto:col(['CONJUNTO']),situacao:col(['SITUAÇÃO']),categoria:col(['CATEGORIA']),capacidade:col(['CAPACIDADE']),regime:col(['REGIME']),ocupacao:col(['TAXA DE OCUPAÇÃO']),inefLog:col(['INEF LOGÍSTICA']),inefCom:col(['INF COMERCIAL']),inefOp:col(['INEF OPERACIONAL']),inefMec:col(['INEF MECÂNICA']),horas:col(['QTD HORAS VARIÁVEIS']),extras:col(['QTD HORA EXTRA']),orcado:col(['ROB ORÇADA']),realizado:col(['ROB REAL']),movInterna:col(['MOV INTERNA']),frete:col(['FRETE']),diaria:col(['DIARIA']),locacao:col(['LOCAÇÃO']),kmVazio:kmVazioIndex,kmRodadoTotal:col(['KM RODADOS TOTAL']),kmOrcado:col(['KM ORÇADOS']),litrosOrcados:col(['LITROS ORÇADOS']),kmRodadoVazio:col(['KM RODADOS VAZIO']),kmRodadoCarregado:col(['KM RODADOS CARREGADO (FRETE)']),kmMovInterna:col(['KM MOV. INTERNA']),kmApoio:col(['KM APOIO']),desvioKm:col(['DESVIO RODAGEM KM']),litrosRealizados:col(['LITROS ABASTECIDOS']),kmLOrcado:col(['KM/L ORÇADO']),kmLRealizado:col(['KM/L REALIZADO']),valorAbastecido:col(['R$ ABASTECIDOS']),precoLitroReal:col(['R$/L ABASTECIDO']),precoLitroOrcado:col(['R$/L ORÇADO']),tempoLigado:col(['TEMPO LIGADO (H)']),tempoParadoLigado:col(['TEMPO PARADO LIGADO (H)']),consumoIdle:col(['CONSUMO PARADO LIGADO (L)']),perdaIdle:col(['R$ INEFICIENCIA PARADO LIGADO']),savingIdle:col(['OPORTUNIDADE SAVING R$ IDLE']),diasOp:col(['DIAS OP']),diasManut:col(['DIAS MANUT']),diasDc:col(['DIAS DC']),diasDoc:col(['DOC F']),diasAc:col(['AC']),diasAd:col(['AD']),observacao:observacaoIndex,motivoAgregado:motivoDesvioIndex};
   const sourceRows=rows.slice(headerIndex+1),executionFields=[ix.realizado,ix.movInterna,ix.frete,ix.diaria,ix.locacao,ix.kmVazio].filter(index=>index>=0);
   const activeMonths=new Set(sourceRows.filter(row=>executionFields.some(index=>Math.abs(budgetNumber(row[index])||0)>.001)).map(row=>budgetMonthNumber(row[ix.mes])).filter(Boolean));
   const officialBudgetMap=new Map();
@@ -3220,7 +3221,7 @@ function processFLEETBILLING(rows){
     const mes=budgetMonthNumber(row[ix.mes]),frota=budgetText(row[ix.frota]);
     if(!activeMonths.has(mes)||!frota)return null;
     const categoria=budgetText(row[ix.categoria]),tipo=fleetBillingType(categoria),locacao=budgetNumber(row[ix.locacao])||0,realizado=budgetNumber(row[ix.realizado])||0;
-    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:officialBudgetMap.get(mes+'|'+budgetKey(frota))||0,realizado,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,diasManut:budgetNumber(row[ix.diasManut])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):'',motivoAgregado:ix.motivoAgregado>=0?budgetText(row[ix.motivoAgregado]):''};
+    return{rowIndex:rowIndex+headerIndex+2,mes,frota,classe:budgetText(row[ix.classe]),conjunto:budgetText(row[ix.conjunto]),situacao:budgetText(row[ix.situacao]),categoria,tipo,unidade:'MKT / LOGÍSTICA',capacidade:budgetText(row[ix.capacidade]),regime:budgetText(row[ix.regime]),ocupacao:budgetRate(row[ix.ocupacao]),inefLog:budgetRate(row[ix.inefLog]),inefCom:budgetRate(row[ix.inefCom]),inefOp:budgetRate(row[ix.inefOp]),inefMec:budgetRate(row[ix.inefMec]),horas:budgetNumber(row[ix.horas]),extras:budgetNumber(row[ix.extras]),orcado:officialBudgetMap.get(mes+'|'+budgetKey(frota))||0,realizado,movInterna:budgetNumber(row[ix.movInterna])||0,frete:budgetNumber(row[ix.frete])||0,diaria:budgetNumber(row[ix.diaria])||0,locacao,kmVazio:budgetNumber(row[ix.kmVazio])||0,kmRodadoTotal:budgetNumber(row[ix.kmRodadoTotal])||0,kmOrcado:budgetNumber(row[ix.kmOrcado])||0,litrosOrcados:budgetNumber(row[ix.litrosOrcados])||0,kmRodadoVazio:budgetNumber(row[ix.kmRodadoVazio])||0,kmRodadoCarregado:budgetNumber(row[ix.kmRodadoCarregado])||0,kmMovInterna:budgetNumber(row[ix.kmMovInterna])||0,kmApoio:budgetNumber(row[ix.kmApoio])||0,desvioKm:budgetNumber(row[ix.desvioKm])||0,litrosRealizados:budgetNumber(row[ix.litrosRealizados])||0,kmLOrcado:budgetNumber(row[ix.kmLOrcado])||0,kmLRealizado:budgetNumber(row[ix.kmLRealizado])||0,valorAbastecido:budgetNumber(row[ix.valorAbastecido])||0,precoLitroReal:budgetNumber(row[ix.precoLitroReal])||0,precoLitroOrcado:budgetNumber(row[ix.precoLitroOrcado])||0,tempoLigado:budgetNumber(row[ix.tempoLigado])||0,tempoParadoLigado:budgetNumber(row[ix.tempoParadoLigado])||0,consumoIdle:budgetNumber(row[ix.consumoIdle])||0,perdaIdle:budgetNumber(row[ix.perdaIdle])||0,savingIdle:budgetNumber(row[ix.savingIdle])||0,diasOp:budgetNumber(row[ix.diasOp])||0,diasManut:budgetNumber(row[ix.diasManut])||0,diasDc:budgetNumber(row[ix.diasDc])||0,diasDoc:budgetNumber(row[ix.diasDoc])||0,diasAc:budgetNumber(row[ix.diasAc])||0,diasAd:budgetNumber(row[ix.diasAd])||0,observacao:ix.observacao>=0?budgetText(row[ix.observacao]):'',motivoAgregado:ix.motivoAgregado>=0?budgetText(row[ix.motivoAgregado]):''};
   }).filter(Boolean);
   if(budgetData.length)renderBUDGET();
   if(budgetData.length)renderBUDGET2026();
@@ -3352,8 +3353,8 @@ function renderBUDGETMonthChart(rows){
 function aggregateFLEETBILLING(rows){
   const map=new Map();
   (rows||[]).forEach(row=>{
-    const key=row.mes+'|'+budgetKey(row.frota),item=map.get(key)||{...row,orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,diasManut:0,observacoes:[],motivosAgregados:[]};
-    ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio','diasManut'].forEach(field=>item[field]+=row[field]||0);
+    const key=row.mes+'|'+budgetKey(row.frota),item=map.get(key)||{...row,orcado:0,realizado:0,movInterna:0,frete:0,diaria:0,locacao:0,kmVazio:0,kmRodadoTotal:0,kmOrcado:0,litrosOrcados:0,kmRodadoVazio:0,kmRodadoCarregado:0,kmMovInterna:0,kmApoio:0,desvioKm:0,litrosRealizados:0,valorAbastecido:0,tempoLigado:0,tempoParadoLigado:0,consumoIdle:0,perdaIdle:0,savingIdle:0,diasOp:0,diasManut:0,diasDc:0,diasDoc:0,diasAc:0,diasAd:0,observacoes:[],motivosAgregados:[]};
+    ['orcado','realizado','movInterna','frete','diaria','locacao','kmVazio','kmRodadoTotal','kmOrcado','litrosOrcados','kmRodadoVazio','kmRodadoCarregado','kmMovInterna','kmApoio','desvioKm','litrosRealizados','valorAbastecido','tempoLigado','tempoParadoLigado','consumoIdle','perdaIdle','savingIdle','diasOp','diasManut','diasDc','diasDoc','diasAc','diasAd'].forEach(field=>item[field]+=row[field]||0);
     if(row.observacao&&!item.observacoes.includes(row.observacao))item.observacoes.push(row.observacao);
     if(row.motivoAgregado&&!item.motivosAgregados.includes(row.motivoAgregado))item.motivosAgregados.push(row.motivoAgregado);
     map.set(key,item);
@@ -4543,14 +4544,20 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const lineAxleRows=billingRows.filter(row=>lineAxleIds.has(fleetKey(row.frota)));
   const lineAxleBudget=sum(lineAxleRows,'orcado'),lineAxleReal=sum(lineAxleRows,'realizado');
   const dailyRevenue=sum(billingRows,'diaria'),inefValue=sum(inefRows,'vlTotal');
-  const kmTotal=dayRows.reduce((total,row)=>total+(Number(row.km)||0),0);
-  const cargoKey=row=>budgetKey(row.cargd||'');
-  const kmLoaded=dayRows.filter(row=>cargoKey(row).includes('CARREG')).reduce((total,row)=>total+(Number(row.km)||0),0);
-  const kmEmpty=dayRows.filter(row=>{const key=cargoKey(row);return(key.includes('VAZIO')&&!key.includes('CARREG'))||key.includes('DESCARREGADO');}).reduce((total,row)=>total+(Number(row.km)||0),0);
-  const revenueTypes=[
-    ['Mov. interna',sum(billingRows,'movInterna')],['Frete',sum(billingRows,'frete')],['KM vazio',sum(billingRows,'kmVazio')],
-    ['Diária de ineficiência',dailyRevenue],['Locação',sum(billingRows,'locacao')]
-  ];
+  const kmBudget=sum(billingRows,'kmOrcado'),kmActual=sum(billingRows,'kmRodadoTotal');
+  const kmLoaded=sum(billingRows,'kmRodadoCarregado'),kmEmpty=sum(billingRows,'kmRodadoVazio');
+  const loadedRevenue=sum(billingRows,'frete'),emptyRevenue=sum(billingRows,'kmVazio');
+  const litersBudget=sum(billingRows,'litrosOrcados'),litersActual=sum(billingRows,'litrosRealizados');
+  const fuelActual=sum(billingRows,'valorAbastecido'),idleLoss=sum(billingRows,'perdaIdle'),idleSaving=sum(billingRows,'savingIdle');
+  const fuelMonths=new Set(billingRows.filter(row=>row.litrosRealizados>0).map(row=>row.mes));
+  const priceBudgetRows=billingRows.filter(row=>row.precoLitroOrcado>0),priceActualRows=billingRows.filter(row=>row.precoLitroReal>0);
+  const dieselBudgetLiters=sum(priceBudgetRows,'litrosOrcados');
+  const dieselBudget=dieselBudgetLiters>0?priceBudgetRows.reduce((total,row)=>total+row.precoLitroOrcado*row.litrosOrcados,0)/dieselBudgetLiters:null;
+  const dieselActual=litersActual>0?fuelActual/litersActual:null;
+  const efficiencyBudgetLiters=sum(billingRows.filter(row=>row.kmLOrcado>0),'litrosOrcados');
+  const efficiencyActualLiters=sum(billingRows.filter(row=>row.kmLRealizado>=0&&row.litrosRealizados>0),'litrosRealizados');
+  const efficiencyBudget=efficiencyBudgetLiters>0?billingRows.reduce((total,row)=>total+(row.kmLOrcado>0?row.kmLOrcado*row.litrosOrcados:0),0)/efficiencyBudgetLiters:null;
+  const efficiencyActual=efficiencyActualLiters>0?billingRows.reduce((total,row)=>total+(row.litrosRealizados>0?row.kmLRealizado*row.litrosRealizados:0),0)/efficiencyActualLiters:null;
   const classified=dayRows.map(row=>{
     const key=execStatusKey(row.cond),tokens=key.split(/[^A-Z0-9]+/).filter(Boolean);
     let type=waitType(row.cond);
@@ -4579,38 +4586,44 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const pending=items=>items.map((item,index)=>`<div class="exec-dre-pending-item"><span class="exec-dre-index">${String(index+1).padStart(2,'0')}</span><div><b>${execEsc(item[0])}</b><br>${execEsc(item[1])}</div></div>`).join('');
 
   html('execDreRevenueMetrics',[
-    metric('ROB Real',billingRows.length?budgetMoneyCompact(real):'N/D',attainment==null?'sem orçamento comparável':`${attainment.toLocaleString('pt-BR',{maximumFractionDigits:1})}% do orçamento`,'green'),
     metric('Cavalos orçados x faturando',budgetRows.length?`${budgetedHorses.size} x ${billingHorses.size}`:'N/D','frotas únicas no período','blue'),
-    metric('KM realizado',dayRows.length?`${Math.round(kmTotal).toLocaleString('pt-BR')} km`:'N/D','orçamento de KM sem campo conectado','amber'),
-    metric('Linha de eixo',lineAxleRows.length?budgetMoneyCompact(lineAxleReal):'N/D',lineAxleRows.length?`${budgetMoneyCompact(lineAxleBudget)} orçado · frotas 615, 617 e 619`:'sem registro no período','blue'),
-    metric('KM carregado x vazio',dayRows.length?`${Math.round(kmLoaded).toLocaleString('pt-BR')} x ${Math.round(kmEmpty).toLocaleString('pt-BR')}`:'N/D','quilômetros realizados','green'),
-    metric('Diárias faturadas',billingRows.length?budgetMoneyCompact(dailyRevenue):'N/D',inefRows.length?`${budgetMoneyCompact(inefValue)} no controle de ineficiências`:'controle sem registros','amber'),
-    metric('Perda potencial',potentialLoss.length?budgetMoneyCompact(potentialTotal):'N/D','premissa conservadora de KM vazio','red'),
-    metric('Desvio da ROB',billingRows.length&&budget>0?budgetMoneyCompact(real-budget):'N/D',budget>0?`${budgetMoneyCompact(budget)} orçado`:'orçamento indisponível','red')
+    metric('KM orçado x realizado',kmBudget>0?`${Math.round(kmBudget).toLocaleString('pt-BR')} x ${Math.round(kmActual).toLocaleString('pt-BR')}`:'N/D','quantidade de quilômetros','blue'),
+    metric('Receita de Linha de Eixo',lineAxleRows.length?budgetMoneyCompact(lineAxleReal):'N/D',lineAxleRows.length?`${budgetMoneyCompact(lineAxleBudget)} orçado · frotas 615, 617 e 619`:'sem registro no período','green'),
+    metric('Receita KM carregado',billingRows.length?budgetMoneyCompact(loadedRevenue):'N/D',`${Math.round(kmLoaded).toLocaleString('pt-BR')} km carregados`,'green'),
+    metric('Receita KM vazio',billingRows.length?budgetMoneyCompact(emptyRevenue):'N/D',`${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios`,'amber'),
+    metric('Receita de diárias',billingRows.length?budgetMoneyCompact(dailyRevenue):'N/D',inefRows.length?`${budgetMoneyCompact(inefValue)} no controle de ineficiências`:'controle sem registros','amber'),
+    metric('Perda potencial por ineficiências',potentialLoss.length?budgetMoneyCompact(potentialTotal):'N/D','mecânica e causas operacionais classificadas','red')
   ].join(''));
-  html('execDreRevenueComposition',revenueTypes.map(([label,value])=>line(label,real>0?`${(value/real*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}% da ROB Real`:'sem ROB Real',billingRows.length?fMoney(value):'N/D')).join(''));
   html('execDreLossPotential',potentialLoss.length?potentialLoss.map(row=>line(row.label,`${row.days} frota-dias${row.unmapped?` · ${row.unmapped} sem tarifa`:''}`,row.value>0?fMoney(row.value):'N/D')).join(''):line('Sem leitura classificada','Relatório de Eficiência sem ocorrência no recorte','N/D'));
 
   html('execDreFuelMetrics',[
-    metric('KM realizado',dayRows.length?`${Math.round(kmTotal).toLocaleString('pt-BR')} km`:'N/D','Relatório de Eficiência','green'),
-    metric('KM orçado','N/D','campo não existe na base de orçamento','amber'),
-    metric('Litros realizados','N/D','base de abastecimento pendente','amber'),
-    metric('KM/L por frota','N/D','depende de litros por frota','amber')
+    metric('Diesel orçado x realizado',dieselBudget!=null&&dieselActual!=null?`${fMoney(dieselBudget)} x ${fMoney(dieselActual)}`:'N/D','valor por litro','blue'),
+    metric('KM orçado x realizado',kmBudget>0?`${Math.round(kmBudget).toLocaleString('pt-BR')} x ${Math.round(kmActual).toLocaleString('pt-BR')}`:'N/D','quantidade de quilômetros','blue'),
+    metric('KM/L orçado x realizado',efficiencyBudget!=null&&efficiencyActual!=null?`${efficiencyBudget.toLocaleString('pt-BR',{maximumFractionDigits:2})} x ${efficiencyActual.toLocaleString('pt-BR',{maximumFractionDigits:2})}`:'N/D','consolidado do período','green'),
+    metric('Litros orçados x realizados',litersBudget>0?`${Math.round(litersBudget).toLocaleString('pt-BR')} x ${Math.round(litersActual).toLocaleString('pt-BR')}`:'N/D',fuelActual>0?`${budgetMoneyCompact(fuelActual)} abastecidos`:'sem valor realizado','amber'),
+    metric('Perda com parado ligado',fuelMonths.size?budgetMoneyCompact(idleSaving):'N/D',`${budgetMoneyCompact(idleLoss)} registrado como ineficiência IDLE`,'red')
   ].join(''));
-  html('execDreFuelPending',pending([
-    ['Preço do diesel orçado x realizado','Conectar preço orçado e abastecimentos com competência, frota, litros e valor por litro.'],
-    ['Consumo e litros','Conectar litros por frota para calcular KM/L, litros orçados x realizados e desvios.'],
-    ['Parado ligado','Conectar horas em marcha lenta e consumo horário para monetizar a perda.']
-  ]));
+  const fuelFleetMap=new Map();
+  billingRows.filter(row=>row.tipo==='CAVALO'&&(row.kmLOrcado>0||row.kmLRealizado>0)).forEach(row=>{
+    const key=fleetKey(row.frota),item=fuelFleetMap.get(key)||{frota:row.frota,budgetWeighted:0,actualWeighted:0,litersBudget:0,litersActual:0};
+    if(row.kmLOrcado>0&&row.litrosOrcados>0){item.budgetWeighted+=row.kmLOrcado*row.litrosOrcados;item.litersBudget+=row.litrosOrcados;}
+    if(row.litrosRealizados>0){item.actualWeighted+=row.kmLRealizado*row.litrosRealizados;item.litersActual+=row.litrosRealizados;}
+    fuelFleetMap.set(key,item);
+  });
+  const fuelFleets=[...fuelFleetMap.values()].map(row=>({...row,budgetRate:row.litersBudget>0?row.budgetWeighted/row.litersBudget:null,actualRate:row.litersActual>0?row.actualWeighted/row.litersActual:null})).filter(row=>row.budgetRate!=null&&row.actualRate!=null).sort((a,b)=>(a.actualRate-a.budgetRate)-(b.actualRate-b.budgetRate)).slice(0,10);
+  html('execDreFuelFleet',fuelFleets.length?fuelFleets.map(row=>line(`Frota ${row.frota}`,`desvio ${(row.actualRate-row.budgetRate).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})} km/L`,`${row.budgetRate.toLocaleString('pt-BR',{maximumFractionDigits:2})} x ${row.actualRate.toLocaleString('pt-BR',{maximumFractionDigits:2})}`)).join(''):line('Sem medição no recorte','A base possui realização de combustível em julho e agosto','N/D'));
+  const fuelStatus=document.getElementById('execDreFuelStatus');
+  if(fuelStatus){fuelStatus.textContent=fuelMonths.size?`${fuelMonths.size} ${fuelMonths.size===1?'competência':'competências'} com realizado`:'Sem realizado no período';fuelStatus.className='exec-dre-status '+(fuelMonths.size?'ready':'partial');}
+  html('execDreFuelPending',litersActual>0?'':pending([['Realização de combustível','A planilha não possui valores realizados para os meses selecionados.']]))
   html('execDreSalaryPending',pending([
-    ['Horas extras 50% e 100%','Não há base de folha ou apontamento de horas conectada ao painel.'],
+    ['Horas extras 50% e 100% de junho','A planilha possui somente totais genéricos de horas e não separa HE 50% de HE 100%.'],
     ['Banco de horas de janeiro','Não há saldo de BH conectado; o HTML de referência não é utilizado como fonte.'],
     ['Horas extras x mobilizações','Conectar colaborador, data, horas, percentual e mobilização autorizadora para validar o cruzamento.']
   ]));
   html('execDreTravelPending',pending([
-    ['Diárias orçadas x realizadas','Conectar orçamento e prestação de contas por competência, colaborador, quantidade e valor.'],
-    ['Cobertura do orçamento','A regra de 30 diárias a R$ 120 por motorista está pronta, mas falta a quantidade real de motoristas elegíveis.'],
-    ['Estadias dos cavalos Munck','Conectar despesas de hospedagem por frota e competência para comparar orçamento x realizado.']
+    ['Diárias orçadas x realizadas de julho','Conectar orçamento e prestação de contas por competência, colaborador, quantidade e valor.'],
+    ['Cobertura do orçamento','Premissa pronta: 30 diárias a R$ 120, ou R$ 3.600 por motorista. Falta a quantidade real de motoristas elegíveis.'],
+    ['Estadias dos cavalos Munck','Premissa informada: 5 Muncks e referência aproximada de R$ 20 mil/mês. Falta a base de despesas por frota e competência.']
   ]));
   set('execDrePeriod',monthLabel);
   const gap=real-budget,lineGap=lineAxleReal-lineAxleBudget;
@@ -4619,7 +4632,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   if(lineAxleRows.length&&lineGap<0)actions.push({kind:'critical',title:'Atuar na linha de eixo',body:`Frotas 615, 617 e 619 acumulam ${fMoney(Math.abs(lineGap))} abaixo do orçamento no recorte.`});
   if(potentialLoss.length)actions.push({kind:'critical',title:'Reduzir perda potencial',body:`As ineficiências classificadas representam ${fMoney(potentialTotal)} de exposição estimada; priorizar causas com maior valor.`});
   if(kmEmpty>0&&sum(billingRows,'kmVazio')<=0)actions.push({kind:'critical',title:'Validar cobrança de KM vazio',body:`Há ${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios registrados e nenhuma receita de KM vazio no período.`});
-  actions.push({kind:'pending',title:'Completar a DRE operacional',body:'Conectar combustível, folha/BH e viagens/estadias para liberar os três blocos ainda parciais.'});
+  actions.push({kind:'pending',title:'Completar a DRE operacional',body:'Conectar folha/BH e viagens/estadias para liberar os dois blocos ainda pendentes.'});
   html('execDreActions',actions.slice(0,4).map(item=>`<div class="exec-dre-action ${item.kind}"><div class="exec-dre-action-title">${execEsc(item.title)}</div><div class="exec-dre-action-body">${execEsc(item.body)}</div></div>`).join(''));
 }
 
@@ -7652,7 +7665,7 @@ function initPWA(){
     setInstallActionVisible(false);
   });
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-    navigator.serviceWorker.register('./sw.js?v=97',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=98',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
