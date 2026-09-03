@@ -2258,7 +2258,7 @@ tbody tr:hover td{background:var(--surface2)}
         <div class="exec-tab-content" id="execContentDre">
           <div class="exec-dre-blocks">
             <section class="exec-dre-block">
-              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 01</div><div class="exec-dre-block-title">Receita</div></div><span class="exec-dre-status ready">Bases conectadas</span></div>
+              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 01</div><div class="exec-dre-block-title">Receita</div></div><span class="exec-dre-status ready">Dados no período</span></div>
               <div class="exec-dre-sequence" id="execDreRevenueSequence"></div>
             </section>
             <section class="exec-dre-block">
@@ -2284,7 +2284,7 @@ tbody tr:hover td{background:var(--surface2)}
               <div class="exec-dre-actions" id="execDreActions"></div>
             </section>
             <section class="exec-dre-block">
-              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Rastreabilidade</div><div class="exec-dre-block-title">Fontes da Análise de Resultado</div></div><span class="exec-dre-status ready">bases conectadas</span></div>
+              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Rastreabilidade</div><div class="exec-dre-block-title">Fontes da Análise de Resultado</div></div><span class="exec-dre-status ready">fontes consultadas</span></div>
               <div class="exec-dre-panel"><div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table exec-dre-sources-table"><thead><tr><th>Fonte</th><th>Uso na análise</th><th>Disponibilidade</th></tr></thead><tbody id="execDreSourcesTbl"></tbody></table></div></div>
             </section>
           </div>
@@ -4773,7 +4773,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const fuelFleets=[...fuelFleetMap.values()].map(row=>({...row,budgetRate:row.litersBudget>0?row.budgetWeighted/row.litersBudget:null,actualRate:row.litersActual>0?row.actualWeighted/row.litersActual:null})).filter(row=>row.budgetRate!=null&&row.actualRate!=null).sort((a,b)=>(a.actualRate-a.budgetRate)-(b.actualRate-b.budgetRate)).slice(0,10);
   html('execDreFuelFleet',fuelFleets.length?fuelFleets.map(row=>line(`Frota ${row.frota}`,`desvio ${(row.actualRate-row.budgetRate).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})} km/L`,`${row.budgetRate.toLocaleString('pt-BR',{maximumFractionDigits:2})} x ${row.actualRate.toLocaleString('pt-BR',{maximumFractionDigits:2})}`)).join(''):line('Sem medição no recorte','A base possui realização de combustível em julho e agosto','N/D'));
   const fuelStatus=document.getElementById('execDreFuelStatus');
-  if(fuelStatus){fuelStatus.textContent=fuelMonths.size?'Base disponível':'Sem base no período';fuelStatus.className='exec-dre-status '+(fuelMonths.size?'ready':'partial');}
+  if(fuelStatus){fuelStatus.textContent=fuelMonths.size?'Dados no período':'Sem dados no período';fuelStatus.className='exec-dre-status '+(fuelMonths.size?'ready':'partial');}
   html('execDreFuelPending',litersActual>0?'':pending([['Realização de combustível','A planilha não possui valores realizados para os meses selecionados.']]))
   const extraMinutes=sum(extraHourRows,'minutes'),extraPeople=new Set(extraHourRows.map(row=>row.employee));
   const extraTypes=[...new Set(extraHourRows.map(row=>row.type))].sort();
