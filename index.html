@@ -4746,7 +4746,8 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     metric('Diesel orçado x realizado',dieselBudget!=null&&dieselActual!=null?`${fMoney(dieselBudget)} x ${fMoney(dieselActual)}`:'N/D',dieselBudget!=null&&dieselActual!=null?`desvio ${signedMoney(dieselActual-dieselBudget)} por litro`:'valor por litro','blue'),
     metric('KM orçado x realizado',kmBudget>0?`${Math.round(kmBudget).toLocaleString('pt-BR')} x ${Math.round(kmActual).toLocaleString('pt-BR')}`:'N/D','quantidade de quilômetros','blue'),
     metric('KM/L orçado x realizado',efficiencyBudget!=null&&efficiencyActual!=null?`${efficiencyBudget.toLocaleString('pt-BR',{maximumFractionDigits:2})} x ${efficiencyActual.toLocaleString('pt-BR',{maximumFractionDigits:2})}`:'N/D','média ponderada · somente abastecidos','green'),
-    metric('Litros orçados x realizados',litersBudget>0?`${Math.round(litersBudget).toLocaleString('pt-BR')} x ${Math.round(litersActual).toLocaleString('pt-BR')}`:'N/D',fuelBudgetValue>0&&fuelActual>0?`${budgetMoneyCompact(fuelBudgetValue)} orçados · ${budgetMoneyCompact(fuelActual)} abastecidos`:'sem valor realizado','amber')
+    metric('Litros orçados x realizados',litersBudget>0?`${Math.round(litersBudget).toLocaleString('pt-BR')} x ${Math.round(litersActual).toLocaleString('pt-BR')}`:'N/D','volume de combustível','amber'),
+    metric('Valor de combustível orçado x abastecido',fuelBudgetValue>0&&fuelActual>0?`${budgetMoneyCompact(fuelBudgetValue)} x ${budgetMoneyCompact(fuelActual)}`:'N/D','orçado x abastecido','red')
   ].join(''));
   const fuelFleetMap=new Map();
   billingRows.filter(row=>row.tipo==='CAVALO'&&(row.kmLOrcado>0||row.kmLRealizado>0)).forEach(row=>{
