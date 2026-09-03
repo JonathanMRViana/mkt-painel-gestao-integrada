@@ -360,12 +360,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .exec-dre-detail-table{min-width:780px!important;table-layout:auto!important}
 #panel-exec .exec-dre-detail-table th,#panel-exec .exec-dre-detail-table td{width:auto!important}
 .exec-dre-detail-table th{white-space:nowrap}.exec-dre-detail-table td{vertical-align:top}
-.exec-dre-loss-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.exec-dre-loss-group{min-width:0}
+.exec-dre-loss-blocks{display:grid;gap:12px}
+.exec-dre-loss-block{min-width:0}
 .exec-dre-loss-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 7px;font:700 10px var(--font-ui);color:var(--text);text-transform:uppercase}
 .exec-dre-loss-title span{font:600 10px var(--font-data);color:var(--text2);white-space:nowrap}
-.exec-dre-loss-table{min-width:360px!important}
-@media(max-width:900px){.exec-dre-loss-groups{grid-template-columns:1fr}}
+.exec-dre-loss-table{min-width:520px!important}
 .exec-dre-sequence{display:grid;gap:0}
 .exec-dre-topic{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:18px 0;border-bottom:1px solid var(--border)}
 .exec-dre-topic:first-child{padding-top:0}.exec-dre-topic:last-child{padding-bottom:0;border-bottom:0}
@@ -4661,9 +4660,9 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   }).join('')}</tbody></table></div>`:'<div class="exec-revenue-empty">Não há base disponível para o período selecionado.</div>';
   const dailyDaysTotal=inefRows.reduce((total,row)=>total+(budgetNumber(row.diasDia)||0),0);
   const topDaily=inefRows.length?[...inefRows].sort((a,b)=>(b.vlTotal||0)-(a.vlTotal||0))[0]:null;
-  const lossDetail=potentialLoss.length?`<div class="exec-dre-loss-groups">${potentialLoss.map(cause=>{
+  const lossDetail=potentialLoss.length?`<div class="exec-dre-loss-blocks">${potentialLoss.map(cause=>{
     const rows=[...cause.fleets.entries()].map(([fleet,data])=>({fleet,...data})).sort((a,b)=>b.value-a.value||b.days-a.days||String(a.fleet).localeCompare(String(b.fleet),'pt-BR',{numeric:true}));
-    return `<section class="exec-dre-loss-group"><div class="exec-dre-loss-title">${execEsc(cause.label)}<span>${cause.value>0?fMoney(cause.value):'N/D'}</span></div><div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table exec-dre-loss-table"><thead><tr><th>Frota</th><th>Dias</th><th>Perda Potencial</th></tr></thead><tbody>${rows.map(row=>`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data);text-align:right">${row.days.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700;text-align:right;white-space:nowrap">${row.value>0?fMoney(row.value):'N/D'}</td></tr>`).join('')}</tbody></table></div></section>`;
+    return `<section class="exec-dre-panel exec-dre-loss-block"><div class="exec-dre-loss-title">${execEsc(cause.label)}<span>${cause.value>0?fMoney(cause.value):'N/D'}</span></div><div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table exec-dre-loss-table"><thead><tr><th>Frota</th><th>Dias</th><th>Perda Potencial</th></tr></thead><tbody>${rows.map(row=>`<tr><td style="font-family:var(--font-data);font-weight:700">${execEsc(row.fleet)}</td><td style="font-family:var(--font-data);text-align:right">${row.days.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);font-weight:700;text-align:right;white-space:nowrap">${row.value>0?fMoney(row.value):'N/D'}</td></tr>`).join('')}</tbody></table></div></section>`;
   }).join('')}</div>`:'<div class="exec-revenue-empty">Não há base disponível para o período selecionado.</div>';
   const kmDeviation=kmActual-kmBudget,lineDeviation=lineAxleReal-lineAxleBudget;
   const topLoss=potentialLoss[0];
@@ -4673,7 +4672,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     topic(3,metric('Receita de Linha de Eixo orçada x realizada',lineAxleRows.length?`${budgetMoneyCompact(lineAxleBudget)} x ${budgetMoneyCompact(lineAxleReal)}`:'N/D',lineAxleRows.length?`desvio ${signedMoney(lineDeviation)}`:'não há base disponível para o período selecionado','green'),panel('Detalhamento da Linha de Eixo',[line('ROB orçada','frotas 615, 617 e 619 · configuração Linha de Eixo',fMoney(lineAxleBudget)),line('ROB realizada como prancha','toda a receita realizada das frotas 615, 617 e 619',fMoney(lineAxlePranchaReal)),line('Desvio','prancha realizada menos Linha de Eixo orçada',signedMoney(lineDeviation))].join('')),lineAxleRows.length?`As frotas 615, 617 e 619 foram orçadas como Linha de Eixo, mas operaram como prancha. A receita realizada como prancha foi de ${fMoney(lineAxlePranchaReal)} no período.`:'Não há base disponível para o período selecionado.',true),
     topic(4,metric('Receita de KM carregado e KM vazio',billingRows.length?`${budgetMoneyCompact(loadedRevenue)} x ${budgetMoneyCompact(emptyRevenue)}`:'N/D',billingRows.length?`${Math.round(kmLoaded).toLocaleString('pt-BR')} km carregados · ${Math.round(kmEmpty).toLocaleString('pt-BR')} km vazios`:'não há base disponível para o período selecionado','green'),panel('Composição da ROB Real',compositionDetail)+panel('Conferência da Cobrança por KM',kmRevenueDetail),billingRows.length?(kmWithoutCharge>0?`${Math.round(kmWithoutCharge).toLocaleString('pt-BR')} km não possuem valor associado nas colunas Frete ou KM Vazio. As ${kmAuditFleets.size} frotas devem ser validadas pelas observações e regras contratuais; manutenção e apoio não representam automaticamente perda de receita.`:'Todos os quilômetros registrados no período possuem valor associado nas colunas Frete ou KM Vazio.'):'Não há base disponível para o período selecionado.'),
     topic(5,metric('Receita de diárias de ineficiência',billingRows.length?budgetMoneyCompact(dailyRevenue):'N/D',inefRows.length?`${inefRows.length} ${inefRows.length===1?'registro':'registros'} · ${dailyDaysTotal.toLocaleString('pt-BR')} ${dailyDaysTotal===1?'diária':'diárias'}`:'não há base disponível para o período selecionado','amber'),panel('Detalhamento das Diárias',dailyDetail),topDaily?`No período, ${dailyDaysTotal.toLocaleString('pt-BR')} ${dailyDaysTotal===1?'diária faturada totaliza':'diárias faturadas totalizam'} ${fMoney(inefValue)}. A maior ocorrência foi ${topDaily.motivo||'não classificada'}, da frota ${topDaily.frota||'N/I'}, no valor de ${fMoney(topDaily.vlTotal||0)}.`:'Não há base disponível para o período selecionado.',true),
-    topic(6,metric('Receita potencial perdida por ineficiências',potentialLoss.length?budgetMoneyCompact(potentialTotal):'N/D','mecânica e causas operacionais classificadas','red'),panel('Detalhamento da Perda Potencial',lossDetail),topLoss?`${topLoss.label} concentra a maior perda potencial: ${fMoney(topLoss.value)}, associada a ${topLoss.days} dias de indisponibilidade.`:'Não há base disponível para o período selecionado.',true)
+    topic(6,metric('Receita potencial perdida por ineficiências',potentialLoss.length?budgetMoneyCompact(potentialTotal):'N/D','mecânica e causas operacionais classificadas','red'),lossDetail,topLoss?`${topLoss.label} concentra a maior perda potencial: ${fMoney(topLoss.value)}, associada a ${topLoss.days} dias de indisponibilidade.`:'Não há base disponível para o período selecionado.',true)
   ].join(''));
 
   html('execDreFuelMetrics',[
@@ -7752,7 +7751,7 @@ function initPWA(){
       reloadingForUpdate=true;
       location.reload();
     });
-    navigator.serviceWorker.register('./sw.js?v=116',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=117',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
