@@ -3118,7 +3118,7 @@ function budgetHeaderIndex(headers,aliases,fallback){
 }
 function budgetIsImplement(...values){
   const key=budgetKey(values.filter(Boolean).join(' '));
-  return['IMPLEMENTO','CARRETA','PRANCHA','DOLLY','REBOQUE','SEMIRREBOQUE'].some(token=>key.includes(token));
+  return['IMPLEMENTO','CARRETA','PRANCHA','DOLLY','REBOQUE','SEMIRREBOQUE','CARGASECA'].some(token=>key.includes(token));
 }
 function processBUDGET(rows){
   let headerIndex=rows.findIndex(row=>{const keys=row.map(budgetKey);return keys.includes('MES')&&keys.includes('FROTA')&&keys.some(k=>k.includes('ROBORCADA'));});
@@ -4549,8 +4549,15 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const sum=(rows,key)=>rows.reduce((total,row)=>total+(Number(row[key])||0),0);
   const real=sum(billingRows,'realizado'),budget=sum(billingRows,'orcado');
   const validFleet=value=>{const key=fleetKey(value);return key&&key.length<=4?key:'';};
-  const budgetedHorses=new Set(budgetRows.filter(row=>!budgetIsImplement(row.categoria,row.tipo)&&row.rob>0).map(row=>validFleet(row.frota)).filter(Boolean));
-  const billingHorses=new Set(billingRows.filter(row=>row.tipo==='CAVALO'&&row.realizado>0).map(row=>validFleet(row.frota)).filter(Boolean));
+  const fleetIsImplement=(fleet,...values)=>assetTypeByFleet.has(validFleet(fleet))||budgetIsImplement(...values);
+  const budgetedHorses=new Set(budgetRows.filter(row=>!fleetIsImplement(row.frota,row.categoria,row.tipo)&&row.rob>0).map(row=>validFleet(row.frota)).filter(Boolean));
+  const billingHorses=new Set(billingRows.filter(row=>row.tipo==='CAVALO'&&!fleetIsImplement(row.frota,row.categoria,row.classe)&&row.realizado>0).map(row=>validFleet(row.frota)).filter(Boolean));
+  const budgetedImplementKeys=new Set(budgetRows.filter(row=>fleetIsImplement(row.frota,row.categoria,row.tipo)&&row.rob>0).map(row=>`${row.mes}|${validFleet(row.frota)}`));
+  const unbudgetedPranchaRows=billingRows.filter(row=>{
+    const fleet=validFleet(row.frota),asset=assetTypeByFleet.get(fleet),isPrancha=(asset&&/^P\d+$/.test(asset.code))||budgetKey([row.categoria,row.classe].join(' ')).includes('PRANCHA');
+    return fleet&&row.realizado>0&&isPrancha&&!budgetedImplementKeys.has(`${row.mes}|${fleet}`);
+  });
+  const unbudgetedPranchas=new Set(unbudgetedPranchaRows.map(row=>validFleet(row.frota))),unbudgetedPranchaRevenue=sum(unbudgetedPranchaRows,'realizado');
   const lineAxleIds=new Set(['615','617','619']);
   const lineAxleRows=billingRows.filter(row=>lineAxleIds.has(fleetKey(row.frota)));
   const lineAxleBudget=sum(lineAxleRows,'orcado'),lineAxleReal=sum(lineAxleRows,'realizado');
@@ -4618,7 +4625,8 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     line('Cavalos orçados',fleetList(budgetedHorses),`${budgetedHorses.size} frotas`),
     line('Cavalos faturando',fleetList(billingHorses),`${billingHorses.size} frotas`),
     line('Faturando com orçamento',fleetList(budgetedBillingHorses),`${budgetedBillingHorses.size} frotas`),
-    line('Faturando sem orçamento',fleetList(unbudgetedBillingHorses),`${unbudgetedBillingHorses.size} frotas`)
+    line('Faturando sem orçamento',fleetList(unbudgetedBillingHorses),`${unbudgetedBillingHorses.size} frotas`),
+    unbudgetedPranchas.size?line('Observação*',`${fleetList(unbudgetedPranchas)} · pranchas faturando sem orçamento associado`,`${unbudgetedPranchas.size} pranchas · ${fMoney(unbudgetedPranchaRevenue)}`):''
   ].join('');
   const revenueComposition=[
     ['Mov. Interna',sum(billingRows,'movInterna')],
@@ -7736,7 +7744,7 @@ function initPWA(){
       reloadingForUpdate=true;
       location.reload();
     });
-    navigator.serviceWorker.register('./sw.js?v=113',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=114',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
