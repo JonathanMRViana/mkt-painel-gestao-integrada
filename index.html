@@ -2263,7 +2263,9 @@ tbody tr:hover td{background:var(--surface2)}
               <div class="exec-dre-pending" id="execDreSalaryPending"></div>
             </section>
             <section class="exec-dre-block">
-              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 04</div><div class="exec-dre-block-title">Viagens e Estadias</div></div><span class="exec-dre-status partial">Base pendente</span></div>
+              <div class="exec-dre-block-head"><div><div class="exec-dre-block-kicker">Bloco 04</div><div class="exec-dre-block-title">Viagens e Estadias</div></div><span class="exec-dre-status" id="execDreTravelStatus">verificando base</span></div>
+              <div class="exec-dre-metrics" id="execDreTravelMetrics"></div>
+              <div class="exec-dre-panel" style="margin-top:14px"><div class="exec-dre-panel-title">Detalhamento do Orçamento por Cargo</div><div class="tbl-wrap"><table class="exec-data-table exec-dre-detail-table"><thead><tr><th>Cargo</th><th>Pessoas</th><th>Hospedagem</th><th>Alimentação</th><th>Transporte</th><th>Total</th></tr></thead><tbody id="execDreTravelTbl"></tbody></table></div></div>
               <div class="exec-dre-pending" id="execDreTravelPending"></div>
             </section>
             <section class="exec-dre-block">
@@ -2452,7 +2454,7 @@ tbody tr:hover td{background:var(--surface2)}
 
 <!-- v1778869583 -->
 <script>
-let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],freightRates=[],freightPlan=[],assetTypeByFleet=new Map(),aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,execBillingFleetChart=null,execBillingDeviationChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
+let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],travelBudgetData=[],freightRates=[],freightPlan=[],assetTypeByFleet=new Map(),aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,execBillingFleetChart=null,execBillingDeviationChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
 window._aet=()=>aetData;
 window._mob=()=>mobData;
 
@@ -2987,6 +2989,7 @@ const CSV_RESULT_BI="https://docs.google.com/spreadsheets/d/e/2PACX-1vRJCb4qUO4R
 const CSV_FLEET_BILLING="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1256794079";
 const CSV_FREIGHT_RATES="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7NVqy6w4B2QRGFcNnvQEv3G_F2YjEprDxd9hZE2TDplS5RR_ZKmmoSypw5lwj2PKaAtOM4URz/pub?output=csv&gid=1374757392";
 const CSV_MAKRO_ASSETS="https://docs.google.com/spreadsheets/d/e/2PACX-1vRuXBqTTc4oX0_e_gGnueuum1tKmqLeGb_ftuE0aVrRGIebBwK0U1d-MeLmJkH3SflQxQqDcOaH4ZEP/pub?output=csv&gid=519353169";
+const CSV_TRAVEL_BUDGET="https://docs.google.com/spreadsheets/d/e/2PACX-1vRpe0VGkMBrBuB2MDpzf2OPq-P9MK7y_0XGVwpbwn7SGTfS7Bfod7cYWMNAFWLIt-kWvTqZSL7CcztM/pub?output=csv&gid=1021521780";
 const CSV_MOB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_Ry7aRW5A3zpaLdCu2u_xb3vgfOjnfHRmSH_OyvVX3wzmxvh4fSZBFvZakDRF2eDNA3DWJk9OFbml/pub?output=csv&gid=1729222115";
 const PROG_SHEETS=[
   {key:'prog-w28',week:'W28',gid:'97434237',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=97434237'},
@@ -3050,9 +3053,9 @@ async function loadAll(){
       return '';
     }
   };
-  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFleetBilling,txtFreight,txtAssets,progTexts]=await Promise.all([
+  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFleetBilling,txtFreight,txtAssets,txtTravelBudget,progTexts]=await Promise.all([
     safeFetch(CSV_AET,'aet'),safeFetch(CSV_MOB,'mob'),safeFetch(CSV_MAT,'mat-tie'),safeFetch(CSV_MAT_SAFETY,'mat-safety'),
-    safeFetch(CSV_PATIO,'patio'),safeFetch(CSV_PATIO_INVENTORY,'patio-inventory'),safeFetch(CSV_INEF,'inef'),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url,s.key))),safeFetch(CSV_RPD,'rpd'),safeFetch(CSV_BUDGET,'budget'),safeFetch(CSV_RESULT_BI,'result-bi'),safeFetch(CSV_FLEET_BILLING,'fleet-billing'),safeFetch(CSV_FREIGHT_RATES,'freight-rates'),safeFetch(CSV_MAKRO_ASSETS,'makro-assets'),
+    safeFetch(CSV_PATIO,'patio'),safeFetch(CSV_PATIO_INVENTORY,'patio-inventory'),safeFetch(CSV_INEF,'inef'),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url,s.key))),safeFetch(CSV_RPD,'rpd'),safeFetch(CSV_BUDGET,'budget'),safeFetch(CSV_RESULT_BI,'result-bi'),safeFetch(CSV_FLEET_BILLING,'fleet-billing'),safeFetch(CSV_FREIGHT_RATES,'freight-rates'),safeFetch(CSV_MAKRO_ASSETS,'makro-assets'),safeFetch(CSV_TRAVEL_BUDGET,'travel-budget'),
     Promise.all(PROG_SHEETS.map(s=>safeFetch(s.url,s.key)))
   ]);
   try{processAET(parseCSV(txtAet));}catch(e){console.error('processAET error:',e.message);}
@@ -3067,6 +3070,7 @@ async function loadAll(){
   try{processRESULT(parseCSV(txtResultBI));}catch(e){console.error('processRESULT error:',e.message);}
   try{processMAKROAssets(parseCSV(txtAssets));}catch(e){console.error('processMAKROAssets error:',e.message);}
   try{processFLEETBILLING(parseCSV(txtFleetBilling));}catch(e){console.error('processFLEETBILLING error:',e.message);}
+  try{processTRAVELBUDGET(parseCSV(txtTravelBudget));}catch(e){console.error('processTRAVELBUDGET error:',e.message);}
   try{processFreightRates(parseCSV(txtFreight));}catch(e){console.error('processFreightRates error:',e.message);}
   try{processPROG(progTexts.map((txt,i)=>({meta:PROG_SHEETS[i],rows:parseCSV(txt)})));}catch(e){console.error('processPROG error:',e.message);}
   try{renderEXEC();}catch(e){console.error('renderEXEC error:',e.message);}
@@ -3246,6 +3250,20 @@ function processFLEETBILLING(rows){
   }).filter(Boolean);
   if(budgetData.length)renderBUDGET();
   if(budgetData.length)renderBUDGET2026();
+}
+function processTRAVELBUDGET(rows){
+  travelBudgetData=[];
+  const headerIndex=rows.findIndex(row=>budgetKey(row[0])==='VERSAO'&&budgetKey(row[1]).includes('COD.DOFUNCIONARIO'));
+  if(headerIndex<0)return;
+  rows.slice(headerIndex+1).forEach((row,rowIndex)=>{
+    const employee=budgetText(row[1]),role=budgetText(row[10]),unit=budgetText(row[4]),costCenter=budgetText(row[6]),valueClass=budgetText(row[14]);
+    if(!employee||!role)return;
+    for(let mes=1;mes<=12;mes++){
+      const offset=mes-1,allocation=budgetNumber(row[15+offset])||0,lodgingUnits=budgetNumber(row[27+offset])||0;
+      const lodging=budgetNumber(row[39+offset])||0,food=budgetNumber(row[52+offset])||0,transport=budgetNumber(row[65+offset])||0,total=lodging+food+transport;
+      if(allocation||lodgingUnits||total)travelBudgetData.push({rowIndex:rowIndex+headerIndex+2,mes,employee,role,unit,costCenter,valueClass,allocation,lodgingUnits,lodging,food,transport,total});
+    }
+  });
 }
 function budgetFilterState(){return {mes:getSelectValues('budgetMes'),situacao:getSelectValues('budgetSituacao'),tipo:getSelectValues('budgetTipo'),unidade:getSelectValues('budgetUnidade'),contrato:getSelectValues('budgetContrato')};}
 function budgetMatches(row,state,skip,query,exactFleet){
@@ -4554,6 +4572,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   const monthSet=new Set(months),monthLabel=months.length===1?(BUDGET_MONTHS[months[0]-1]||months[0]):`${months.length} meses`;
   const billingRows=fleetBillingData.filter(row=>monthSet.has(row.mes));
   const budgetRows=budgetData.filter(row=>monthSet.has(row.mes));
+  const travelRows=travelBudgetData.filter(row=>monthSet.has(row.mes));
   const inefRows=inefData.filter(row=>monthSet.has(budgetMonthNumber(row.mes)));
   const dayRows=meaningfulDays.filter(row=>row.date&&row.date.getFullYear()===2026&&monthSet.has(row.date.getMonth()+1));
   const fleetKey=value=>String(value||'').replace(/\D/g,'').replace(/^0+(?=\d)/,'');
@@ -4724,11 +4743,26 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
     ['Banco de horas','Não há base disponível para o período selecionado.'],
     ['Horas extras x mobilizações','Não há base disponível para o período selecionado.']
   ]));
-  html('execDreTravelPending',pending([
-    ['Diárias orçadas x realizadas','Não há base disponível para o período selecionado.'],
-    ['Cobertura do orçamento','Não há base disponível para o período selecionado.'],
-    ['Estadias dos cavalos Munck','Não há base disponível para o período selecionado.']
-  ]));
+  const travelTotal=sum(travelRows,'total'),travelLodging=sum(travelRows,'lodging'),travelFood=sum(travelRows,'food'),travelTransport=sum(travelRows,'transport');
+  const travelPeople=new Set(travelRows.filter(row=>row.allocation>0).map(row=>row.employee));
+  html('execDreTravelMetrics',[
+    metric('Orçamento do período',travelRows.length?budgetMoneyCompact(travelTotal):'N/D',travelRows.length?`${travelPeople.size} pessoas contempladas`:'não há base disponível para o período selecionado','blue'),
+    metric('Hospedagem',travelRows.length?budgetMoneyCompact(travelLodging):'N/D','valor orçado','green'),
+    metric('Alimentação',travelRows.length?budgetMoneyCompact(travelFood):'N/D','valor orçado','amber'),
+    metric('Transporte',travelRows.length?budgetMoneyCompact(travelTransport):'N/D','valor orçado','blue')
+  ].join(''));
+  const travelRoleMap=new Map();
+  travelRows.forEach(row=>{
+    const item=travelRoleMap.get(row.role)||{role:row.role,people:new Set(),lodging:0,food:0,transport:0,total:0};
+    if(row.allocation>0)item.people.add(row.employee);
+    item.lodging+=row.lodging;item.food+=row.food;item.transport+=row.transport;item.total+=row.total;
+    travelRoleMap.set(row.role,item);
+  });
+  const travelRoles=[...travelRoleMap.values()].sort((a,b)=>b.total-a.total||a.role.localeCompare(b.role,'pt-BR'));
+  html('execDreTravelTbl',travelRoles.length?travelRoles.map(row=>`<tr><td><strong>${execEsc(row.role)}</strong></td><td style="font-family:var(--font-data);text-align:right">${row.people.size.toLocaleString('pt-BR')}</td><td style="font-family:var(--font-data);text-align:right;white-space:nowrap">${fMoney(row.lodging)}</td><td style="font-family:var(--font-data);text-align:right;white-space:nowrap">${fMoney(row.food)}</td><td style="font-family:var(--font-data);text-align:right;white-space:nowrap">${fMoney(row.transport)}</td><td style="font-family:var(--font-data);font-weight:700;text-align:right;white-space:nowrap">${fMoney(row.total)}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Não há base disponível para o período selecionado.</td></tr>');
+  const travelStatus=document.getElementById('execDreTravelStatus');
+  if(travelStatus){travelStatus.textContent=travelRows.length?'Orçamento disponível':'Sem base no período';travelStatus.className='exec-dre-status '+(travelRows.length?'ready':'partial');}
+  html('execDreTravelPending',pending([['Realizado de viagens e estadias','Não há base realizada disponível para confronto no período selecionado.']]));
   set('execDrePeriod',monthLabel);
   const gap=real-budget,lineGap=lineAxleReal-lineAxleBudget;
   const actions=[];
@@ -4736,7 +4770,7 @@ function renderDREAnalysis(meaningfulDays,waitType,set,html,selectedMonths=[]){
   if(lineAxleRows.length&&lineGap<0)actions.push({kind:'critical',title:'Atuar na linha de eixo',body:`Frotas 615, 617 e 619 acumulam ${fMoney(Math.abs(lineGap))} abaixo do orçamento no recorte.`});
   if(potentialLoss.length)actions.push({kind:'critical',title:'Reduzir perda potencial',body:`As ineficiências classificadas representam ${fMoney(potentialTotal)} de exposição estimada; priorizar causas com maior valor.`});
   if(kmWithoutCharge>0)actions.push({kind:'critical',title:'Validar cobrança dos quilômetros',body:`Há ${Math.round(kmWithoutCharge).toLocaleString('pt-BR')} km sem valor associado nas colunas Frete ou KM Vazio, distribuídos em ${kmAuditFleets.size} frotas. Validar observações e regra contratual antes de classificar como perda.`});
-  actions.push({kind:'pending',title:'Completar a DRE operacional',body:'Conectar folha/BH e viagens/estadias para liberar os dois blocos ainda pendentes.'});
+  actions.push({kind:'pending',title:'Completar a DRE operacional',body:'Conectar folha/BH e o realizado de viagens/estadias para concluir os confrontos pendentes.'});
   html('execDreActions',actions.slice(0,4).map(item=>`<div class="exec-dre-action ${item.kind}"><div class="exec-dre-action-title">${execEsc(item.title)}</div><div class="exec-dre-action-body">${execEsc(item.body)}</div></div>`).join(''));
 }
 
@@ -7776,7 +7810,7 @@ function initPWA(){
       reloadingForUpdate=true;
       location.reload();
     });
-    navigator.serviceWorker.register('./sw.js?v=121',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
+    navigator.serviceWorker.register('./sw.js?v=122',{updateViaCache:'none'}).then(registration=>registration.update()).catch(error=>console.warn('Service worker não registrado:',error));
   }
 }
 
