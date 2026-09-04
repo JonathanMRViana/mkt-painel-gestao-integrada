@@ -970,6 +970,11 @@ tbody tr:hover td{background:var(--surface2)}
     <span class="nav-lbl">Programação Logística Semanal</span>
   </div>
 
+  <div class="nav-item" id="nav-business" data-tip="Possíveis Negócios" data-sub="Pipeline comercial por frota" onclick="goTo('business')">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M3 12h18"/><path d="M10 12v2h4v-2"/></svg>
+    <span class="nav-lbl">Possíveis Negócios</span>
+  </div>
+
 
   <div class="sb-section">KPIs</div>
 
@@ -2118,6 +2123,36 @@ tbody tr:hover td{background:var(--surface2)}
       </div>
     </div>
 
+    <!-- POSSIVEIS NEGOCIOS PANEL -->
+    <div id="panel-business" class="panel">
+      <div id="businessLoad" class="loading"><div class="spinner"></div><div class="loading-txt">carregando dados · possíveis negócios</div></div>
+      <div id="businessBody" style="display:none">
+        <div class="top-filter-bar">
+          <span class="top-filter-bar-title">Filtros</span>
+          <div class="filter-divider"></div>
+          <div class="search-wrap" style="flex:1;min-width:220px;margin-bottom:0">
+            <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" id="businessSearch" placeholder="Buscar frota, cliente, local ou equipamento..." oninput="renderBUSINESS()">
+          </div>
+          <div class="select-group"><label class="select-label">Status Comercial</label><select class="f-select" id="businessStatus" onchange="renderBUSINESS()"><option value="TODOS">Todos</option></select></div>
+          <div class="select-group"><label class="select-label">Atualização</label><select class="f-select" id="businessUpdate" onchange="renderBUSINESS()"><option value="TODOS">Todas</option></select></div>
+          <button class="clear-filters-btn" onclick="clearBUSINESSFilters()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Limpar</button>
+        </div>
+
+        <div class="kpi-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+          <div class="kpi c-blue"><div class="kpi-stripe"></div><div class="kpi-label">Negócios Mapeados</div><div class="kpi-value" id="businessK0">—</div><div class="kpi-sub">registros no recorte</div></div>
+          <div class="kpi c-mkblue"><div class="kpi-stripe"></div><div class="kpi-label">Frotas Envolvidas</div><div class="kpi-value" id="businessK1">—</div><div class="kpi-sub">frotas com oportunidade</div></div>
+          <div class="kpi c-amber"><div class="kpi-stripe"></div><div class="kpi-label">Probabilidade Média</div><div class="kpi-value" id="businessK2">—</div><div class="kpi-sub">conforme avaliação comercial</div></div>
+          <div class="kpi c-red"><div class="kpi-stripe"></div><div class="kpi-label">Negócios Quentes</div><div class="kpi-value" id="businessK3">—</div><div class="kpi-sub">em estágio quente</div></div>
+        </div>
+
+        <div class="tbl-card">
+          <div class="tbl-head"><span class="tbl-title">Pipeline Comercial</span><span class="count-tag" id="businessCnt">0 registros</span></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Frota</th><th>Equipamento</th><th>Capacidade</th><th>Cliente</th><th>Duração</th><th>Local da Atividade</th><th>Status Comercial</th><th>Probabilidade</th><th>Previsão de Início</th><th>Prazo de Manutenção</th><th>Atualização</th><th>Observações</th></tr></thead><tbody id="businessTbl"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
     <!-- EXECUTIVE SUMMARY PANEL -->
     <div id="panel-exec" class="panel">
       <div class="exec-panel">
@@ -2472,7 +2507,7 @@ tbody tr:hover td{background:var(--surface2)}
 
 <!-- v1778869583 -->
 <script>
-let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],budgetData=[],resultData=[],fleetBillingData=[],travelBudgetData=[],extraHoursData=[],freightRates=[],freightPlan=[],assetTypeByFleet=new Map(),aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,execBillingFleetChart=null,execBillingDeviationChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
+let aetData=[],mobData=[],matData=[],matSafetyData=[],patData=[],patInventoryData=[],patInventoryUpdated='',inefData=[],eflData=[],eflDetailData=[],rpdData=[],progSheetsData=[],businessData=[],budgetData=[],resultData=[],fleetBillingData=[],travelBudgetData=[],extraHoursData=[],freightRates=[],freightPlan=[],assetTypeByFleet=new Map(),aC=null,mC=null,mAC=null,pC=null,pCompareLineC=null,pCompareStatusC=null,pInventoryChart=null,iC=null,iC2=null,progStatusChart=null,progClientChart=null,progLoadChart=null,progTrendChart=null,budgetMonthChart=null,budgetFleetChart=null,execBillingFleetChart=null,execBillingDeviationChart=null,dark=document.documentElement.getAttribute('data-theme')==='dark';
 window._aet=()=>aetData;
 window._mob=()=>mobData;
 
@@ -2481,6 +2516,7 @@ const pages={aet:{t:'Gestão de AET\'s',s:'licenças especiais de trânsito'},mo
   mat:{t:'Mat. de Amarração & Segurança',s:'controle de materiais por frota'},
   pat:{t:'Gestão de Pátio',s:'controle de atividades e operações de pátio'},
   inef:{t:'Diárias de Ineficiências Operacionais',s:'monitoramento de equipamentos parados e diárias'},
+  business:{t:'Possíveis Negócios',s:'pipeline comercial e disponibilidade de frotas'},
   efl:{t:'Relatório de Eficiência Logística',s:'eficiência de KM por frota · operação diária'},
   exec:{t:'Resumo Executivo',s:'visão gerencial consolidada das operações'},
   budget:{t:'Resultado da Unidade',s:'orçado x realizado por unidade e cavalo'},
@@ -2676,6 +2712,7 @@ function goTo(id){
     if(id==='efl'){if(eflChart){eflChart.destroy();eflChart=null;}if(eflFrotaMesChart){eflFrotaMesChart.destroy();eflFrotaMesChart=null;}if(eflMesChart){eflMesChart.destroy();eflMesChart=null;}if(eflDiaChart){eflDiaChart.destroy();eflDiaChart=null;}if(eflData.length>0)renderEFL();}
     if(id==='rpd'&&rpdData.length>0){if(rpdChart){rpdChart.destroy();rpdChart=null;}renderRPD();}
     if(id==='prog'&&progSheetsData.length>0){if(progStatusChart){progStatusChart.destroy();progStatusChart=null;}if(progClientChart){progClientChart.destroy();progClientChart=null;}if(progLoadChart){progLoadChart.destroy();progLoadChart=null;}if(progTrendChart){progTrendChart.destroy();progTrendChart=null;}renderPROG();}
+    if(id==='business'&&businessData.length>0)renderBUSINESS();
     if(id==='mat'&&(matData.length>0||matSafetyData.length>0)){if(mAC){mAC.destroy();mAC=null;}renderMAT();}
     if(id==='budget'&&budgetData.length>0){if(budgetMonthChart){budgetMonthChart.destroy();budgetMonthChart=null;}if(budgetFleetChart){budgetFleetChart.destroy();budgetFleetChart=null;}renderBUDGET();}
     if(id==='budget2026'&&budgetData.length>0)renderBUDGET2026();
@@ -2731,6 +2768,7 @@ function toggleTheme(){
   if(activeId==='efl'&&eflData.length)renderEFL();
   if(activeId==='rpd'&&rpdData.length)renderRPD();
   if(activeId==='prog'&&progSheetsData.length)renderPROG();
+  if(activeId==='business'&&businessData.length)renderBUSINESS();
   if(activeId==='budget'&&budgetData.length)renderBUDGET();
   if(activeId==='exec')renderEXEC();
 }
@@ -3009,6 +3047,7 @@ const CSV_FREIGHT_RATES="https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_KB7
 const CSV_MAKRO_ASSETS="https://docs.google.com/spreadsheets/d/e/2PACX-1vRuXBqTTc4oX0_e_gGnueuum1tKmqLeGb_ftuE0aVrRGIebBwK0U1d-MeLmJkH3SflQxQqDcOaH4ZEP/pub?output=csv&gid=519353169";
 const CSV_TRAVEL_BUDGET="https://docs.google.com/spreadsheets/d/e/2PACX-1vRpe0VGkMBrBuB2MDpzf2OPq-P9MK7y_0XGVwpbwn7SGTfS7Bfod7cYWMNAFWLIt-kWvTqZSL7CcztM/pub?output=csv&gid=1021521780";
 const CSV_EXTRA_HOURS="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZjeOA0emEwG8ydReC-fuzQlBnn8MYKIof1n2hE9d-Ea7PXAAzNYGUnjGrYYTmZw/pub?output=csv&gid=508953740";
+const CSV_BUSINESS="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZSeGOufA_X_iZdy0uigkYFidD2XRNxR7R8ZpYEzaX3nAFQnNt0owHDHzTZ-Qp03rBPlebs0BZgFo9/pub?output=csv";
 const CSV_MOB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_Ry7aRW5A3zpaLdCu2u_xb3vgfOjnfHRmSH_OyvVX3wzmxvh4fSZBFvZakDRF2eDNA3DWJk9OFbml/pub?output=csv&gid=1729222115";
 const PROG_SHEETS=[
   {key:'prog-w28',week:'W28',gid:'97434237',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQWdxW-Qn5RKMC-Gb6Naq6pRsrx1UfWobug_0-y8cU6e0surPMON-_HIdzK5aade_G41YekLbvPMt2/pub?output=csv&gid=97434237'},
@@ -3072,9 +3111,9 @@ async function loadAll(){
       return '';
     }
   };
-  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFleetBilling,txtFreight,txtAssets,txtTravelBudget,txtExtraHours,progTexts]=await Promise.all([
+  const [txtAet,txtMob,txtMat,txtMatSafety,txtPat,txtPatInventory,txtInef,txtEfls,txtRpd,txtBudget,txtResultBI,txtFleetBilling,txtFreight,txtAssets,txtTravelBudget,txtExtraHours,txtBusiness,progTexts]=await Promise.all([
     safeFetch(CSV_AET,'aet'),safeFetch(CSV_MOB,'mob'),safeFetch(CSV_MAT,'mat-tie'),safeFetch(CSV_MAT_SAFETY,'mat-safety'),
-    safeFetch(CSV_PATIO,'patio'),safeFetch(CSV_PATIO_INVENTORY,'patio-inventory'),safeFetch(CSV_INEF,'inef'),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url,s.key))),safeFetch(CSV_RPD,'rpd'),safeFetch(CSV_BUDGET,'budget'),safeFetch(CSV_RESULT_BI,'result-bi'),safeFetch(CSV_FLEET_BILLING,'fleet-billing'),safeFetch(CSV_FREIGHT_RATES,'freight-rates'),safeFetch(CSV_MAKRO_ASSETS,'makro-assets'),safeFetch(CSV_TRAVEL_BUDGET,'travel-budget'),safeFetch(CSV_EXTRA_HOURS,'extra-hours'),
+    safeFetch(CSV_PATIO,'patio'),safeFetch(CSV_PATIO_INVENTORY,'patio-inventory'),safeFetch(CSV_INEF,'inef'),Promise.all(EFL_SHEETS.map(s=>safeFetch(s.url,s.key))),safeFetch(CSV_RPD,'rpd'),safeFetch(CSV_BUDGET,'budget'),safeFetch(CSV_RESULT_BI,'result-bi'),safeFetch(CSV_FLEET_BILLING,'fleet-billing'),safeFetch(CSV_FREIGHT_RATES,'freight-rates'),safeFetch(CSV_MAKRO_ASSETS,'makro-assets'),safeFetch(CSV_TRAVEL_BUDGET,'travel-budget'),safeFetch(CSV_EXTRA_HOURS,'extra-hours'),safeFetch(CSV_BUSINESS,'business'),
     Promise.all(PROG_SHEETS.map(s=>safeFetch(s.url,s.key)))
   ]);
   try{processAET(parseCSV(txtAet));}catch(e){console.error('processAET error:',e.message);}
@@ -3091,6 +3130,7 @@ async function loadAll(){
   try{processFLEETBILLING(parseCSV(txtFleetBilling));}catch(e){console.error('processFLEETBILLING error:',e.message);}
   try{processTRAVELBUDGET(parseCSV(txtTravelBudget));}catch(e){console.error('processTRAVELBUDGET error:',e.message);}
   try{processEXTRAHOURS(parseCSV(txtExtraHours));}catch(e){console.error('processEXTRAHOURS error:',e.message);}
+  try{processBUSINESS(parseCSV(txtBusiness));}catch(e){console.error('processBUSINESS error:',e.message);}
   try{processFreightRates(parseCSV(txtFreight));}catch(e){console.error('processFreightRates error:',e.message);}
   try{processPROG(progTexts.map((txt,i)=>({meta:PROG_SHEETS[i],rows:parseCSV(txt)})));}catch(e){console.error('processPROG error:',e.message);}
   try{renderEXEC();}catch(e){console.error('renderEXEC error:',e.message);}
@@ -3299,6 +3339,66 @@ function processEXTRAHOURS(rows){
     if(!employee||!role||!type.startsWith('E')||!competenceMonth||year!==2026||!minutes)return;
     extraHoursData.push({rowIndex:rowIndex+headerIndex+2,employee,name,role,costCenter:budgetText(row[ix.costCenter]),type,competenceMonth,paymentMonth:8,minutes});
   });
+}
+function processBUSINESS(rows){
+  businessData=[];
+  const headerIndex=rows.findIndex(row=>budgetKey(row[0])==='FROTA'&&budgetKey(row[1])==='EQUIPAMENTO');
+  if(headerIndex<0)return;
+  const headers=rows[headerIndex].map(budgetKey),col=name=>headers.findIndex(header=>header===name);
+  const ix={frota:col('FROTA'),equipamento:col('EQUIPAMENTO'),capacidade:col('CAPACIDADE'),cliente:col('CLIENTE'),duracao:col('DURACAO'),local:col('LOCALDAATIVIDADE'),status:col('STATUSCOMERCIAL'),probabilidade:col('PROBABILIDADE'),inicio:col('PREVISAODEINICIO'),observacoes:col('OBSERVACOES'),prazoManutencao:col('PRAZODEMANUTENCAO'),atualizacao:col('ATUALIZACAO')};
+  if(ix.frota<0||ix.cliente<0)return;
+  rows.slice(headerIndex+1).forEach((row,rowIndex)=>{
+    const frota=budgetText(row[ix.frota]),cliente=budgetText(row[ix.cliente]);
+    if(!frota&&!cliente)return;
+    businessData.push({
+      rowIndex:headerIndex+rowIndex+2,frota,equipamento:budgetText(row[ix.equipamento]),capacidade:budgetText(row[ix.capacidade]),cliente,duracao:budgetText(row[ix.duracao]),local:budgetText(row[ix.local]),status:budgetText(row[ix.status]),probabilidade:budgetRate(row[ix.probabilidade]),inicio:budgetText(row[ix.inicio]),observacoes:budgetText(row[ix.observacoes]),prazoManutencao:budgetText(row[ix.prazoManutencao]),atualizacao:budgetText(row[ix.atualizacao])
+    });
+  });
+  const loading=document.getElementById('businessLoad'),body=document.getElementById('businessBody');
+  if(loading)loading.style.display='none';
+  if(body)body.style.display='block';
+  refreshBUSINESSFilters();
+  renderBUSINESS();
+}
+function businessTag(value,kind){
+  const key=budgetKey(value);
+  let css='tag-dim';
+  if(kind==='status')css=key==='QUENTE'?'tag-red':key==='MORNO'?'tag-amber':key==='FRIO'?'tag-teal':'tag-dim';
+  if(kind==='update')css=key.includes('DECLIN')?'tag-red':key.includes('AGUARD')?'tag-amber':key.includes('DISPON')?'tag-green':'tag-dim';
+  return `<span class="tag ${css}">${budgetEsc(value||'—')}</span>`;
+}
+function refreshBUSINESSFilters(){
+  const fill=(id,values,label)=>{
+    const select=document.getElementById(id);if(!select)return;
+    const current=select.value||'TODOS';
+    select.innerHTML=`<option value="TODOS">${label}</option>`+values.map(value=>`<option value="${budgetEsc(value)}">${budgetEsc(value)}</option>`).join('');
+    select.value=values.includes(current)?current:'TODOS';
+  };
+  const unique=field=>[...new Set(businessData.map(row=>row[field]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  fill('businessStatus',unique('status'),'Todos');
+  fill('businessUpdate',unique('atualizacao'),'Todas');
+}
+function clearBUSINESSFilters(){
+  ['businessSearch','businessStatus','businessUpdate'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=id==='businessSearch'?'':'TODOS';});
+  renderBUSINESS();
+}
+function renderBUSINESS(){
+  const query=budgetKey((document.getElementById('businessSearch')||{}).value||'');
+  const status=(document.getElementById('businessStatus')||{}).value||'TODOS';
+  const update=(document.getElementById('businessUpdate')||{}).value||'TODOS';
+  const rows=businessData.filter(row=>{
+    if(status!=='TODOS'&&row.status!==status)return false;
+    if(update!=='TODOS'&&row.atualizacao!==update)return false;
+    return !query||budgetKey([row.frota,row.equipamento,row.capacidade,row.cliente,row.duracao,row.local,row.status,row.inicio,row.observacoes,row.prazoManutencao,row.atualizacao].join(' ')).includes(query);
+  });
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  const frotas=new Set(rows.map(row=>budgetKey(row.frota)).filter(Boolean));
+  const probabilities=rows.map(row=>row.probabilidade).filter(value=>value!=null);
+  const average=probabilities.length?probabilities.reduce((sum,value)=>sum+value,0)/probabilities.length:null;
+  set('businessK0',rows.length);set('businessK1',frotas.size);set('businessK2',average==null?'—':(average*100).toFixed(1).replace('.',',')+'%');set('businessK3',rows.filter(row=>budgetKey(row.status)==='QUENTE').length);set('businessCnt',rows.length+' '+(rows.length===1?'registro':'registros'));
+  const body=document.getElementById('businessTbl');
+  if(body)body.innerHTML=rows.length?rows.map(row=>`<tr><td><strong>${budgetEsc(row.frota||'—')}</strong></td><td>${budgetEsc(row.equipamento||'—')}</td><td>${budgetEsc(row.capacidade||'—')}</td><td>${budgetEsc(row.cliente||'—')}</td><td>${budgetEsc(row.duracao||'—')}</td><td>${budgetEsc(row.local||'—')}</td><td>${businessTag(row.status,'status')}</td><td>${row.probabilidade==null?'—':(row.probabilidade*100).toFixed(0).replace('.',',')+'%'}</td><td>${budgetEsc(row.inicio||'—')}</td><td>${budgetEsc(row.prazoManutencao||'—')}</td><td>${businessTag(row.atualizacao,'update')}</td><td>${budgetEsc(row.observacoes||'—')}</td></tr>`).join(''):'<tr><td colspan="12" class="empty-row">Nenhum possível negócio encontrado no recorte.</td></tr>';
+  scheduleKpiValueFit(document.getElementById('panel-business'));
 }
 function budgetFilterState(){return {mes:getSelectValues('budgetMes'),situacao:getSelectValues('budgetSituacao'),tipo:getSelectValues('budgetTipo'),unidade:getSelectValues('budgetUnidade'),contrato:getSelectValues('budgetContrato')};}
 function budgetMatches(row,state,skip,query,exactFleet){
