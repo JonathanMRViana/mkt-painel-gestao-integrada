@@ -115,10 +115,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-heigh
 .main-wrap.col{margin-left:var(--sbm)}
 .ambient-bg{position:fixed;inset:0 0 0 var(--sbw);z-index:0;pointer-events:none;overflow:hidden;transition:left .3s cubic-bezier(.4,0,.2,1)}
 .main-wrap.col .ambient-bg{left:var(--sbm)}
-body.business-share-view .sidebar,body.business-share-view .mobile-nav-backdrop{display:none!important}
-body.business-share-view .main-wrap,body.business-share-view .main-wrap.col{margin-left:0!important;width:100%;max-width:100%;flex-basis:100%}
-body.business-share-view .ambient-bg,body.business-share-view .main-wrap.col .ambient-bg{left:0}
-body.business-share-view .mobile-menu-btn{display:none!important}
 .ambient-bg-layer{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transform:scale(1.015);filter:saturate(.72) contrast(.92);transition:opacity 2.5s ease}
 .ambient-bg-layer.active{opacity:.085}
 [data-theme="dark"] .ambient-bg-layer.active{opacity:.10}
@@ -2697,7 +2693,6 @@ function initMobileNavigation(){
 }
 
 function goTo(id){
-  if(isBusinessShareView()&&id!=='business')return;
   toggleMobileNav(false);
   window.scrollTo({top:0,left:0,behavior:'auto'});
   currentPanelId=id;
@@ -3201,13 +3196,6 @@ function budgetIsImplement(...values){
   return['IMPLEMENTO','CARRETA','PRANCHA','DOLLY','REBOQUE','SEMIRREBOQUE','CARGASECA'].some(token=>key.includes(token));
 }
 
-function isBusinessShareView(){return window.location.hash.toLowerCase()==='#possiveis-negocios';}
-function applyBusinessShareView(){
-  const shareView=isBusinessShareView();
-  document.body.classList.toggle('business-share-view',shareView);
-  if(shareView&&currentPanelId!=='business')goTo('business');
-}
-window.addEventListener('hashchange',applyBusinessShareView);
 function processBUDGET(rows){
   let headerIndex=rows.findIndex(row=>{const keys=row.map(budgetKey);return keys.includes('MES')&&keys.includes('FROTA')&&keys.some(k=>k.includes('ROBORCADA'));});
   if(headerIndex<0)headerIndex=0;
@@ -8061,7 +8049,6 @@ const kpiValueObserver=new MutationObserver(mutations=>{
 });
 kpiValueObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>scheduleKpiValueFit());
-applyBusinessShareView();
 loadAll();
 window.addEventListener('resize',()=>{requestAnimationFrame(refreshTableScrollbars);scheduleKpiValueFit();});
 setInterval(loadAll,5*60*1000);
